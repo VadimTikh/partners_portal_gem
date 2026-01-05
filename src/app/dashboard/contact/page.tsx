@@ -35,7 +35,7 @@ export default function ContactPage() {
       await api.sendContactMessage(data.subject, data.message);
       toast.success(t.contact.successMessage);
       reset();
-    } catch (error) {
+    } catch (_error) {
       toast.error(t.contact.failedMessage);
     }
   };

@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth';
+import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,12 +41,13 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    // Mock check
-    if (data.email === 'admin@partner.de' && data.password === 'password123') {
-      login(data.email);
+    try {
+      const user = await api.login(data.email, data.password);
+      login(user, user.token);
       toast.success(t.login.successMessage);
       router.push('/dashboard');
-    } else {
+    } catch (error) {
+      console.error(error);
       toast.error(t.login.invalidCredentials);
     }
   };

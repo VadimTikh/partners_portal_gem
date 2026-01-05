@@ -1,15 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-interface User {
-  email: string;
-  name: string;
-}
+import { User } from './types';
 
 interface AuthState {
   user: User | null;
   token: string | null;
-  login: (email: string) => void;
+  login: (user: User, token?: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -20,10 +16,10 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
-      login: (email: string) =>
+      login: (user: User, token?: string) =>
         set({
-          user: { email, name: 'Partner Admin' },
-          token: 'fake-jwt-token',
+          user,
+          token: token || user.token || 'mock-jwt-token',
           isAuthenticated: true,
         }),
       logout: () => set({ user: null, token: null, isAuthenticated: false }),

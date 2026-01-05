@@ -18,6 +18,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const savedLocale = localStorage.getItem('locale') as Locale;
     if (savedLocale && (savedLocale === 'de' || savedLocale === 'en')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocaleState(savedLocale);
     }
     setIsLoaded(true);

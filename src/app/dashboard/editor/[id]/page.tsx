@@ -7,10 +7,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Trash2, Plus, Upload, Image as ImageIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Trash2, Plus, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
-import { Course, CourseDate } from '@/lib/mock-data';
+import { Course, CourseDate } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -139,7 +139,7 @@ export default function EditorPage() {
     setDates(dates.filter(d => d.id !== dateId));
   };
 
-  const handleDateChange = (dateId: string, field: keyof CourseDate, value: any) => {
+  const handleDateChange = (dateId: string, field: keyof CourseDate, value: string | number | Date) => {
     setDates(dates.map(d => {
       if (d.id === dateId) {
         return { ...d, [field]: value };
