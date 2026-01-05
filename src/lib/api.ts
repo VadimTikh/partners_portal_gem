@@ -1,22 +1,24 @@
 import axios from 'axios';
 import { Course, CourseDate, User } from './types';
 import { MOCK_COURSES, MOCK_DATES } from './mock-data';
+import { useAuthStore } from './auth';
 
-// Environment variables for n8n Webhooks
-const API_URLS = {
-  login: process.env.NEXT_PUBLIC_N8N_LOGIN_WEBHOOK,
-  courses: process.env.NEXT_PUBLIC_N8N_COURSES_WEBHOOK,
-  course: process.env.NEXT_PUBLIC_N8N_COURSE_WEBHOOK,
-  updateCourse: process.env.NEXT_PUBLIC_N8N_UPDATE_COURSE_WEBHOOK,
-  dates: process.env.NEXT_PUBLIC_N8N_DATES_WEBHOOK,
-  saveDates: process.env.NEXT_PUBLIC_N8N_SAVE_DATES_WEBHOOK,
-  contact: process.env.NEXT_PUBLIC_N8N_CONTACT_WEBHOOK,
-  changePassword: process.env.NEXT_PUBLIC_N8N_CHANGE_PASSWORD_WEBHOOK,
-  resetPassword: process.env.NEXT_PUBLIC_N8N_RESET_PASSWORD_WEBHOOK,
-};
+// Single entry point for all n8n operations
+const API_URL = process.env.NEXT_PUBLIC_N8N_API_URL;
 
 // Simulate network delay for mocks
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Helper to get auth headers
+const getAuthConfig = () => {
+  const token = useAuthStore.getState().token;
+  return {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : '',
+      'Content-Type': 'application/json',
+    },
+  };
+};
 
 // In-memory store for the session (fallback)
 let courses = [...MOCK_COURSES];
@@ -24,8 +26,11 @@ let dates = [...MOCK_DATES];
 
 export const api = {
   login: async (email: string, password: string): Promise<User> => {
-    if (API_URLS.login) {
-      const response = await axios.post(API_URLS.login, { email, password });
+    if (API_URL) {
+      // Login typically doesn't need auth headers, but needs the action param
+      const response = await axios.post(API_URL, { email, password }, {
+        params: { action: 'login' }
+      });
       return response.data;
     }
     // Mock login
@@ -37,8 +42,11 @@ export const api = {
   },
 
   getCourses: async (): Promise<Course[]> => {
-    if (API_URLS.courses) {
-      const response = await axios.get(API_URLS.courses);
+    if (API_URL) {
+      const response = await axios.post(API_URL, {}, { 
+        ...getAuthConfig(),
+        params: { action: 'get-courses' }
+      });
       return response.data;
     }
     await delay(800);
@@ -46,21 +54,24 @@ export const api = {
   },
   
   getCourse: async (id: string): Promise<Course | undefined> => {
-    if (API_URLS.course) {
-      const response = await axios.get(API_URLS.course, { params: { id } });
+    if (API_URL) {
+      const response = await axios.post(API_URL, { id }, { 
+        ...getAuthConfig(),
+        params: { action: 'get-course' } 
+      });
       return response.data;
     }
-    // If we have a courses endpoint but not specific course endpoint, we could fetch all and find one,
-    // but here we assume if one is missing we fallback to mock for that specific action or use the memory store.
-    
     // Fallback to memory store
     await delay(800);
     return courses.find((c) => c.id === id);
   },
   
   updateCourse: async (course: Course): Promise<Course> => {
-    if (API_URLS.updateCourse) {
-      const response = await axios.post(API_URLS.updateCourse, course);
+    if (API_URL) {
+      const response = await axios.post(API_URL, course, { 
+        ...getAuthConfig(),
+        params: { action: 'update-course' }
+      });
       return response.data;
     }
     await delay(1000);
@@ -73,8 +84,11 @@ export const api = {
   },
 
   getDates: async (courseId: string): Promise<CourseDate[]> => {
-    if (API_URLS.dates) {
-      const response = await axios.get(API_URLS.dates, { params: { courseId } });
+    if (API_URL) {
+      const response = await axios.post(API_URL, { courseId }, { 
+        ...getAuthConfig(),
+        params: { action: 'get-dates' } 
+      });
       return response.data;
     }
     await delay(800);
@@ -82,8 +96,11 @@ export const api = {
   },
   
   saveDates: async (courseId: string, newDates: CourseDate[]): Promise<CourseDate[]> => {
-    if (API_URLS.saveDates) {
-      const response = await axios.post(API_URLS.saveDates, { courseId, dates: newDates });
+    if (API_URL) {
+      const response = await axios.post(API_URL, { courseId, dates: newDates }, { 
+        ...getAuthConfig(),
+        params: { action: 'save-dates' }
+      });
       return response.data;
     }
     await delay(1000);
@@ -93,20 +110,24 @@ export const api = {
   },
 
   changePassword: async (password: string, newPassword: string): Promise<void> => {
-    if (API_URLS.changePassword) {
-      await axios.post(API_URLS.changePassword, { password, newPassword });
+    if (API_URL) {
+      await axios.post(API_URL, { password, newPassword }, { 
+        ...getAuthConfig(),
+        params: { action: 'change-password' }
+      });
       return;
     }
     // Mock password change
     await delay(1000);
-    // In a real app we'd verify current password first, but here we just simulate success.
     console.log('Password changed from', password, 'to', newPassword);
     return;
   },
 
   resetPassword: async (email: string): Promise<void> => {
-    if (API_URLS.resetPassword) {
-      await axios.post(API_URLS.resetPassword, { email });
+    if (API_URL) {
+      await axios.post(API_URL, { email }, {
+        params: { action: 'reset-password' }
+      });
       return;
     }
     // Mock password reset
@@ -116,8 +137,11 @@ export const api = {
   },
 
   sendContactMessage: async (subject: string, message: string): Promise<void> => {
-    if (API_URLS.contact) {
-      await axios.post(API_URLS.contact, { subject, message });
+    if (API_URL) {
+      await axios.post(API_URL, { subject, message }, { 
+        ...getAuthConfig(),
+        params: { action: 'contact' }
+      });
       return;
     }
     await delay(1000);

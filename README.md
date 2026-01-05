@@ -35,12 +35,17 @@ A modern partner portal for managing courses, dates, and account settings. Built
 
 ## API Documentation (n8n Webhooks)
 
-This application is designed to connect to an n8n backend via Webhooks. To enable this connection, you must provide the corresponding Webhook URLs in your `.env` file (see `.env.example`).
+This application is designed to connect to an n8n backend via a **single Webhook endpoint**. To enable this connection, you must provide the corresponding Webhook URL in your `.env` file (see `.env.example`).
+
+**Main Entry Point:** `NEXT_PUBLIC_N8N_API_URL`
+**Method:** `POST` (for all actions)
+
+The application distinguishes between operations using the `action` query parameter.
 
 ### Authentication & Account
 
 #### 1. Login
-*   **Env Variable**: `NEXT_PUBLIC_N8N_LOGIN_WEBHOOK`
+*   **Query Param**: `?action=login`
 *   **Method**: `POST`
 *   **Payload**:
     ```json
@@ -59,8 +64,9 @@ This application is designed to connect to an n8n backend via Webhooks. To enabl
     ```
 
 #### 2. Change Password
-*   **Env Variable**: `NEXT_PUBLIC_N8N_CHANGE_PASSWORD_WEBHOOK`
+*   **Query Param**: `?action=change-password`
 *   **Method**: `POST`
+*   **Headers**: `Authorization: Bearer <token>`
 *   **Payload**:
     ```json
     {
@@ -68,10 +74,9 @@ This application is designed to connect to an n8n backend via Webhooks. To enabl
       "newPassword": "newSecurePassword"
     }
     ```
-*   **Expected Response**: `200 OK` (Empty body or success message)
 
 #### 3. Reset Password
-*   **Env Variable**: `NEXT_PUBLIC_N8N_RESET_PASSWORD_WEBHOOK`
+*   **Query Param**: `?action=reset-password`
 *   **Method**: `POST`
 *   **Payload**:
     ```json
@@ -79,14 +84,14 @@ This application is designed to connect to an n8n backend via Webhooks. To enabl
       "email": "user@example.com"
     }
     ```
-*   **Expected Response**: `200 OK` (Empty body or success message)
 
 ### Course Management
 
 #### 4. Get All Courses
-*   **Env Variable**: `NEXT_PUBLIC_N8N_COURSES_WEBHOOK`
-*   **Method**: `GET`
-*   **Payload**: None
+*   **Query Param**: `?action=get-courses`
+*   **Method**: `POST`
+*   **Headers**: `Authorization: Bearer <token>`
+*   **Payload**: `{}` (Empty JSON object)
 *   **Expected Response**: `200 OK`
     ```json
     [
@@ -103,25 +108,20 @@ This application is designed to connect to an n8n backend via Webhooks. To enabl
     ```
 
 #### 5. Get Single Course
-*   **Env Variable**: `NEXT_PUBLIC_N8N_COURSE_WEBHOOK`
-*   **Method**: `GET`
-*   **Query Params**: `?id=course_id`
-*   **Expected Response**: `200 OK`
+*   **Query Param**: `?action=get-course`
+*   **Method**: `POST`
+*   **Headers**: `Authorization: Bearer <token>`
+*   **Payload**:
     ```json
     {
-      "id": "1",
-      "title": "Course Title",
-      "sku": "SKU-123",
-      "status": "active",
-      "description": "...",
-      "image": "...",
-      "basePrice": 99.00
+      "id": "course_id"
     }
     ```
 
 #### 6. Update/Create Course
-*   **Env Variable**: `NEXT_PUBLIC_N8N_UPDATE_COURSE_WEBHOOK`
+*   **Query Param**: `?action=update-course`
 *   **Method**: `POST`
+*   **Headers**: `Authorization: Bearer <token>`
 *   **Payload**: `Course` object
     ```json
     {
@@ -134,54 +134,38 @@ This application is designed to connect to an n8n backend via Webhooks. To enabl
       "basePrice": 99.00
     }
     ```
-*   **Expected Response**: `200 OK` (Returns the updated course object)
 
 ### Inventory (Dates)
 
 #### 7. Get Course Dates
-*   **Env Variable**: `NEXT_PUBLIC_N8N_DATES_WEBHOOK`
-*   **Method**: `GET`
-*   **Query Params**: `?courseId=course_id`
-*   **Expected Response**: `200 OK`
+*   **Query Param**: `?action=get-dates`
+*   **Method**: `POST`
+*   **Headers**: `Authorization: Bearer <token>`
+*   **Payload**:
     ```json
-    [
-      {
-        "id": "date_1",
-        "courseId": "1",
-        "dateTime": "2024-03-20T18:00:00.000Z",
-        "capacity": 10,
-        "booked": 2,
-        "duration": 180
-      }
-    ]
+    {
+      "courseId": "course_id"
+    }
     ```
 
 #### 8. Save Course Dates
-*   **Env Variable**: `NEXT_PUBLIC_N8N_SAVE_DATES_WEBHOOK`
+*   **Query Param**: `?action=save-dates`
 *   **Method**: `POST`
+*   **Headers**: `Authorization: Bearer <token>`
 *   **Payload**:
     ```json
     {
       "courseId": "1",
-      "dates": [
-        {
-           "id": "date_1",
-           "courseId": "1",
-           "dateTime": "2024-03-20T18:00:00.000Z",
-           "capacity": 10,
-           "booked": 2,
-           "duration": 180
-        }
-      ]
+      "dates": [ ... ]
     }
     ```
-*   **Expected Response**: `200 OK` (Returns the saved array of dates)
 
 ### Support
 
 #### 9. Contact Support
-*   **Env Variable**: `NEXT_PUBLIC_N8N_CONTACT_WEBHOOK`
+*   **Query Param**: `?action=contact`
 *   **Method**: `POST`
+*   **Headers**: `Authorization: Bearer <token>`
 *   **Payload**:
     ```json
     {
@@ -189,4 +173,3 @@ This application is designed to connect to an n8n backend via Webhooks. To enabl
       "message": "I cannot access my course..."
     }
     ```
-*   **Expected Response**: `200 OK`
