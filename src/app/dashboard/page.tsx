@@ -1,0 +1,119 @@
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Search, Edit, Plus } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { useI18n } from '@/lib/i18n';
+
+export default function DashboardPage() {
+  const [search, setSearch] = useState('');
+  const { t } = useI18n();
+  const { data: courses, isLoading } = useQuery({
+    queryKey: ['courses'],
+    queryFn: api.getCourses,
+  });
+
+  const filteredCourses = courses?.filter((course) =>
+    course.title.toLowerCase().includes(search.toLowerCase()) ||
+    course.sku.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-3xl font-bold tracking-tight text-primary">{t.dashboard.title}</h1>
+        <Button asChild>
+            <Link href="/dashboard/editor/new" className="gap-2">
+                <Plus className="h-4 w-4" /> {t.common.addNewCourse}
+            </Link>
+        </Button>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder={t.common.search}
+          className="pl-8 max-w-sm"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {isLoading ? (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+                <Card key={i} className="overflow-hidden">
+                    <Skeleton className="h-48 w-full" />
+                    <CardHeader>
+                        <Skeleton className="h-6 w-2/3" />
+                        <Skeleton className="h-4 w-1/3" />
+                    </CardHeader>
+                    <CardFooter>
+                         <Skeleton className="h-10 w-full" />
+                    </CardFooter>
+                </Card>
+            ))}
+        </div>
+      ) : filteredCourses?.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center animate-in fade-in-50">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Search className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="mt-4 text-lg font-semibold">{t.dashboard.noCourses}</h3>
+            <p className="mb-4 mt-2 text-sm text-muted-foreground">
+                {t.dashboard.noCoursesDesc}
+            </p>
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredCourses?.map((course) => (
+            <Card key={course.id} className="overflow-hidden flex flex-col">
+              <div className="relative aspect-video w-full overflow-hidden">
+                <img
+                  src={course.image}
+                  alt={course.title}
+                  className="object-cover w-full h-full transition-transform hover:scale-105"
+                />
+                <Badge
+                    className={`absolute top-2 right-2 ${
+                        course.status === 'active' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-500 hover:bg-gray-600'
+                    }`}
+                >
+                    {course.status === 'active' ? t.common.active : t.common.inactive}
+                </Badge>
+              </div>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                    <CardTitle className="text-xl line-clamp-1">{course.title}</CardTitle>
+                </div>
+                <CardDescription className="line-clamp-2">
+                  {course.description}
+                </CardDescription>
+                <div className="text-xs text-muted-foreground font-mono mt-1">
+                    SKU: {course.sku}
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1">
+                 <div className="font-semibold text-lg">€{course.basePrice}</div>
+              </CardContent>
+              <CardFooter>
+                <Button asChild className="w-full" variant="outline">
+                  <Link href={`/dashboard/editor/${course.id}`}>
+                    <Edit className="mr-2 h-4 w-4" /> {t.dashboard.editCourse}
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
