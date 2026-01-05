@@ -11,6 +11,8 @@ const API_URLS = {
   dates: process.env.NEXT_PUBLIC_N8N_DATES_WEBHOOK,
   saveDates: process.env.NEXT_PUBLIC_N8N_SAVE_DATES_WEBHOOK,
   contact: process.env.NEXT_PUBLIC_N8N_CONTACT_WEBHOOK,
+  changePassword: process.env.NEXT_PUBLIC_N8N_CHANGE_PASSWORD_WEBHOOK,
+  resetPassword: process.env.NEXT_PUBLIC_N8N_RESET_PASSWORD_WEBHOOK,
 };
 
 // Simulate network delay for mocks
@@ -88,6 +90,29 @@ export const api = {
     // Remove old dates for this course and add new ones
     dates = dates.filter(d => d.courseId !== courseId).concat(newDates);
     return newDates;
+  },
+
+  changePassword: async (password: string, newPassword: string): Promise<void> => {
+    if (API_URLS.changePassword) {
+      await axios.post(API_URLS.changePassword, { password, newPassword });
+      return;
+    }
+    // Mock password change
+    await delay(1000);
+    // In a real app we'd verify current password first, but here we just simulate success.
+    console.log('Password changed from', password, 'to', newPassword);
+    return;
+  },
+
+  resetPassword: async (email: string): Promise<void> => {
+    if (API_URLS.resetPassword) {
+      await axios.post(API_URLS.resetPassword, { email });
+      return;
+    }
+    // Mock password reset
+    await delay(1000);
+    console.log('Reset password link sent to:', email);
+    return;
   },
 
   sendContactMessage: async (subject: string, message: string): Promise<void> => {

@@ -1,36 +1,192 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Miomente Partners Portal
+
+A modern partner portal for managing courses, dates, and account settings. Built with Next.js 15, Tailwind CSS, and shadcn/ui.
+
+## Features
+
+- **Authentication**: Secure login and session management.
+- **Dashboard**: Overview of your courses.
+- **Course Editor**: Create and edit course details.
+- **Inventory Management**: Manage dates, times, and capacity for each course.
+- **Contact Support**: Direct line to support team.
+- **Settings**: Manage account settings including password changes.
+- **Internationalization**: Full support for German (de) and English (en).
 
 ## Getting Started
 
-First, run the development server:
+1.  **Clone the repository**:
+    ```bash
+    git clone <repository-url>
+    cd miomente_partners_portal_gem
+    ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3.  **Run the development server**:
+    ```bash
+    npm run dev
+    ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4.  **Open in browser**:
+    Navigate to [http://localhost:3000](http://localhost:3000).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## API Documentation (n8n Webhooks)
 
-## Learn More
+This application is designed to connect to an n8n backend via Webhooks. To enable this connection, you must provide the corresponding Webhook URLs in your `.env` file (see `.env.example`).
 
-To learn more about Next.js, take a look at the following resources:
+### Authentication & Account
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+#### 1. Login
+*   **Env Variable**: `NEXT_PUBLIC_N8N_LOGIN_WEBHOOK`
+*   **Method**: `POST`
+*   **Payload**:
+    ```json
+    {
+      "email": "user@example.com",
+      "password": "secretpassword"
+    }
+    ```
+*   **Expected Response**: `200 OK`
+    ```json
+    {
+      "email": "user@example.com",
+      "name": "Partner Name",
+      "token": "jwt-token-string"
+    }
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+#### 2. Change Password
+*   **Env Variable**: `NEXT_PUBLIC_N8N_CHANGE_PASSWORD_WEBHOOK`
+*   **Method**: `POST`
+*   **Payload**:
+    ```json
+    {
+      "password": "currentPassword",
+      "newPassword": "newSecurePassword"
+    }
+    ```
+*   **Expected Response**: `200 OK` (Empty body or success message)
 
-## Deploy on Vercel
+#### 3. Reset Password
+*   **Env Variable**: `NEXT_PUBLIC_N8N_RESET_PASSWORD_WEBHOOK`
+*   **Method**: `POST`
+*   **Payload**:
+    ```json
+    {
+      "email": "user@example.com"
+    }
+    ```
+*   **Expected Response**: `200 OK` (Empty body or success message)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Course Management
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+#### 4. Get All Courses
+*   **Env Variable**: `NEXT_PUBLIC_N8N_COURSES_WEBHOOK`
+*   **Method**: `GET`
+*   **Payload**: None
+*   **Expected Response**: `200 OK`
+    ```json
+    [
+      {
+        "id": "1",
+        "title": "Course Title",
+        "sku": "SKU-123",
+        "status": "active",
+        "description": "...",
+        "image": "...",
+        "basePrice": 99.00
+      }
+    ]
+    ```
+
+#### 5. Get Single Course
+*   **Env Variable**: `NEXT_PUBLIC_N8N_COURSE_WEBHOOK`
+*   **Method**: `GET`
+*   **Query Params**: `?id=course_id`
+*   **Expected Response**: `200 OK`
+    ```json
+    {
+      "id": "1",
+      "title": "Course Title",
+      "sku": "SKU-123",
+      "status": "active",
+      "description": "...",
+      "image": "...",
+      "basePrice": 99.00
+    }
+    ```
+
+#### 6. Update/Create Course
+*   **Env Variable**: `NEXT_PUBLIC_N8N_UPDATE_COURSE_WEBHOOK`
+*   **Method**: `POST`
+*   **Payload**: `Course` object
+    ```json
+    {
+      "id": "1",
+      "title": "Updated Title",
+      "sku": "SKU-123",
+      "status": "active",
+      "description": "...",
+      "image": "...",
+      "basePrice": 99.00
+    }
+    ```
+*   **Expected Response**: `200 OK` (Returns the updated course object)
+
+### Inventory (Dates)
+
+#### 7. Get Course Dates
+*   **Env Variable**: `NEXT_PUBLIC_N8N_DATES_WEBHOOK`
+*   **Method**: `GET`
+*   **Query Params**: `?courseId=course_id`
+*   **Expected Response**: `200 OK`
+    ```json
+    [
+      {
+        "id": "date_1",
+        "courseId": "1",
+        "dateTime": "2024-03-20T18:00:00.000Z",
+        "capacity": 10,
+        "booked": 2,
+        "duration": 180
+      }
+    ]
+    ```
+
+#### 8. Save Course Dates
+*   **Env Variable**: `NEXT_PUBLIC_N8N_SAVE_DATES_WEBHOOK`
+*   **Method**: `POST`
+*   **Payload**:
+    ```json
+    {
+      "courseId": "1",
+      "dates": [
+        {
+           "id": "date_1",
+           "courseId": "1",
+           "dateTime": "2024-03-20T18:00:00.000Z",
+           "capacity": 10,
+           "booked": 2,
+           "duration": 180
+        }
+      ]
+    }
+    ```
+*   **Expected Response**: `200 OK` (Returns the saved array of dates)
+
+### Support
+
+#### 9. Contact Support
+*   **Env Variable**: `NEXT_PUBLIC_N8N_CONTACT_WEBHOOK`
+*   **Method**: `POST`
+*   **Payload**:
+    ```json
+    {
+      "subject": "Help needed",
+      "message": "I cannot access my course..."
+    }
+    ```
+*   **Expected Response**: `200 OK`

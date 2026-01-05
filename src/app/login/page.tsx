@@ -26,6 +26,8 @@ export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
   const { t } = useI18n();
 
   const {
@@ -52,9 +54,23 @@ export default function LoginPage() {
     }
   };
 
-  const handleForgotPassword = () => {
-    setIsForgotPasswordOpen(false);
-    toast.success(t.login.resetSent);
+  const handleForgotPassword = async () => {
+    if (!resetEmail) {
+        toast.error('Please enter your email');
+        return;
+    }
+    setIsResetting(true);
+    try {
+        await api.resetPassword(resetEmail);
+        setIsForgotPasswordOpen(false);
+        toast.success(t.login.resetSent);
+        setResetEmail('');
+    } catch (error) {
+        console.error(error);
+        toast.error('Failed to send reset link');
+    } finally {
+        setIsResetting(false);
+    }
   };
 
   return (
@@ -100,11 +116,18 @@ export default function LoginPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="reset-email">{t.common.email}</Label>
-                  <Input id="reset-email" placeholder="m@example.com" />
+                  <Input 
+                    id="reset-email" 
+                    placeholder="m@example.com" 
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                  />
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={handleForgotPassword}>{t.common.sendResetLink}</Button>
+                <Button onClick={handleForgotPassword} disabled={isResetting}>
+                    {isResetting ? 'Sending...' : t.common.sendResetLink}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
