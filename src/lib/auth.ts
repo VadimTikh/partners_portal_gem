@@ -19,8 +19,8 @@ export const useAuthStore = create<AuthState>()(
       login: (user: User, token?: string) =>
         set({
           user,
-          token: token || user.token || 'mock-jwt-token',
-          isAuthenticated: true,
+          token: token || user.token,
+          isAuthenticated: !!(token || user.token),
         }),
       logout: () => set({ user: null, token: null, isAuthenticated: false }),
     }),
