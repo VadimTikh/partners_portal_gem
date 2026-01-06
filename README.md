@@ -50,32 +50,26 @@ The application uses a **Single Endpoint Architecture**.
 **Your Backend Logic (n8n Switch Node):**
 1.  Receive Webhook (POST).
 2.  Switch based on `query.action`.
-3.  If action is protected, Validate JWT from `headers.authorization`.
+3.  If action is protected, Validate Token from `headers.authorization` by looking it up in the database.
 4.  Execute Logic (Database query, etc.).
 5.  Return JSON response.
 
-### 2. Authentication & JWT Structure
+### 2. Authentication & Session Structure
 
-The frontend expects a **JWT (JSON Web Token)** upon successful login. It stores this token and sends it back with every subsequent request.
+The frontend expects a **Session Token** upon successful login. It stores this token and sends it back with every subsequent request.
 
-**Recommended JWT Payload:**
-When generating the token in your backend, include at least these fields to securely identify the partner:
-```json
-{
-  "sub": "partner_123",       // (Subject) Unique User ID in your DB
-  "email": "user@example.com", // User's email
-  "role": "partner",           // Role for permission checks
-  "iat": 1710000000,           // Issued At timestamp
-  "exp": 1710086400            // Expiration timestamp (e.g., 24h)
-}
-```
+**Token Flow:**
+1.  **Login:** Frontend sends credentials.
+2.  **Backend:** Verifies credentials -> Generates a random string (Token) -> Saves it to DB -> Returns it.
+3.  **Requests:** Frontend sends `Authorization: Bearer <token>`.
+4.  **Verification:** Backend looks up the token in the DB to identify the user.
 
 **Verification Logic:**
 For every protected action (everything except `login` and `reset-password`):
 1.  Extract token from header: `Authorization: Bearer <token>`.
-2.  Verify signature using your secret key.
-3.  Decode payload to get the `sub` (User ID).
-4.  Use this User ID to filter database queries (e.g., `SELECT * FROM courses WHERE partner_id = 'partner_123'`).
+2.  Query your User database table for this token.
+3.  **If found:** Proceed with the action, using the found User's ID.
+4.  **If not found:** Return 401 Unauthorized.
 
 ### 3. API Action Reference
 
@@ -95,7 +89,7 @@ For every protected action (everything except `login` and `reset-password`):
     {
       "email": "partner@example.com",
       "name": "Partner Name", // Displayed in UI
-      "token": "eyJhbGciOiJIUz..." // The JWT string
+      "token": "a1b2c3d4-..." // Random session string
     }
     ```
 *   **Error Response (401/400):** `{ "error": "Invalid credentials" }`
@@ -111,7 +105,7 @@ For every protected action (everything except `login` and `reset-password`):
 *   **Logic:** Trigger an email workflow to send a reset link.
 *   **Success Response (200 OK):** `{ "success": true }`
 
-#### B. Protected Actions (Require Valid JWT)
+#### B. Protected Actions (Require Valid Token)
 
 **3. Change Password**
 *   **Action:** `change-password`
@@ -128,7 +122,7 @@ For every protected action (everything except `login` and `reset-password`):
 **4. Get All Courses**
 *   **Action:** `get-courses`
 *   **Input Body:** `{}` (Empty)
-*   **Logic:** Fetch all courses belonging to the User ID from the JWT.
+Logic: Fetch all courses belonging to the identified User ID.
 *   **Success Response (200 OK):**
     ```json
     [
@@ -161,7 +155,7 @@ For every protected action (everything except `login` and `reset-password`):
 *   **Logic:**
     *   If `id` exists in DB: Update the record.
     *   If `id` is new/missing: Create new record.
-    *   **Always** associate with the User ID from JWT.
+    *   **Always** associate with the identified User ID.
 *   **Success Response (200 OK):** Returns the updated/created Course object.
 
 **7. Get Course Dates (Inventory)**
@@ -207,5 +201,5 @@ For every protected action (everything except `login` and `reset-password`):
       "message": "Hi, when will I receive..."
     }
     ```
-*   **Logic:** Send email to support team including the User's email from JWT.
+*   **Logic:** Send email to support team including the identified User's email.
 *   **Success Response (200 OK):** `{ "success": true }`

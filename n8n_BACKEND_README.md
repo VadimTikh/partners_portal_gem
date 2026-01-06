@@ -12,9 +12,14 @@ The frontend communicates with the backend via a **single HTTP entry point** (We
 
 ## Authentication
 
-*   **Mechanism:** Bearer Token.
+*   **Mechanism:** Stored Session Token (Opaque Bearer Token).
 *   **Header:** `Authorization: Bearer <token>`
-*   **Validation:** All protected actions (everything except `login` and `reset-password`) must validate the token before processing the request.
+*   **Strategy:**
+    1.  On `login`, generate a random string (e.g., UUID).
+    2.  Store this string in the User's record in the database.
+    3.  Return this string to the frontend.
+    4.  For protected actions, take the token from the header and perform a **Database Lookup** to find the user associated with that token.
+*   **Validation:** All protected actions (everything except `login` and `reset-password`) must validate the token by checking if it exists in the database.
 
 ## Data Structures
 
@@ -23,7 +28,7 @@ The frontend communicates with the backend via a **single HTTP entry point** (We
 {
   "email": "string",
   "name": "string",
-  "token": "string" // Returned on login
+  "token": "string" // Random session string
 }
 ```
 
@@ -71,7 +76,7 @@ The frontend communicates with the backend via a **single HTTP entry point** (We
     {
       "email": "user@example.com",
       "name": "John Doe",
-      "token": "generated_jwt_or_session_token"
+      "token": "random_session_token"
     }
     ```
 
@@ -161,6 +166,6 @@ Trigger a password reset email flow.
 
 1.  **Webhook Node:** Start with a `Webhook` node set to `POST`.
 2.  **Router:** Use a `Switch` node checking `{{ $json.query.action }}`.
-3.  **Auth Sub-workflow:** Consider creating a separate workflow or a reusable verification step for JWT/Token validation to call at the start of protected branches.
-4.  **Database:** Use n8n nodes for your preferred database (Postgres, MySQL, Airtable, Baserow, etc.) to store Users, Courses, and Dates.
+3.  **Auth Sub-workflow:** Create a reusable workflow that takes the `Authorization` header, strips "Bearer ", and queries the database. If found, it returns the User ID; if not, it returns an error.
+4.  **Database:** Use n8n nodes for your preferred database (Postgres, MySQL, Airtable, Baserow, etc.) to store Users (with their current session token), Courses, and Dates.
 5.  **Response:** Ensure the `Respond to Webhook` node returns the data in the exact JSON structure defined above.
