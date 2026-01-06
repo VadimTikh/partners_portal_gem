@@ -3,11 +3,8 @@ import { Course, CourseDate, User } from './types';
 import { useAuthStore } from './auth';
 
 // Single entry point for all n8n operations
-const API_URL = process.env.NEXT_PUBLIC_N8N_API_URL;
+const API_URL = '/api/proxy';
 
-if (!API_URL) {
-  console.warn('NEXT_PUBLIC_N8N_API_URL is not set. API calls will fail.');
-}
 
 // Helper to get auth headers
 const getAuthConfig = () => {
