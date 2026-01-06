@@ -1,10 +1,15 @@
 import axios from 'axios';
 import { Course, CourseDate, User } from './types';
 import { useAuthStore } from './auth';
+import { mockApi } from './mock-data';
 
 // Single entry point for all n8n operations
 const API_URL = '/api/proxy';
+const USE_MOCK = !process.env.NEXT_PUBLIC_N8N_API_URL;
 
+if (USE_MOCK) {
+  console.log('Running in MOCK mode. API calls will be simulated.');
+}
 
 // Helper to get auth headers
 const getAuthConfig = () => {
@@ -19,6 +24,8 @@ const getAuthConfig = () => {
 
 export const api = {
   login: async (email: string, password: string): Promise<User> => {
+    if (USE_MOCK) return mockApi.login(email, password);
+
     // Login typically doesn't need auth headers, but needs the action param
     if (!API_URL) throw new Error('API URL not configured');
     const response = await axios.post(API_URL, { email, password }, {
@@ -28,6 +35,8 @@ export const api = {
   },
 
   getCourses: async (): Promise<Course[]> => {
+    if (USE_MOCK) return mockApi.getCourses();
+
     if (!API_URL) throw new Error('API URL not configured');
     const response = await axios.post(API_URL, {}, { 
       ...getAuthConfig(),
@@ -37,6 +46,8 @@ export const api = {
   },
   
   getCourse: async (id: string): Promise<Course | undefined> => {
+    if (USE_MOCK) return mockApi.getCourse(id);
+
     if (!API_URL) throw new Error('API URL not configured');
     const response = await axios.post(API_URL, { id }, { 
       ...getAuthConfig(),
@@ -46,6 +57,8 @@ export const api = {
   },
   
   updateCourse: async (course: Course): Promise<Course> => {
+    if (USE_MOCK) return mockApi.updateCourse(course);
+
     if (!API_URL) throw new Error('API URL not configured');
     const response = await axios.post(API_URL, course, { 
       ...getAuthConfig(),
@@ -55,6 +68,8 @@ export const api = {
   },
 
   getDates: async (courseId: string): Promise<CourseDate[]> => {
+    if (USE_MOCK) return mockApi.getDates(courseId);
+
     if (!API_URL) throw new Error('API URL not configured');
     const response = await axios.post(API_URL, { courseId }, { 
       ...getAuthConfig(),
@@ -64,6 +79,8 @@ export const api = {
   },
   
   saveDates: async (courseId: string, newDates: CourseDate[]): Promise<CourseDate[]> => {
+    if (USE_MOCK) return mockApi.saveDates(courseId, newDates);
+
     if (!API_URL) throw new Error('API URL not configured');
     const response = await axios.post(API_URL, { courseId, dates: newDates }, { 
       ...getAuthConfig(),
@@ -73,6 +90,8 @@ export const api = {
   },
 
   changePassword: async (password: string, newPassword: string): Promise<void> => {
+    if (USE_MOCK) return mockApi.changePassword(password, newPassword);
+
     if (!API_URL) throw new Error('API URL not configured');
     await axios.post(API_URL, { password, newPassword }, { 
       ...getAuthConfig(),
@@ -81,6 +100,8 @@ export const api = {
   },
 
   resetPassword: async (email: string): Promise<void> => {
+    if (USE_MOCK) return mockApi.resetPassword(email);
+
     if (!API_URL) throw new Error('API URL not configured');
     await axios.post(API_URL, { email }, {
       params: { action: 'reset-password' }
@@ -88,6 +109,8 @@ export const api = {
   },
 
   sendContactMessage: async (subject: string, message: string): Promise<void> => {
+    if (USE_MOCK) return mockApi.sendContactMessage(subject, message);
+
     if (!API_URL) throw new Error('API URL not configured');
     await axios.post(API_URL, { subject, message }, { 
       ...getAuthConfig(),
