@@ -35,11 +35,12 @@ export async function POST(request: NextRequest) {
     // 4. Return n8n's response to the client
     return NextResponse.json(response.data);
 
-  } catch (error: any) {
-    console.error('Proxy Error calling n8n:', error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Proxy Error calling n8n:', errorMessage);
     
     // Check if it's an axios error response from upstream
-    if (error.response) {
+    if (axios.isAxiosError(error) && error.response) {
       return NextResponse.json(error.response.data, { status: error.response.status });
     }
 

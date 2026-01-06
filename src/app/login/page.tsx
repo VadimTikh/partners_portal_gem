@@ -28,7 +28,7 @@ export default function LoginPage() {
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isResetting, setIsResetting] = useState(false);
-  const { t } = useI18n();
+  const { t, locale, setLocale } = useI18n();
 
   const {
     register,
@@ -56,7 +56,7 @@ export default function LoginPage() {
 
   const handleForgotPassword = async () => {
     if (!resetEmail) {
-        toast.error('Please enter your email');
+        toast.error(t.login.enterEmail);
         return;
     }
     setIsResetting(true);
@@ -67,14 +67,30 @@ export default function LoginPage() {
         setResetEmail('');
     } catch (error) {
         console.error(error);
-        toast.error('Failed to send reset link');
+        toast.error(t.login.resetError);
     } finally {
         setIsResetting(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted/40">
+    <div className="flex items-center justify-center min-h-screen bg-muted/40 relative">
+      <div className="absolute top-4 right-4 flex gap-2">
+        <Button 
+          variant={locale === 'de' ? 'default' : 'outline'} 
+          size="sm" 
+          onClick={() => setLocale('de')}
+        >
+          DE
+        </Button>
+        <Button 
+          variant={locale === 'en' ? 'default' : 'outline'} 
+          size="sm" 
+          onClick={() => setLocale('en')}
+        >
+          EN
+        </Button>
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-primary">{t.login.title}</CardTitle>
@@ -126,7 +142,7 @@ export default function LoginPage() {
               </div>
               <DialogFooter>
                 <Button onClick={handleForgotPassword} disabled={isResetting}>
-                    {isResetting ? 'Sending...' : t.common.sendResetLink}
+                    {isResetting ? t.login.sending : t.common.sendResetLink}
                 </Button>
               </DialogFooter>
             </DialogContent>

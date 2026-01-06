@@ -35,6 +35,9 @@ export const dictionaries = {
       resetTitle: 'Passwort zurücksetzen',
       resetDescription: 'Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.',
       resetSent: 'Link zum Zurücksetzen an Ihre E-Mail gesendet',
+      enterEmail: 'Bitte geben Sie Ihre E-Mail-Adresse ein',
+      resetError: 'Fehler beim Senden des Links',
+      sending: 'Senden...',
     },
     dashboard: {
       title: 'Meine Kurse',
@@ -131,6 +134,9 @@ export const dictionaries = {
       resetTitle: 'Reset Password',
       resetDescription: "Enter your email address and we'll send you a link to reset your password.",
       resetSent: 'Password reset link sent to your email',
+      enterEmail: 'Please enter your email',
+      resetError: 'Failed to send reset link',
+      sending: 'Sending...',
     },
     dashboard: {
       title: 'My Courses',
