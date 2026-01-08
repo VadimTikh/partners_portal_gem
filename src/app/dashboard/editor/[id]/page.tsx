@@ -195,7 +195,13 @@ export default function EditorPage() {
                             {t.editor.skuLabel}
                             {!isNew && <Lock className="h-3 w-3 text-muted-foreground" />}
                         </Label>
-                        <Input id="sku" {...form.register('sku')} readOnly={!isNew} className={!isNew ? 'bg-muted cursor-not-allowed' : ''} />
+                        {isNew ? (
+                            <Input id="sku" {...form.register('sku')} />
+                        ) : (
+                             <div className="rounded-md border border-input bg-muted px-3 py-2 text-sm cursor-not-allowed text-muted-foreground">
+                                {form.watch('sku')}
+                            </div>
+                        )}
                          {form.formState.errors.sku && <p className="text-sm text-destructive">{form.formState.errors.sku.message}</p>}
                     </div>
                     <div className="grid gap-2">
@@ -336,13 +342,9 @@ export default function EditorPage() {
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Input 
-                                                type="number" 
-                                                className="w-full min-w-[70px]"
-                                                min={0}
-                                                value={date.duration || 0} 
-                                                onChange={(e) => handleDateChange(date.id, 'duration', parseInt(e.target.value))}
-                                            />
+                                            <div className="flex items-center px-3 py-2 text-sm text-muted-foreground bg-muted rounded-md border border-input h-10 w-full min-w-[70px] cursor-not-allowed">
+                                                {date.duration || 0}
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             <Input 
