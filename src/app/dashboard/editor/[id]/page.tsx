@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Trash2, Plus, Upload } from 'lucide-react';
+import { Calendar as CalendarIcon, Trash2, Plus, Upload, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { Course, CourseDate } from '@/lib/types';
@@ -191,12 +191,18 @@ export default function EditorPage() {
                         {form.formState.errors.title && <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>}
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="sku">{t.editor.skuLabel}</Label>
+                        <Label htmlFor="sku" className="flex items-center gap-2">
+                            {t.editor.skuLabel}
+                            {!isNew && <Lock className="h-3 w-3 text-muted-foreground" />}
+                        </Label>
                         <Input id="sku" {...form.register('sku')} readOnly={!isNew} className={!isNew ? 'bg-muted cursor-not-allowed' : ''} />
                          {form.formState.errors.sku && <p className="text-sm text-destructive">{form.formState.errors.sku.message}</p>}
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="description">{t.editor.descLabel}</Label>
+                        <Label htmlFor="description" className="flex items-center gap-2">
+                            {t.editor.descLabel}
+                            {!isNew && <Lock className="h-3 w-3 text-muted-foreground" />}
+                        </Label>
                         {isNew ? (
                             <Textarea id="description" {...form.register('description')} />
                         ) : (

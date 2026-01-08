@@ -38,6 +38,28 @@ export default function DashboardPage() {
       (datesFilter === 'without-dates' && (course.available_dates || 0) === 0);
 
     return matchesSearch && matchesStatus && matchesDates;
+  }).sort((a, b) => {
+    // Helper to get sort score
+    // 3: Active & Has Dates
+    // 2: Active & No Dates
+    // 1: Inactive
+    const getScore = (c: typeof a) => {
+      if (c.status === 'inactive') return 1;
+      if ((c.available_dates || 0) > 0) return 3;
+      return 2;
+    };
+
+    const scoreA = getScore(a);
+    const scoreB = getScore(b);
+
+    if (scoreA !== scoreB) return scoreB - scoreA;
+
+    // If both have dates, sort by amount of dates descending
+    if (scoreA === 3) {
+      return (b.available_dates || 0) - (a.available_dates || 0);
+    }
+    
+    return 0;
   });
 
   return (
@@ -154,26 +176,27 @@ export default function DashboardPage() {
               <Card
                 key={course.id}
                 className={cn(
-                  "overflow-hidden flex flex-col transition-all",
-                  hasNoDates && "border-amber-400 border-2",
-                  isInactive && "opacity-50 grayscale"
+                  "overflow-hidden flex flex-col transition-all duration-300 hover:shadow-lg",
+                  hasNoDates && !isInactive && "border-amber-400/50 border-2 shadow-amber-100",
+                  isInactive && "opacity-60 grayscale-[0.8] hover:opacity-100 hover:grayscale-0"
                 )}
               >
                 <div className="relative aspect-video w-full overflow-hidden">
                   <img
                     src={course.image}
                     alt={course.title}
-                    className="object-cover w-full h-full transition-transform hover:scale-105"
+                    className="object-cover w-full h-full transition-transform duration-500 hover:scale-105"
                   />
                   <Badge
-                      className={`absolute top-2 right-2 ${
-                          course.status === 'active' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-500 hover:bg-gray-600'
-                      }`}
+                      className={cn(
+                        "absolute top-2 right-2 transition-colors",
+                        course.status === 'active' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-500 hover:bg-gray-600'
+                      )}
                   >
                       {course.status === 'active' ? t.common.active : t.common.inactive}
                   </Badge>
-                  {hasNoDates && (
-                    <Badge className="absolute top-2 left-2 bg-amber-500 hover:bg-amber-600">
+                  {hasNoDates && course.status === 'active' && (
+                    <Badge className="absolute top-2 left-2 bg-amber-500 hover:bg-amber-600 animate-pulse">
                       No Dates
                     </Badge>
                   )}
