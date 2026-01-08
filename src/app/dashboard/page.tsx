@@ -20,6 +20,10 @@ export default function DashboardPage() {
     queryFn: api.getCourses,
   });
 
+  const stripHtml = (html: string) => {
+    return html.replace(/<[^>]*>/g, '');
+  };
+
   const filteredCourses = courses?.filter((course) =>
     course.title.toLowerCase().includes(search.toLowerCase()) ||
     course.sku.toLowerCase().includes(search.toLowerCase())
@@ -93,10 +97,9 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-start">
                     <CardTitle className="text-xl line-clamp-1">{course.title}</CardTitle>
                 </div>
-                <CardDescription
-                  className="line-clamp-2"
-                  dangerouslySetInnerHTML={{ __html: course.description }}
-                />
+                <CardDescription className="line-clamp-2">
+                  {stripHtml(course.description)}
+                </CardDescription>
                 <div className="text-xs text-muted-foreground font-mono mt-1">
                     SKU: {course.sku}
                 </div>
