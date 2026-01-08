@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +15,8 @@ import { useI18n } from '@/lib/i18n';
 
 export default function DashboardPage() {
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [datesFilter, setDatesFilter] = useState<'all' | 'with-dates' | 'without-dates'>('all');
   const { t } = useI18n();
   const { data: courses, isLoading } = useQuery({
     queryKey: ['courses'],
@@ -24,10 +27,18 @@ export default function DashboardPage() {
     return html.replace(/<[^>]*>/g, '');
   };
 
-  const filteredCourses = courses?.filter((course) =>
-    course.title.toLowerCase().includes(search.toLowerCase()) ||
-    course.sku.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredCourses = courses?.filter((course) => {
+    const matchesSearch = course.title.toLowerCase().includes(search.toLowerCase()) ||
+      course.sku.toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus = statusFilter === 'all' || course.status === statusFilter;
+
+    const matchesDates = datesFilter === 'all' ||
+      (datesFilter === 'with-dates' && (course.available_dates || 0) > 0) ||
+      (datesFilter === 'without-dates' && (course.available_dates || 0) === 0);
+
+    return matchesSearch && matchesStatus && matchesDates;
+  });
 
   return (
     <div className="space-y-6">
@@ -40,14 +51,72 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder={t.common.search}
-          className="pl-8 max-w-sm"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="space-y-4">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={t.common.search}
+            className="pl-8 max-w-sm"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Status:</span>
+            <div className="flex gap-1">
+              <Button
+                size="sm"
+                variant={statusFilter === 'all' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('all')}
+              >
+                All
+              </Button>
+              <Button
+                size="sm"
+                variant={statusFilter === 'active' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('active')}
+              >
+                Active
+              </Button>
+              <Button
+                size="sm"
+                variant={statusFilter === 'inactive' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('inactive')}
+              >
+                Inactive
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Available Dates:</span>
+            <div className="flex gap-1">
+              <Button
+                size="sm"
+                variant={datesFilter === 'all' ? 'default' : 'outline'}
+                onClick={() => setDatesFilter('all')}
+              >
+                All
+              </Button>
+              <Button
+                size="sm"
+                variant={datesFilter === 'with-dates' ? 'default' : 'outline'}
+                onClick={() => setDatesFilter('with-dates')}
+              >
+                With Dates
+              </Button>
+              <Button
+                size="sm"
+                variant={datesFilter === 'without-dates' ? 'default' : 'outline'}
+                onClick={() => setDatesFilter('without-dates')}
+              >
+                Without Dates
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
@@ -77,45 +146,67 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredCourses?.map((course) => (
-            <Card key={course.id} className="overflow-hidden flex flex-col">
-              <div className="relative aspect-video w-full overflow-hidden">
-                <img
-                  src={course.image}
-                  alt={course.title}
-                  className="object-cover w-full h-full transition-transform hover:scale-105"
-                />
-                <Badge
-                    className={`absolute top-2 right-2 ${
-                        course.status === 'active' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-500 hover:bg-gray-600'
-                    }`}
-                >
-                    {course.status === 'active' ? t.common.active : t.common.inactive}
-                </Badge>
-              </div>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                    <CardTitle className="text-xl line-clamp-1">{course.title}</CardTitle>
+          {filteredCourses?.map((course) => {
+            const hasNoDates = (course.available_dates || 0) === 0;
+            const isInactive = course.status === 'inactive';
+
+            return (
+              <Card
+                key={course.id}
+                className={cn(
+                  "overflow-hidden flex flex-col transition-all",
+                  hasNoDates && "border-amber-400 border-2",
+                  isInactive && "opacity-50 grayscale"
+                )}
+              >
+                <div className="relative aspect-video w-full overflow-hidden">
+                  <img
+                    src={course.image}
+                    alt={course.title}
+                    className="object-cover w-full h-full transition-transform hover:scale-105"
+                  />
+                  <Badge
+                      className={`absolute top-2 right-2 ${
+                          course.status === 'active' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-500 hover:bg-gray-600'
+                      }`}
+                  >
+                      {course.status === 'active' ? t.common.active : t.common.inactive}
+                  </Badge>
+                  {hasNoDates && (
+                    <Badge className="absolute top-2 left-2 bg-amber-500 hover:bg-amber-600">
+                      No Dates
+                    </Badge>
+                  )}
                 </div>
-                <CardDescription className="line-clamp-2">
-                  {stripHtml(course.description)}
-                </CardDescription>
-                <div className="text-xs text-muted-foreground font-mono mt-1">
-                    SKU: {course.sku}
-                </div>
-              </CardHeader>
-              <CardContent className="flex-1">
-                 <div className="font-semibold text-lg">€{course.basePrice}</div>
-              </CardContent>
-              <CardFooter>
-                <Button asChild className="w-full" variant="outline">
-                  <Link href={`/dashboard/editor/${course.id}`}>
-                    <Edit className="mr-2 h-4 w-4" /> {t.dashboard.editCourse}
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                      <CardTitle className="text-xl line-clamp-1">{course.title}</CardTitle>
+                  </div>
+                  <CardDescription className="line-clamp-2">
+                    {stripHtml(course.description)}
+                  </CardDescription>
+                  <div className="flex items-center justify-between gap-2 mt-2">
+                    <div className="text-xs text-muted-foreground font-mono">
+                        SKU: {course.sku}
+                    </div>
+                    <div className="text-xs font-medium text-muted-foreground">
+                      {course.available_dates || 0} available {(course.available_dates || 0) === 1 ? 'date' : 'dates'}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex-1">
+                   <div className="font-semibold text-lg">€{course.basePrice}</div>
+                </CardContent>
+                <CardFooter>
+                  <Button asChild className="w-full" variant="outline">
+                    <Link href={`/dashboard/editor/${course.id}`}>
+                      <Edit className="mr-2 h-4 w-4" /> {t.dashboard.editCourse}
+                    </Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

@@ -1,0 +1,4 @@
+1. When a user opens a course (edit) do not let user edit sku an description (read-only)
+2. When a user opens a course (edit) in the description, parse HTML (now its text with tags)
+3. In list of courses add filter for active/inactive courses
+4. in list of courses add filter for courses with / without available dates (in route for getting all courses from server i added field available_dates: number). Also show somewhere in the course ard in the list this amount. Also somehow note a courses cards without dates (make them a little colored or something). Also note courses Inactive (make them grey or something)

@@ -6,6 +6,7 @@ export interface Course {
   description: string;
   image: string;
   basePrice: number;
+  available_dates?: number;
 }
 
 export interface CourseDate {

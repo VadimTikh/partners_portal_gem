@@ -113,7 +113,7 @@ export default function EditorPage() {
       await updateCourseMutation.mutateAsync(courseData);
 
       const datesToSave = dates.map(d => ({ ...d, courseId }));
-      await saveDatesMutation.mutateAsync({ id: courseId, dates: datesToSave });
+      await saveDatesMutation.mutateAsync({ id: String(courseId), dates: datesToSave });
 
       toast.success(t.editor.successSaved);
       router.push('/dashboard');
@@ -192,12 +192,19 @@ export default function EditorPage() {
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="sku">{t.editor.skuLabel}</Label>
-                        <Input id="sku" {...form.register('sku')} />
+                        <Input id="sku" {...form.register('sku')} readOnly={!isNew} className={!isNew ? 'bg-muted cursor-not-allowed' : ''} />
                          {form.formState.errors.sku && <p className="text-sm text-destructive">{form.formState.errors.sku.message}</p>}
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="description">{t.editor.descLabel}</Label>
-                        <Textarea id="description" {...form.register('description')} />
+                        {isNew ? (
+                            <Textarea id="description" {...form.register('description')} />
+                        ) : (
+                            <div
+                                className="min-h-[100px] rounded-md border border-input bg-muted px-3 py-2 text-sm cursor-not-allowed"
+                                dangerouslySetInnerHTML={{ __html: form.watch('description') || '' }}
+                            />
+                        )}
                          {form.formState.errors.description && <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
