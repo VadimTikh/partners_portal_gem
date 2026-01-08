@@ -103,7 +103,7 @@ export default function EditorPage() {
 
   const onSubmit = async (data: CourseFormValues) => {
     try {
-      const courseId = isNew ? `c${Date.now()}` : id;
+      const courseId = isNew ? Date.now() : Number(id);
       const courseData: Course = {
         id: courseId,
         ...data,
@@ -125,8 +125,8 @@ export default function EditorPage() {
 
   const handleAddDate = () => {
     const newDate: CourseDate = {
-      id: `temp-${Date.now()}`,
-      courseId: id || '',
+      id: Date.now(),
+      courseId: Number(id) || 0,
       dateTime: new Date().toISOString(),
       capacity: 10,
       booked: 0,
@@ -135,11 +135,11 @@ export default function EditorPage() {
     setDates([...dates, newDate]);
   };
 
-  const handleRemoveDate = (dateId: string) => {
+  const handleRemoveDate = (dateId: number) => {
     setDates(dates.filter(d => d.id !== dateId));
   };
 
-  const handleDateChange = (dateId: string, field: keyof CourseDate, value: string | number | Date) => {
+  const handleDateChange = (dateId: number, field: keyof CourseDate, value: string | number | Date) => {
     setDates(dates.map(d => {
       if (d.id === dateId) {
         return { ...d, [field]: value };

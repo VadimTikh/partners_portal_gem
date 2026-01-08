@@ -1,5 +1,5 @@
 export interface Course {
-  id: string;
+  id: number;
   title: string;
   sku: string;
   status: 'active' | 'inactive';
@@ -9,8 +9,8 @@ export interface Course {
 }
 
 export interface CourseDate {
-  id: string;
-  courseId: string;
+  id: number;
+  courseId: number;
   dateTime: string; // ISO string
   capacity: number;
   booked: number;

@@ -8,7 +8,7 @@ export const MOCK_USER: User = {
 
 export const MOCK_COURSES: Course[] = [
   {
-    id: 'c1',
+    id: 1,
     title: 'Italian Cooking Masterclass',
     sku: 'IT-COOK-001',
     status: 'active',
@@ -17,7 +17,7 @@ export const MOCK_COURSES: Course[] = [
     basePrice: 89.00,
   },
   {
-    id: 'c2',
+    id: 2,
     title: 'Wine Tasting Essentials',
     sku: 'WINE-101',
     status: 'active',
@@ -26,7 +26,7 @@ export const MOCK_COURSES: Course[] = [
     basePrice: 59.00,
   },
   {
-    id: 'c3',
+    id: 3,
     title: 'Barista Basics',
     sku: 'COFFEE-001',
     status: 'inactive',
@@ -36,17 +36,17 @@ export const MOCK_COURSES: Course[] = [
   }
 ];
 
-export const MOCK_DATES: Record<string, CourseDate[]> = {
-  'c1': [
-    { id: 'd1', courseId: 'c1', dateTime: '2024-02-15T18:00:00Z', capacity: 12, booked: 8, duration: 180 },
-    { id: 'd2', courseId: 'c1', dateTime: '2024-02-22T18:00:00Z', capacity: 12, booked: 12, duration: 180 },
-    { id: 'd3', courseId: 'c1', dateTime: '2024-03-01T18:00:00Z', capacity: 12, booked: 4, duration: 180 },
+export const MOCK_DATES: Record<number, CourseDate[]> = {
+  1: [
+    { id: 1, courseId: 1, dateTime: '2024-02-15T18:00:00Z', capacity: 12, booked: 8, duration: 180 },
+    { id: 2, courseId: 1, dateTime: '2024-02-22T18:00:00Z', capacity: 12, booked: 12, duration: 180 },
+    { id: 3, courseId: 1, dateTime: '2024-03-01T18:00:00Z', capacity: 12, booked: 4, duration: 180 },
   ],
-  'c2': [
-    { id: 'd4', courseId: 'c2', dateTime: '2024-02-20T19:00:00Z', capacity: 20, booked: 15, duration: 120 },
-    { id: 'd5', courseId: 'c2', dateTime: '2024-03-05T19:00:00Z', capacity: 20, booked: 5, duration: 120 },
+  2: [
+    { id: 4, courseId: 2, dateTime: '2024-02-20T19:00:00Z', capacity: 20, booked: 15, duration: 120 },
+    { id: 5, courseId: 2, dateTime: '2024-03-05T19:00:00Z', capacity: 20, booked: 5, duration: 120 },
   ],
-  'c3': []
+  3: []
 };
 
 // Helper to simulate network delay
@@ -70,9 +70,10 @@ export const mockApi = {
     return [...MOCK_COURSES];
   },
 
-  getCourse: async (id: string): Promise<Course | undefined> => {
+  getCourse: async (id: string | number): Promise<Course | undefined> => {
     await delay(300);
-    return MOCK_COURSES.find(c => c.id === id);
+    const numId = Number(id);
+    return MOCK_COURSES.find(c => c.id === numId);
   },
 
   updateCourse: async (course: Course): Promise<Course> => {
@@ -85,14 +86,16 @@ export const mockApi = {
     return course;
   },
 
-  getDates: async (courseId: string): Promise<CourseDate[]> => {
+  getDates: async (courseId: string | number): Promise<CourseDate[]> => {
     await delay(400);
-    return MOCK_DATES[courseId] || [];
+    const numId = Number(courseId);
+    return MOCK_DATES[numId] || [];
   },
 
-  saveDates: async (courseId: string, newDates: CourseDate[]): Promise<CourseDate[]> => {
+  saveDates: async (courseId: string | number, newDates: CourseDate[]): Promise<CourseDate[]> => {
     await delay(600);
-    MOCK_DATES[courseId] = newDates;
+    const numId = Number(courseId);
+    MOCK_DATES[numId] = newDates;
     return newDates;
   },
 

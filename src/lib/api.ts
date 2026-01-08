@@ -45,13 +45,13 @@ export const api = {
     return response.data;
   },
   
-  getCourse: async (id: string): Promise<Course | undefined> => {
+  getCourse: async (id: string | number): Promise<Course | undefined> => {
     if (USE_MOCK) return mockApi.getCourse(id);
 
     if (!API_URL) throw new Error('API URL not configured');
-    const response = await axios.post(API_URL, { id }, { 
+    const response = await axios.post(API_URL, { course_id: Number(id) }, {
       ...getAuthConfig(),
-      params: { action: 'get-course' } 
+      params: { action: 'get-course' }
     });
     return response.data;
   },
@@ -67,22 +67,22 @@ export const api = {
     return response.data;
   },
 
-  getDates: async (courseId: string): Promise<CourseDate[]> => {
+  getDates: async (courseId: string | number): Promise<CourseDate[]> => {
     if (USE_MOCK) return mockApi.getDates(courseId);
 
     if (!API_URL) throw new Error('API URL not configured');
-    const response = await axios.post(API_URL, { courseId }, { 
+    const response = await axios.post(API_URL, { course_id: Number(courseId) }, {
       ...getAuthConfig(),
-      params: { action: 'get-dates' } 
+      params: { action: 'get-dates' }
     });
     return response.data;
   },
   
-  saveDates: async (courseId: string, newDates: CourseDate[]): Promise<CourseDate[]> => {
+  saveDates: async (courseId: string | number, newDates: CourseDate[]): Promise<CourseDate[]> => {
     if (USE_MOCK) return mockApi.saveDates(courseId, newDates);
 
     if (!API_URL) throw new Error('API URL not configured');
-    const response = await axios.post(API_URL, { courseId, dates: newDates }, { 
+    const response = await axios.post(API_URL, { course_id: Number(courseId), dates: newDates }, {
       ...getAuthConfig(),
       params: { action: 'save-dates' }
     });
