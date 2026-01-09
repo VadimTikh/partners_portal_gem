@@ -56,13 +56,29 @@ export const api = {
     return response.data;
   },
   
-  updateCourse: async (course: Course): Promise<Course> => {
+  updateCourse: async (course: Pick<Course, 'id' | 'title' | 'status' | 'basePrice'>): Promise<Course> => {
     if (USE_MOCK) return mockApi.updateCourse(course);
 
     if (!API_URL) throw new Error('API URL not configured');
-    const response = await axios.post(API_URL, course, { 
+    const response = await axios.post(API_URL, {
+      id: course.id,
+      title: course.title,
+      status: course.status,
+      basePrice: course.basePrice,
+    }, {
       ...getAuthConfig(),
       params: { action: 'update-course' }
+    });
+    return response.data;
+  },
+
+  createCourse: async (course: Omit<Course, 'id' | 'available_dates'>): Promise<Course> => {
+    if (USE_MOCK) return mockApi.createCourse(course);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    const response = await axios.post(API_URL, course, {
+      ...getAuthConfig(),
+      params: { action: 'create-course' }
     });
     return response.data;
   },
@@ -77,16 +93,26 @@ export const api = {
     });
     return response.data;
   },
-  
-  saveDates: async (courseId: string | number, newDates: CourseDate[]): Promise<CourseDate[]> => {
-    if (USE_MOCK) return mockApi.saveDates(courseId, newDates);
+
+  createDate: async (date: Omit<CourseDate, 'id' | 'booked'>): Promise<CourseDate> => {
+    if (USE_MOCK) return mockApi.createDate(date);
 
     if (!API_URL) throw new Error('API URL not configured');
-    const response = await axios.post(API_URL, { course_id: Number(courseId), dates: newDates }, {
+    const response = await axios.post(API_URL, date, {
       ...getAuthConfig(),
-      params: { action: 'save-dates' }
+      params: { action: 'create-date' }
     });
     return response.data;
+  },
+
+  deleteDate: async (dateId: number): Promise<void> => {
+    if (USE_MOCK) return mockApi.deleteDate(dateId);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    await axios.post(API_URL, { date_id: dateId }, {
+      ...getAuthConfig(),
+      params: { action: 'delete-date' }
+    });
   },
 
   changePassword: async (password: string, newPassword: string): Promise<void> => {

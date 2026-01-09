@@ -79,14 +79,30 @@ export const mockApi = {
     return MOCK_COURSES.find(c => c.id === numId);
   },
 
-  updateCourse: async (course: Course): Promise<Course> => {
+  updateCourse: async (course: Pick<Course, 'id' | 'title' | 'status' | 'basePrice'>): Promise<Course> => {
     await delay(500);
     const index = MOCK_COURSES.findIndex(c => c.id === course.id);
     if (index !== -1) {
-      MOCK_COURSES[index] = { ...course };
+      MOCK_COURSES[index] = {
+        ...MOCK_COURSES[index],
+        title: course.title,
+        status: course.status,
+        basePrice: course.basePrice,
+      };
       return MOCK_COURSES[index];
     }
-    return course;
+    throw new Error('Course not found');
+  },
+
+  createCourse: async (course: Omit<Course, 'id' | 'available_dates'>): Promise<Course> => {
+    await delay(500);
+    const newCourse: Course = {
+      ...course,
+      id: Date.now(),
+    };
+    MOCK_COURSES.push(newCourse);
+    MOCK_DATES[newCourse.id] = [];
+    return newCourse;
   },
 
   getDates: async (courseId: string | number): Promise<CourseDate[]> => {
@@ -95,11 +111,29 @@ export const mockApi = {
     return MOCK_DATES[numId] || [];
   },
 
-  saveDates: async (courseId: string | number, newDates: CourseDate[]): Promise<CourseDate[]> => {
-    await delay(600);
-    const numId = Number(courseId);
-    MOCK_DATES[numId] = newDates;
-    return newDates;
+  createDate: async (date: Omit<CourseDate, 'id' | 'booked'>): Promise<CourseDate> => {
+    await delay(500);
+    const newDate: CourseDate = {
+      ...date,
+      id: Date.now(),
+      booked: 0,
+    };
+    if (!MOCK_DATES[date.courseId]) {
+      MOCK_DATES[date.courseId] = [];
+    }
+    MOCK_DATES[date.courseId].push(newDate);
+    return newDate;
+  },
+
+  deleteDate: async (dateId: number): Promise<void> => {
+    await delay(400);
+    for (const courseId in MOCK_DATES) {
+      const index = MOCK_DATES[Number(courseId)].findIndex(d => d.id === dateId);
+      if (index !== -1) {
+        MOCK_DATES[Number(courseId)].splice(index, 1);
+        return;
+      }
+    }
   },
 
   changePassword: async (password: string, newPassword: string): Promise<void> => {

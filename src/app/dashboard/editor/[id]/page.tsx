@@ -8,9 +8,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Trash2, Plus, Upload, Lock } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
-import { Course, CourseDate } from '@/lib/types';
+import { CourseDate } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/i18n';
 
@@ -43,7 +43,12 @@ export default function EditorPage() {
   const queryClient = useQueryClient();
   const { t } = useI18n();
 
-  const [dates, setDates] = useState<CourseDate[]>([]);
+  const [isAddDateDialogOpen, setIsAddDateDialogOpen] = useState(false);
+  const [newDateForm, setNewDateForm] = useState({
+    dateTime: new Date(),
+    capacity: 10,
+    duration: 180,
+  });
 
   const { data: course, isLoading: isCourseLoading } = useQuery({
     queryKey: ['course', id],
@@ -84,21 +89,30 @@ export default function EditorPage() {
     }
   }, [course, form]);
 
-  useEffect(() => {
-    if (existingDates) {
-      setDates(existingDates);
-    }
-  }, [existingDates]);
-
   const updateCourseMutation = useMutation({
     mutationFn: api.updateCourse,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['course', id] });
+    },
+  });
+
+  const createCourseMutation = useMutation({
+    mutationFn: api.createCourse,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
     },
   });
 
-  const saveDatesMutation = useMutation({
-    mutationFn: (data: { id: string; dates: CourseDate[] }) => api.saveDates(data.id, data.dates),
+  const createDateMutation = useMutation({
+    mutationFn: api.createDate,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dates', id] });
+    },
+  });
+
+  const deleteDateMutation = useMutation({
+    mutationFn: api.deleteDate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dates', id] });
     },
@@ -106,17 +120,24 @@ export default function EditorPage() {
 
   const onSubmit = async (data: CourseFormValues) => {
     try {
-      const courseId = isNew ? Date.now() : Number(id);
-      const courseData: Course = {
-        id: courseId,
-        ...data,
-        image: data.image || '',
-      };
-
-      await updateCourseMutation.mutateAsync(courseData);
-
-      const datesToSave = dates.map(d => ({ ...d, courseId }));
-      await saveDatesMutation.mutateAsync({ id: String(courseId), dates: datesToSave });
+      if (isNew) {
+        await createCourseMutation.mutateAsync({
+          title: data.title,
+          sku: data.sku,
+          location: data.location,
+          description: data.description,
+          basePrice: data.basePrice,
+          status: data.status,
+          image: data.image || '',
+        });
+      } else {
+        await updateCourseMutation.mutateAsync({
+          id: Number(id),
+          title: data.title,
+          status: data.status,
+          basePrice: data.basePrice,
+        });
+      }
 
       toast.success(t.editor.successSaved);
       router.push('/dashboard');
@@ -126,29 +147,39 @@ export default function EditorPage() {
     }
   };
 
-  const handleAddDate = () => {
-    const newDate: CourseDate = {
-      id: Date.now(),
-      courseId: Number(id) || 0,
-      dateTime: new Date().toISOString(),
-      capacity: 10,
-      booked: 0,
-      duration: 180,
-    };
-    setDates([...dates, newDate]);
+  const handleAddDate = async () => {
+    if (isNew) {
+      toast.error('Please save the course first before adding dates');
+      return;
+    }
+    try {
+      await createDateMutation.mutateAsync({
+        courseId: Number(id),
+        dateTime: newDateForm.dateTime.toISOString(),
+        capacity: newDateForm.capacity,
+        duration: newDateForm.duration,
+      });
+      setIsAddDateDialogOpen(false);
+      setNewDateForm({
+        dateTime: new Date(),
+        capacity: 10,
+        duration: 180,
+      });
+      toast.success('Date added successfully');
+    } catch (error) {
+      toast.error('Failed to add date');
+      console.error(error);
+    }
   };
 
-  const handleRemoveDate = (dateId: number) => {
-    setDates(dates.filter(d => d.id !== dateId));
-  };
-
-  const handleDateChange = (dateId: number, field: keyof CourseDate, value: string | number | Date) => {
-    setDates(dates.map(d => {
-      if (d.id === dateId) {
-        return { ...d, [field]: value };
-      }
-      return d;
-    }));
+  const handleRemoveDate = async (dateId: number) => {
+    try {
+      await deleteDateMutation.mutateAsync(dateId);
+      toast.success('Date deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete date');
+      console.error(error);
+    }
   };
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -166,6 +197,8 @@ export default function EditorPage() {
     return <div className="p-8">{t.common.loading}</div>;
   }
 
+  const dates = existingDates || [];
+
   return (
     <div className="space-y-6 pb-12">
       <div className="flex items-center justify-between">
@@ -174,7 +207,7 @@ export default function EditorPage() {
         </h1>
         <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.back()}>{t.common.cancel}</Button>
-            <Button onClick={form.handleSubmit(onSubmit)} disabled={form.formState.isSubmitting || updateCourseMutation.isPending || saveDatesMutation.isPending}>
+            <Button onClick={form.handleSubmit(onSubmit)} disabled={form.formState.isSubmitting || updateCourseMutation.isPending || createCourseMutation.isPending}>
             {form.formState.isSubmitting ? t.editor.saving : t.editor.saveChanges}
             </Button>
         </div>
@@ -197,6 +230,21 @@ export default function EditorPage() {
                         <Label htmlFor="basePrice">{t.editor.priceLabel}</Label>
                         <Input id="basePrice" type="number" step="0.01" {...form.register('basePrice', { valueAsNumber: true })} />
                          {form.formState.errors.basePrice && <p className="text-sm text-destructive">{form.formState.errors.basePrice.message}</p>}
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="status">{t.editor.statusLabel}</Label>
+                        <Select
+                            onValueChange={(value) => form.setValue('status', value as 'active' | 'inactive')}
+                            defaultValue={form.getValues('status')}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder={t.editor.selectStatus} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="active">{t.common.active}</SelectItem>
+                                <SelectItem value="inactive">{t.common.inactive}</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="sku" className="flex items-center gap-2">
@@ -241,23 +289,6 @@ export default function EditorPage() {
                         )}
                          {form.formState.errors.description && <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>}
                     </div>
-                    <div className="grid gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="status">{t.editor.statusLabel}</Label>
-                            <Select 
-                                onValueChange={(value) => form.setValue('status', value as 'active' | 'inactive')} 
-                                defaultValue={form.getValues('status')}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t.editor.selectStatus} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="active">{t.common.active}</SelectItem>
-                                    <SelectItem value="inactive">{t.common.inactive}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
                      <div className="grid gap-2">
                         <Label htmlFor="image">{t.editor.imageLabel}</Label>
                         <div className="flex flex-col gap-4">
@@ -286,114 +317,163 @@ export default function EditorPage() {
                         <CardTitle>{t.editor.inventory}</CardTitle>
                         <CardDescription>{t.editor.inventoryDesc}</CardDescription>
                     </div>
-                    <Button size="sm" onClick={handleAddDate} variant="secondary">
+                    <Button
+                        size="sm"
+                        onClick={() => setIsAddDateDialogOpen(true)}
+                        variant="secondary"
+                        disabled={isNew}
+                    >
                         <Plus className="h-4 w-4 mr-1" /> {t.editor.addDate}
                     </Button>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[180px]">{t.editor.dateHeader}</TableHead>
-                                <TableHead>{t.editor.timeHeader}</TableHead>
-                                <TableHead className="w-[100px]">{t.editor.durationHeader}</TableHead>
-                                <TableHead className="w-[90px]">{t.editor.capacityHeader}</TableHead>
-                                <TableHead className="w-[100px]">{t.editor.bookedHeader}</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {dates.length === 0 ? (
+                    {isNew ? (
+                        <div className="flex items-center justify-center h-24 text-muted-foreground">
+                            Save the course first to manage dates
+                        </div>
+                    ) : (
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center text-muted-foreground h-24">
-                                        {t.editor.noDates}
-                                    </TableCell>
+                                    <TableHead className="w-[180px]">{t.editor.dateHeader}</TableHead>
+                                    <TableHead>{t.editor.timeHeader}</TableHead>
+                                    <TableHead className="w-[100px]">{t.editor.durationHeader}</TableHead>
+                                    <TableHead className="w-[90px]">{t.editor.capacityHeader}</TableHead>
+                                    <TableHead className="w-[100px]">{t.editor.bookedHeader}</TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
-                            ) : (
-                                dates.map((date) => (
-                                    <TableRow key={date.id}>
-                                        <TableCell>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-full justify-start text-left font-normal truncate",
-                                                            !date.dateTime && "text-muted-foreground"
-                                                        )}
-                                                    >
-                                                        <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                                                        <span className="truncate">
-                                                            {date.dateTime ? format(new Date(date.dateTime), "PPP") : <span>{t.editor.pickDate}</span>}
-                                                        </span>
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0">
-                                                    <Calendar
-                                                        mode="single"
-                                                        selected={new Date(date.dateTime)}
-                                                        onSelect={(d) => {
-                                                            if (d) {
-                                                                const current = new Date(date.dateTime);
-                                                                d.setHours(current.getHours(), current.getMinutes());
-                                                                handleDateChange(date.id, 'dateTime', d.toISOString());
-                                                            }
-                                                        }}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Input 
-                                                type="time" 
-                                                className="w-full min-w-[90px]"
-                                                value={format(new Date(date.dateTime), 'HH:mm')}
-                                                onChange={(e) => {
-                                                    const [hours, minutes] = e.target.value.split(':').map(Number);
-                                                    const newDate = new Date(date.dateTime);
-                                                    newDate.setHours(hours);
-                                                    newDate.setMinutes(minutes);
-                                                    handleDateChange(date.id, 'dateTime', newDate.toISOString());
-                                                }}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center px-3 py-2 text-sm text-muted-foreground bg-muted rounded-md border border-input h-10 w-full min-w-[70px] cursor-not-allowed">
-                                                {date.duration || 0}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Input 
-                                                type="number" 
-                                                className="w-full min-w-[70px]" 
-                                                min={1} 
-                                                value={date.capacity} 
-                                                onChange={(e) => handleDateChange(date.id, 'capacity', parseInt(e.target.value))}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2 whitespace-nowrap">
-                                                <span className="text-sm font-medium">{date.booked}</span>
-                                                <span className="text-xs text-muted-foreground">
-                                                     / {date.capacity - date.booked}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Button variant="ghost" size="icon" onClick={() => handleRemoveDate(date.id)}>
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
+                            </TableHeader>
+                            <TableBody>
+                                {dates.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="text-center text-muted-foreground h-24">
+                                            {t.editor.noDates}
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+                                ) : (
+                                    dates.map((date) => (
+                                        <TableRow key={date.id}>
+                                            <TableCell>
+                                                <div className="flex items-center text-sm">
+                                                    <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                                                    <span>{format(new Date(date.dateTime), "PPP")}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm">{format(new Date(date.dateTime), 'HH:mm')}</span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm">{date.duration || 0} min</span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm">{date.capacity}</span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2 whitespace-nowrap">
+                                                    <span className="text-sm font-medium">{date.booked}</span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                         / {date.capacity - date.booked}
+                                                    </span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleRemoveDate(date.id)}
+                                                    disabled={deleteDateMutation.isPending}
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    )}
                 </CardContent>
             </Card>
         </div>
       </div>
+
+      <Dialog open={isAddDateDialogOpen} onOpenChange={setIsAddDateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t.editor.addDate}</DialogTitle>
+            <DialogDescription>
+              Add a new date for this course
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid gap-2">
+              <Label>{t.editor.dateHeader}</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(newDateForm.dateTime, "PPP")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={newDateForm.dateTime}
+                    onSelect={(d) => {
+                      if (d) {
+                        const current = newDateForm.dateTime;
+                        d.setHours(current.getHours(), current.getMinutes());
+                        setNewDateForm({ ...newDateForm, dateTime: d });
+                      }
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="grid gap-2">
+              <Label>{t.editor.timeHeader}</Label>
+              <Input
+                type="time"
+                value={format(newDateForm.dateTime, 'HH:mm')}
+                onChange={(e) => {
+                  const [hours, minutes] = e.target.value.split(':').map(Number);
+                  const newDate = new Date(newDateForm.dateTime);
+                  newDate.setHours(hours);
+                  newDate.setMinutes(minutes);
+                  setNewDateForm({ ...newDateForm, dateTime: newDate });
+                }}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>{t.editor.capacityHeader}</Label>
+              <Input
+                type="number"
+                min={1}
+                value={newDateForm.capacity}
+                onChange={(e) => setNewDateForm({ ...newDateForm, capacity: parseInt(e.target.value) || 1 })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>{t.editor.durationHeader} (min)</Label>
+              <Input
+                type="number"
+                min={1}
+                value={newDateForm.duration}
+                onChange={(e) => setNewDateForm({ ...newDateForm, duration: parseInt(e.target.value) || 1 })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDateDialogOpen(false)}>
+              {t.common.cancel}
+            </Button>
+            <Button onClick={handleAddDate} disabled={createDateMutation.isPending}>
+              {createDateMutation.isPending ? t.editor.saving : t.editor.addDate}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
