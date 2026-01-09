@@ -266,7 +266,7 @@ export default function EditorPage() {
                                     <img src={form.watch('image')} alt="Preview" className="h-full w-full object-cover" />
                                 </div>
                              )}
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 hidden">
                                 <Input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled />
                                 <Button type="button" variant="outline" onClick={() => document.getElementById('image-upload')?.click()} className="w-full" disabled>
                                     <Upload className="mr-2 h-4 w-4" />

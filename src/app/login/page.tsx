@@ -102,7 +102,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">{t.common.email}</Label>
-              <Input id="email" type="email" placeholder="m@example.com" {...register('email')} />
+              <Input id="email" type="email" {...register('email')} />
               {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
@@ -115,7 +115,7 @@ export default function LoginPage() {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex justify-center hidden">
           <Dialog open={isForgotPasswordOpen} onOpenChange={setIsForgotPasswordOpen}>
             <DialogTrigger asChild>
               <Button variant="link" className="px-0 text-sm" disabled={true}>
@@ -132,9 +132,9 @@ export default function LoginPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="reset-email">{t.common.email}</Label>
-                  <Input 
-                    id="reset-email" 
-                    placeholder="m@example.com" 
+                  <Input
+                    id="reset-email"
+                    placeholder="m@example.com"
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                   />
