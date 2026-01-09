@@ -35,171 +35,67 @@ A modern partner portal for managing courses, dates, and account settings. Built
 
 ---
 
-## Backend Implementation Guide & API Specification
+## API Documentation
 
-This section is designed for backend developers (or n8n workflow designers) to understand exactly how to handle requests from this frontend application.
+This application uses a proxy-based architecture where all API requests are routed through `/api/proxy` with an `action` query parameter to determine the operation.
 
-### 1. Architecture Overview
+### Architecture Overview
 
-The application uses a **Single Endpoint Architecture**.
-*   **Method:** Always `POST`.
-*   **Routing:** The frontend sends a query parameter `?action=...` to indicate the intent (e.g., `action=login`, `action=get-courses`).
-*   **Payload:** Data is always sent in the JSON body.
-*   **Authentication:** Protected routes send a `Authorization: Bearer <token>` header.
+- **Base URL:** `/api/proxy`
+- **Method:** All requests use `POST`
+- **Authentication:** Bearer token authentication (except `login` and `reset-password`)
+- **Header Format:** `Authorization: Bearer <token>`
 
-**Your Backend Logic (n8n Switch Node):**
-1.  Receive Webhook (POST).
-2.  Switch based on `query.action`.
-3.  If action is protected, Validate Token from `headers.authorization` by looking it up in the database.
-4.  Execute Logic (Database query, etc.).
-5.  Return JSON response.
+### Quick API Reference
 
-### 2. Authentication & Session Structure
+#### Public Endpoints (No Authentication)
+- **Login:** `POST /api/proxy?action=login`
+- **Reset Password:** `POST /api/proxy?action=reset-password`
 
-The frontend expects a **Session Token** upon successful login. It stores this token and sends it back with every subsequent request.
+#### Protected Endpoints (Require Authentication)
+- **Get All Courses:** `POST /api/proxy?action=get-courses`
+- **Get Single Course:** `POST /api/proxy?action=get-course`
+- **Create Course:** `POST /api/proxy?action=create-course`
+- **Update Course:** `POST /api/proxy?action=update-course`
+- **Get Course Dates:** `POST /api/proxy?action=get-dates`
+- **Create Course Date:** `POST /api/proxy?action=create-date`
+- **Delete Course Date:** `POST /api/proxy?action=delete-date`
+- **Change Password:** `POST /api/proxy?action=change-password`
+- **Send Contact Message:** `POST /api/proxy?action=contact`
 
-**Token Flow:**
-1.  **Login:** Frontend sends credentials.
-2.  **Backend:** Verifies credentials -> Generates a random string (Token) -> Saves it to DB -> Returns it.
-3.  **Requests:** Frontend sends `Authorization: Bearer <token>`.
-4.  **Verification:** Backend looks up the token in the DB to identify the user.
+### Data Models
 
-**Verification Logic:**
-For every protected action (everything except `login` and `reset-password`):
-1.  Extract token from header: `Authorization: Bearer <token>`.
-2.  Query your User database table for this token.
-3.  **If found:** Proceed with the action, using the found User's ID.
-4.  **If not found:** Return 401 Unauthorized.
+**Course:**
+```typescript
+interface Course {
+  id: number;
+  title: string;
+  sku: string;
+  status: 'active' | 'inactive';
+  description: string;
+  image: string;
+  basePrice: number;
+  available_dates?: number;
+  location: string;
+}
+```
 
-### 3. API Action Reference
+**CourseDate:**
+```typescript
+interface CourseDate {
+  id: number;
+  courseId: number;
+  dateTime: string; // ISO 8601 format
+  capacity: number;
+  booked: number;
+  duration?: number; // Duration in minutes
+}
+```
 
-#### A. Public Actions (No Auth Header)
+### Mock Mode
 
-**1. Login**
-*   **Action:** `login`
-*   **Input Body:**
-    ```json
-    {
-      "email": "partner@example.com",
-      "password": "plain_text_password"
-    }
-    ```
-*   **Success Response (200 OK):**
-    ```json
-    {
-      "email": "partner@example.com",
-      "name": "Partner Name", // Displayed in UI
-      "token": "a1b2c3d4-..." // Random session string
-    }
-    ```
-*   **Error Response (401/400):** `{ "error": "Invalid credentials" }`
+The application includes mock mode for development. When `NEXT_PUBLIC_N8N_API_URL` is not set, all API calls use local mock data instead of the backend.
 
-**2. Reset Password (Forgot Password)**
-*   **Action:** `reset-password`
-*   **Input Body:**
-    ```json
-    {
-      "email": "partner@example.com"
-    }
-    ```
-*   **Logic:** Trigger an email workflow to send a reset link.
-*   **Success Response (200 OK):** `{ "success": true }`
+### Full API Documentation
 
-#### B. Protected Actions (Require Valid Token)
-
-**3. Change Password**
-*   **Action:** `change-password`
-*   **Input Body:**
-    ```json
-    {
-      "password": "old_password",
-      "newPassword": "new_password"
-    }
-    ```
-*   **Logic:** Verify `password` matches current DB hash, then hash and save `newPassword`.
-*   **Success Response (200 OK):** `{ "success": true }`
-
-**4. Get All Courses**
-*   **Action:** `get-courses`
-*   **Input Body:** `{}` (Empty)
-Logic: Fetch all courses belonging to the identified User ID.
-*   **Success Response (200 OK):**
-    ```json
-    [
-      {
-        "id": "c1",
-        "title": "Italian Cooking Class",
-        "sku": "SKU-001",
-        "status": "active", // or "inactive"
-        "description": "Learn to cook pasta...",
-        "image": "https://example.com/image.jpg",
-        "basePrice": 89.00
-      }
-    ]
-    ```
-
-**5. Get Single Course**
-*   **Action:** `get-course`
-*   **Input Body:**
-    ```json
-    {
-      "id": "c1"
-    }
-    ```
-*   **Logic:** Fetch specific course. **Security Check:** Ensure course belongs to the requesting User ID.
-*   **Success Response (200 OK):** Returns single Course object (same structure as above).
-
-**6. Update or Create Course**
-*   **Action:** `update-course`
-*   **Input Body:** Course object.
-*   **Logic:**
-    *   If `id` exists in DB: Update the record.
-    *   If `id` is new/missing: Create new record.
-    *   **Always** associate with the identified User ID.
-*   **Success Response (200 OK):** Returns the updated/created Course object.
-
-**7. Get Course Dates (Inventory)**
-*   **Action:** `get-dates`
-*   **Input Body:**
-    ```json
-    {
-      "courseId": "c1"
-    }
-    ```
-*   **Success Response (200 OK):**
-    ```json
-    [
-      {
-        "id": "d1",
-        "courseId": "c1",
-        "dateTime": "2024-12-05T18:00:00.000Z", // ISO 8601
-        "capacity": 15,
-        "booked": 5,
-        "duration": 180 // Minutes
-      }
-    ]
-    ```
-
-**8. Save Course Dates**
-*   **Action:** `save-dates`
-*   **Input Body:**
-    ```json
-    {
-      "courseId": "c1",
-      "dates": [ /* Array of CourseDate objects */ ]
-    }
-    ```
-*   **Logic:** Replace all dates for this course with the new list, or perform a smart merge/diff.
-*   **Success Response (200 OK):** Returns the saved array of dates.
-
-**9. Contact Support**
-*   **Action:** `contact`
-*   **Input Body:**
-    ```json
-    {
-      "subject": "Question about payments",
-      "message": "Hi, when will I receive..."
-    }
-    ```
-*   **Logic:** Send email to support team including the identified User's email.
-*   **Success Response (200 OK):** `{ "success": true }`
+For complete API documentation including detailed request/response examples, error handling, and usage examples, see [docs/api.md](docs/api.md).
