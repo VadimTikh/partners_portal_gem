@@ -93,10 +93,14 @@ export const api = {
     if (USE_MOCK) return mockApi.changePassword(password, newPassword);
 
     if (!API_URL) throw new Error('API URL not configured');
-    await axios.post(API_URL, { password, newPassword }, { 
+    const response = await axios.post(API_URL, { password, newPassword }, { 
       ...getAuthConfig(),
       params: { action: 'change-password' }
     });
+
+    if (response.data && response.data.success === false) {
+      throw new Error(response.data.message || 'Failed to change password');
+    }
   },
 
   resetPassword: async (email: string): Promise<void> => {

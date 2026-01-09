@@ -37,8 +37,8 @@ export default function LoginPage() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'admin@partner.de',
-      password: 'password123',
+      email: '',
+      password: '',
     },
   });
 
@@ -118,7 +118,7 @@ export default function LoginPage() {
         <CardFooter className="flex justify-center">
           <Dialog open={isForgotPasswordOpen} onOpenChange={setIsForgotPasswordOpen}>
             <DialogTrigger asChild>
-              <Button variant="link" className="px-0 text-sm">
+              <Button variant="link" className="px-0 text-sm" disabled={true}>
                 {t.common.forgotPassword}
               </Button>
             </DialogTrigger>

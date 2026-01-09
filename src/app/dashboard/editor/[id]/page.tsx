@@ -194,6 +194,11 @@ export default function EditorPage() {
                         {form.formState.errors.title && <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>}
                     </div>
                     <div className="grid gap-2">
+                        <Label htmlFor="basePrice">{t.editor.priceLabel}</Label>
+                        <Input id="basePrice" type="number" step="0.01" {...form.register('basePrice', { valueAsNumber: true })} />
+                         {form.formState.errors.basePrice && <p className="text-sm text-destructive">{form.formState.errors.basePrice.message}</p>}
+                    </div>
+                    <div className="grid gap-2">
                         <Label htmlFor="sku" className="flex items-center gap-2">
                             {t.editor.skuLabel}
                             {!isNew && <Lock className="h-3 w-3 text-muted-foreground" />}
@@ -236,12 +241,7 @@ export default function EditorPage() {
                         )}
                          {form.formState.errors.description && <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>}
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="basePrice">{t.editor.priceLabel}</Label>
-                            <Input id="basePrice" type="number" step="0.01" {...form.register('basePrice', { valueAsNumber: true })} />
-                             {form.formState.errors.basePrice && <p className="text-sm text-destructive">{form.formState.errors.basePrice.message}</p>}
-                        </div>
+                    <div className="grid gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="status">{t.editor.statusLabel}</Label>
                             <Select 
@@ -267,8 +267,8 @@ export default function EditorPage() {
                                 </div>
                              )}
                             <div className="flex items-center gap-2">
-                                <Input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                                <Button type="button" variant="outline" onClick={() => document.getElementById('image-upload')?.click()} className="w-full">
+                                <Input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled />
+                                <Button type="button" variant="outline" onClick={() => document.getElementById('image-upload')?.click()} className="w-full" disabled>
                                     <Upload className="mr-2 h-4 w-4" />
                                     {form.watch('image') ? t.editor.changeImage : t.editor.uploadImage}
                                 </Button>
