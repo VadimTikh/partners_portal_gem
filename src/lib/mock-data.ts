@@ -15,6 +15,7 @@ export const MOCK_COURSES: Course[] = [
     description: 'Learn the secrets of authentic Italian cuisine from pasta to tiramisu.',
     image: 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?auto=format&fit=crop&q=80&w=1000',
     basePrice: 89.00,
+    location: 'München',
   },
   {
     id: 2,
@@ -24,6 +25,7 @@ export const MOCK_COURSES: Course[] = [
     description: 'A journey through the most famous wine regions of the world.',
     image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&q=80&w=1000',
     basePrice: 59.00,
+    location: 'Berlin',
   },
   {
     id: 3,
@@ -33,6 +35,7 @@ export const MOCK_COURSES: Course[] = [
     description: 'Master the art of espresso and milk frothing.',
     image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1000',
     basePrice: 45.00,
+    location: 'Hamburg',
   }
 ];
 

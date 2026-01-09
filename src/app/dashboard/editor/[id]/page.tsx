@@ -26,6 +26,7 @@ import { useI18n } from '@/lib/i18n';
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   sku: z.string().min(1, 'SKU is required'),
+  location: z.string().min(1, 'Location is required'),
   description: z.string().min(1, 'Description is required'),
   basePrice: z.number().min(0, 'Price must be positive'),
   status: z.enum(['active', 'inactive']),
@@ -61,6 +62,7 @@ export default function EditorPage() {
     defaultValues: {
       title: '',
       sku: '',
+      location: '',
       description: '',
       basePrice: 0,
       status: 'active',
@@ -73,6 +75,7 @@ export default function EditorPage() {
       form.reset({
         title: course.title,
         sku: course.sku,
+        location: course.location,
         description: course.description,
         basePrice: course.basePrice,
         status: course.status,
@@ -203,6 +206,20 @@ export default function EditorPage() {
                             </div>
                         )}
                          {form.formState.errors.sku && <p className="text-sm text-destructive">{form.formState.errors.sku.message}</p>}
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="location" className="flex items-center gap-2">
+                            {t.editor.locationLabel}
+                            {!isNew && <Lock className="h-3 w-3 text-muted-foreground" />}
+                        </Label>
+                        {isNew ? (
+                            <Input id="location" {...form.register('location')} />
+                        ) : (
+                             <div className="rounded-md border border-input bg-muted px-3 py-2 text-sm cursor-not-allowed text-muted-foreground">
+                                {form.watch('location')}
+                            </div>
+                        )}
+                         {form.formState.errors.location && <p className="text-sm text-destructive">{form.formState.errors.location.message}</p>}
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="description" className="flex items-center gap-2">
