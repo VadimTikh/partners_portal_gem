@@ -448,7 +448,7 @@ export default function EditorPage() {
                                                         onClick={() => startEditingPrice(date.id, date.price)}
                                                     >
                                                         <span className={`text-sm font-medium ${date.price !== course?.basePrice ? 'text-amber-600 dark:text-amber-400' : ''}`}>
-                                                            €{date.price.toFixed(2)}
+                                                            €{Number(date.price).toFixed(2)}
                                                         </span>
                                                         {date.price !== course?.basePrice && (
                                                             <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">
@@ -555,7 +555,7 @@ export default function EditorPage() {
                 onChange={(e) => setNewDateForm({ ...newDateForm, price: parseFloat(e.target.value) || 0 })}
               />
               <p className="text-xs text-muted-foreground">
-                Default: €{course?.basePrice.toFixed(2)} (base course price)
+                Default: €{Number(course?.basePrice).toFixed(2)} (base course price)
               </p>
             </div>
           </div>
