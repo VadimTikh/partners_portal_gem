@@ -115,6 +115,16 @@ export const api = {
     });
   },
 
+  updateDate: async (dateId: number, price: number): Promise<void> => {
+    if (USE_MOCK) return mockApi.updateDate(dateId, price);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    await axios.post(API_URL, { date_id: dateId, price }, {
+      ...getAuthConfig(),
+      params: { action: 'update-date' }
+    });
+  },
+
   changePassword: async (password: string, newPassword: string): Promise<void> => {
     if (USE_MOCK) return mockApi.changePassword(password, newPassword);
 

@@ -48,7 +48,10 @@ export default function EditorPage() {
     dateTime: new Date(),
     capacity: 10,
     duration: 180,
+    price: 0,
   });
+  const [editingPriceId, setEditingPriceId] = useState<number | null>(null);
+  const [editedPrice, setEditedPrice] = useState<number>(0);
 
   const { data: course, isLoading: isCourseLoading } = useQuery({
     queryKey: ['course', id],
@@ -118,6 +121,13 @@ export default function EditorPage() {
     },
   });
 
+  const updateDateMutation = useMutation({
+    mutationFn: ({ dateId, price }: { dateId: number; price: number }) => api.updateDate(dateId, price),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dates', id] });
+    },
+  });
+
   const onSubmit = async (data: CourseFormValues) => {
     try {
       if (isNew) {
@@ -158,12 +168,14 @@ export default function EditorPage() {
         dateTime: newDateForm.dateTime.toISOString(),
         capacity: newDateForm.capacity,
         duration: newDateForm.duration,
+        price: newDateForm.price,
       });
       setIsAddDateDialogOpen(false);
       setNewDateForm({
         dateTime: new Date(),
         capacity: 10,
         duration: 180,
+        price: course?.basePrice || 0,
       });
       toast.success('Date added successfully');
     } catch (error) {
@@ -180,6 +192,22 @@ export default function EditorPage() {
       toast.error('Failed to delete date');
       console.error(error);
     }
+  };
+
+  const handleUpdatePrice = async (dateId: number, price: number) => {
+    try {
+      await updateDateMutation.mutateAsync({ dateId, price });
+      setEditingPriceId(null);
+      toast.success('Price updated successfully');
+    } catch (error) {
+      toast.error('Failed to update price');
+      console.error(error);
+    }
+  };
+
+  const startEditingPrice = (dateId: number, currentPrice: number) => {
+    setEditingPriceId(dateId);
+    setEditedPrice(currentPrice);
   };
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -319,7 +347,15 @@ export default function EditorPage() {
                     </div>
                     <Button
                         size="sm"
-                        onClick={() => setIsAddDateDialogOpen(true)}
+                        onClick={() => {
+                            setNewDateForm({
+                                dateTime: new Date(),
+                                capacity: 10,
+                                duration: 180,
+                                price: course?.basePrice || 0,
+                            });
+                            setIsAddDateDialogOpen(true);
+                        }}
                         variant="secondary"
                         disabled={isNew}
                     >
@@ -340,13 +376,14 @@ export default function EditorPage() {
                                     <TableHead className="w-[100px]">{t.editor.durationHeader}</TableHead>
                                     <TableHead className="w-[90px]">{t.editor.capacityHeader}</TableHead>
                                     <TableHead className="w-[100px]">{t.editor.bookedHeader}</TableHead>
+                                    <TableHead className="w-[110px]">Price</TableHead>
                                     <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {dates.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center text-muted-foreground h-24">
+                                        <TableCell colSpan={7} className="text-center text-muted-foreground h-24">
                                             {t.editor.noDates}
                                         </TableCell>
                                     </TableRow>
@@ -375,6 +412,51 @@ export default function EditorPage() {
                                                          / {date.capacity - date.booked}
                                                     </span>
                                                 </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {editingPriceId === date.id ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <Input
+                                                            type="number"
+                                                            step="0.01"
+                                                            min="0"
+                                                            className="w-20 h-8 text-sm"
+                                                            value={editedPrice}
+                                                            onChange={(e) => setEditedPrice(parseFloat(e.target.value) || 0)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleUpdatePrice(date.id, editedPrice);
+                                                                } else if (e.key === 'Escape') {
+                                                                    setEditingPriceId(null);
+                                                                }
+                                                            }}
+                                                            autoFocus
+                                                        />
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-8 w-8"
+                                                            onClick={() => handleUpdatePrice(date.id, editedPrice)}
+                                                            disabled={updateDateMutation.isPending}
+                                                        >
+                                                            ✓
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        className="flex items-center gap-1 cursor-pointer hover:bg-accent/50 rounded px-2 py-1"
+                                                        onClick={() => startEditingPrice(date.id, date.price)}
+                                                    >
+                                                        <span className={`text-sm font-medium ${date.price !== course?.basePrice ? 'text-amber-600 dark:text-amber-400' : ''}`}>
+                                                            €{date.price.toFixed(2)}
+                                                        </span>
+                                                        {date.price !== course?.basePrice && (
+                                                            <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">
+                                                                Custom
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <Button
@@ -462,6 +544,19 @@ export default function EditorPage() {
                 value={newDateForm.duration}
                 onChange={(e) => setNewDateForm({ ...newDateForm, duration: parseInt(e.target.value) || 1 })}
               />
+            </div>
+            <div className="grid gap-2">
+              <Label>Price (€)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                min={0}
+                value={newDateForm.price}
+                onChange={(e) => setNewDateForm({ ...newDateForm, price: parseFloat(e.target.value) || 0 })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Default: €{course?.basePrice.toFixed(2)} (base course price)
+              </p>
             </div>
           </div>
           <DialogFooter>

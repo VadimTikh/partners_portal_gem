@@ -1,0 +1,2046 @@
+{
+  "name": "[Miomente] Webhook Partners App",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "partner-portal",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c7bbbbce-a685-436a-8abf-75d37f1853ea",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -7280,
+        -2368
+      ],
+      "webhookId": "partner-portal-webhook"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "login",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "efbcf2b6-8d0a-4f79-bbfa-fc7d318f3335"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "login"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "reset-password",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2956047f-473d-4be5-b937-4388214eb3c4"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reset-password"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "change-password",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6541ce47-2fbc-43a0-ad09-d2185b44f4ce"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "change-password"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "get-courses",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "807f1d17-268a-4b45-bd31-952503b3ce8f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get-courses"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "get-course",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3ebbb788-618b-41b6-b0b7-5bf26d27d390"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get-course"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "update-course",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7d97c2b7-d846-4b35-8433-ef84afbf81be"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "update-course"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "get-dates",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c3a95c6f-a20d-4819-aa14-09c5471f91ec"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get-dates"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "create-date",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bc9450d8-d9b0-4813-9f64-66075b124ea4"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create-date"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d32f817d-1ee7-4e3c-b2d5-c8514d0fe800",
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "delete-date",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delete-date"
+            },
+            {
+              "outputKey": "update-date",
+              "rules": {
+                "values": [
+                  {
+                    "conditions": {
+                      "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict"
+                      },
+                      "conditions": [
+                        {
+                          "leftValue": "={{ $json.body.action }}",
+                          "rightValue": "update-date",
+                          "operator": {
+                            "type": "string",
+                            "operation": "equals",
+                            "singleValue": true
+                          }
+                        }
+                      ],
+                      "combinator": "and"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "contact",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5241995f-6783-45e8-9a06-553985817a3e"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "contact"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "40ea5b9d-a71a-4496-b20a-c3eb5d956234",
+      "name": "Route by Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -6848,
+        -2496
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "miomente_partner_portal_users",
+          "mode": "list",
+          "cachedResultName": "miomente_partner_portal_users"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "email",
+              "value": "={{ $('Webhook').first().json.body.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "526401c1-6aa4-44ca-94f5-23c55f23e7ee",
+      "name": "Find User by Email",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -4000,
+        -3536
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "0Wh8S0Mv7yF5IDfG",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check-user-exists",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            },
+            {
+              "id": "check-password",
+              "leftValue": "={{ $json.password }}",
+              "rightValue": "={{ $('Webhook').item.json.body.password }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9b342877-e500-4149-b552-22f62129b64e",
+      "name": "Verify Credentials",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3680,
+        -3536
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const email = $('Webhook').item.json.body.email;\nconst timestamp = Date.now();\nconst random = Math.random().toString(36).substring(2, 15);\n\nreturn {\n  token: `${email.split('@')[0]}-${timestamp}-${random}`,\n  email: $json.email,\n  name: $json.name,\n  id: $json.id\n};"
+      },
+      "id": "4d6636a0-1cdb-4e74-865c-084f115fd24d",
+      "name": "Generate Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3392,
+        -3552
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "miomente_partner_portal_users",
+          "mode": "list",
+          "cachedResultName": "miomente_partner_portal_users"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "token": "={{ $json.token }}",
+            "id": "={{ $json.id}}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "password",
+              "displayName": "password",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "token",
+              "displayName": "token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f07636d1-cb17-4518-b7d6-6acb6400c901",
+      "name": "Save Token to DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -3152,
+        -3552
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "0Wh8S0Mv7yF5IDfG",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ email: $('Generate Token').item.json.email, name: $('Generate Token').item.json.name, token: $('Generate Token').item.json.token }) }}",
+        "options": {}
+      },
+      "id": "6da9d0b9-b0f7-400c-8230-5d134b2db677",
+      "name": "Login Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -2912,
+        -3552
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ error: 'Invalid credentials' }) }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "9ca84f75-da40-4528-94f9-6e2822aaa53d",
+      "name": "Login Failed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3680,
+        -3680
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: 'Password reset email sent' }) }}",
+        "options": {}
+      },
+      "id": "a2ef7478-4c3f-4608-b725-718e182fc014",
+      "name": "Reset Password Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -4000,
+        -3104
+      ],
+      "notesInFlow": true,
+      "notes": "TODO: Add email sending logic before this node"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Extract token from Authorization header\nconst authHeader = $('Webhook').item.json.headers.authorization || '';\nconst token = authHeader.replace('Bearer ', '');\n\nreturn {\n  token: token,\n  hasToken: token.length > 0\n};"
+      },
+      "id": "3f05d6e7-b237-487f-884b-4023ae4c7046",
+      "name": "Extract Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5648,
+        -1440
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "miomente_partner_portal_users",
+          "mode": "list",
+          "cachedResultName": "miomente_partner_portal_users"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "token",
+              "value": "={{ $json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e96bcdab-f25b-460c-b669-5f4dae3cfdae",
+      "name": "Verify Token in DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -5424,
+        -1440
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "0Wh8S0Mv7yF5IDfG",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "token-valid",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6a7a681a-017f-4d1b-a86e-a55425e7ade2",
+      "name": "Token Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -5200,
+        -1440
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ error: 'Unauthorized' }) }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "dc4db0ef-4a57-4a6d-8b27-3acf0c3bbe83",
+      "name": "401 Unauthorized",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -5200,
+        -1616
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
+                    "rightValue": "change-password",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "39292811-c794-426f-8334-571077738026"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "change-password"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
+                    "rightValue": "get-courses",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bab52a41-f2d8-4842-b28b-dfde9e4ef919"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get-courses"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
+                    "rightValue": "get-course",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ba8693ac-1320-4f96-a5f7-5c351ce752a4"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get-course"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
+                    "rightValue": "update-course",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "90ee0398-3ff5-4147-98f9-25d406b3424f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "update-course"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
+                    "rightValue": "get-dates",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c204f24e-3944-4c29-a4e3-9063ce7d7893"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get-dates"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
+                    "rightValue": "create-date",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "34d80786-7a6d-4da5-a780-12b500dec8be"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create-date"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "71f71f41-d0c8-44f9-8cd1-ab5d498b1ac6",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
+                    "rightValue": "delete-date",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delete-date"
+            },
+            {
+              "outputKey": "update-date",
+              "rules": {
+                "values": [
+                  {
+                    "conditions": {
+                      "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict"
+                      },
+                      "conditions": [
+                        {
+                          "leftValue": "={{ $json.body.action }}",
+                          "rightValue": "update-date",
+                          "operator": {
+                            "type": "string",
+                            "operation": "equals",
+                            "singleValue": true
+                          }
+                        }
+                      ],
+                      "combinator": "and"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
+                    "rightValue": "contact",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "58f35fd1-b4fd-49e6-9a46-3198281232b2"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "contact"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ad3dcd69-f7f6-40c7-8513-4903b8b11483",
+      "name": "Protected Route Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -4768,
+        -1536
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: 'Password changed' }) }}",
+        "options": {}
+      },
+      "id": "0aa2ad61-fe1e-46a2-b660-bdcba266c496",
+      "name": "Change Password Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3456,
+        -2768
+      ],
+      "notesInFlow": true,
+      "notes": "TODO: Verify old password, hash new password, update DB"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.data) }}",
+        "options": {}
+      },
+      "id": "56dc2116-2239-4ea0-80c7-e77cd410cc67",
+      "name": "Get Courses Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3520,
+        -2208
+      ],
+      "notesInFlow": true,
+      "notes": "TODO: Query courses table WHERE user_id = verified user ID"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.data) }}",
+        "options": {}
+      },
+      "id": "83de9d17-d697-483c-bddb-8cc3bddc4a68",
+      "name": "Get Course Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3536,
+        -1760
+      ],
+      "notesInFlow": true,
+      "notes": "TODO: Query single course by ID, verify ownership"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({}) }}",
+        "options": {}
+      },
+      "id": "04849d21-9ad7-40ec-9178-c0111d51fac6",
+      "name": "Update Course Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3728,
+        -1296
+      ],
+      "notesInFlow": true,
+      "notes": "TODO: Upsert course (INSERT or UPDATE based on id existence)"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.data) }}",
+        "options": {}
+      },
+      "id": "8d1c817c-b738-4205-957e-c908caa11927",
+      "name": "Get Dates Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3472,
+        -864
+      ],
+      "notesInFlow": true,
+      "notes": "TODO: Query course_dates WHERE courseId = input"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true }) }}",
+        "options": {}
+      },
+      "id": "a33c8ba3-8e46-4210-8a7e-c9db1c17170c",
+      "name": "Contact Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -4000,
+        368
+      ],
+      "notesInFlow": true,
+      "notes": "TODO: Send email to support with user info and message"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ error: 'Unknown action' }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "494aac52-4498-4c56-bafc-582058cc7acf",
+      "name": "Unknown Action",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -5648,
+        -944
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## AUTH (DONE)",
+        "height": 368,
+        "width": 1360,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        -3696
+      ],
+      "id": "2bc4daa9-c015-4ffd-82f2-13e88b390dd2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## RESET PASSWORD (TODO)",
+        "height": 368,
+        "width": 1360,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        -3216
+      ],
+      "id": "0821d51c-f1c3-4bde-9c9e-68a5f0c025bb",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## CHANGE PASSWORD (DONE)",
+        "height": 368,
+        "width": 1360,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        -2784
+      ],
+      "id": "cd55d509-f562-4c5b-8089-5bd271ac49c6",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## GET COURSES (DONE)",
+        "height": 368,
+        "width": 1360,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        -2352
+      ],
+      "id": "62b894f7-c95a-4312-9d8f-32048f4607f6",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## GET COURSE (DONE)",
+        "height": 368,
+        "width": 1360,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        -1888
+      ],
+      "id": "3679cdaa-cc19-4970-b53b-45d65c361f48",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## UPDATE COURSE (DONE)",
+        "height": 368,
+        "width": 1360,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        -1440
+      ],
+      "id": "a1dd297b-f457-4e49-a075-d6fc9840cd2e",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## GET COURSE DATES (DONE)",
+        "height": 368,
+        "width": 1360,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        -1024
+      ],
+      "id": "99371296-a95d-4ec3-b52c-491ab9343935",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## SEND EMAIL TO SUPPORT (TODO)",
+        "height": 368,
+        "width": 1360,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        256
+      ],
+      "id": "b12ac5e9-ab7b-48f0-8dc6-9792b9e09630",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## TOKEN VALIDATION (TODO)",
+        "height": 464,
+        "width": 800,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -5728,
+        -1632
+      ],
+      "id": "c92de2cd-896f-4f13-bba3-b880888b82b3",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    cpe.entity_id AS 'id',\n    cpev_name.value AS 'title',\n    cpe.sku AS 'sku',\n    CASE \n        WHEN cpei_status.value = 1 THEN 'active'\n        ELSE 'inactive'\n    END AS 'status',\n    cpet_desc.value AS 'description',\n    CONCAT('https://www.miomente.de/media/catalog/product', img.value) AS 'image',\n    ROUND(cpd_price.value, 2) AS 'basePrice',\n    cpev_location.value AS 'location',\n    op.customernumber AS 'customer_number',\n    (\n        SELECT GROUP_CONCAT(DISTINCT o2.operator_id ORDER BY o2.operator_id)\n        FROM miomente_pdf_operator AS o2\n        WHERE o2.customernumber = op.customernumber\n    ) AS 'operator_ids',\n    (\n        SELECT COUNT(*)\n        FROM catalog_product_entity AS s\n        INNER JOIN catalog_product_super_link AS sl\n            ON s.entity_id = sl.product_id\n        INNER JOIN catalog_product_entity_varchar AS sn\n            ON s.entity_id = sn.entity_id\n            AND sn.attribute_id = 60\n            AND sn.store_id = 0\n        INNER JOIN catalog_product_entity_varchar AS sb\n            ON s.entity_id = sb.entity_id\n            AND sb.attribute_id = 717\n            AND sb.store_id = 0\n        WHERE sl.parent_id = cpe.entity_id\n          AND s.type_id = 'simple'\n          AND sb.value IS NOT NULL\n          AND STR_TO_DATE(\n              CONCAT(SUBSTRING_INDEX(sn.value, '-', -3), ' ', sb.value),\n              '%Y-%m-%d %H:%i'\n          ) > NOW()\n    ) AS 'available_dates'\nFROM catalog_product_entity AS cpe\n-- Title\nINNER JOIN catalog_product_entity_varchar AS cpev_name \n    ON cpe.entity_id = cpev_name.entity_id \n    AND cpev_name.attribute_id = 60\n    AND cpev_name.store_id = 0\n-- Status\nLEFT JOIN catalog_product_entity_int AS cpei_status\n    ON cpe.entity_id = cpei_status.entity_id\n    AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4)\n    AND cpei_status.store_id = 0\n-- Description\nLEFT JOIN catalog_product_entity_text AS cpet_desc\n    ON cpe.entity_id = cpet_desc.entity_id\n    AND cpet_desc.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'description' AND entity_type_id = 4)\n    AND cpet_desc.store_id = 0\n-- Image\nLEFT JOIN catalog_product_entity_varchar AS img\n    ON cpe.entity_id = img.entity_id\n    AND img.attribute_id = 74\n    AND img.store_id = 0\n-- Price\nLEFT JOIN catalog_product_entity_decimal AS cpd_price\n    ON cpe.entity_id = cpd_price.entity_id\n    AND cpd_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)\n    AND cpd_price.store_id = 0\n-- Location (attribute_id = 578)\nLEFT JOIN catalog_product_entity_varchar AS cpev_location\n    ON cpe.entity_id = cpev_location.entity_id\n    AND cpev_location.attribute_id = 578\n    AND cpev_location.store_id = 0\n-- Operator (product -> operator_id)\nINNER JOIN catalog_product_entity_varchar AS cpev_operator \n    ON cpe.entity_id = cpev_operator.entity_id \n    AND cpev_operator.attribute_id = 700\n    AND cpev_operator.store_id = 0\n-- Operator table (operator_id -> customernumber)\nINNER JOIN miomente_pdf_operator AS op\n    ON cpev_operator.value = op.operator_id\nWHERE op.customernumber = {{ $json.customer_number.toString()}}\n  AND cpe.type_id = 'configurable'\nGROUP BY cpe.entity_id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -3968,
+        -2208
+      ],
+      "id": "774337f0-22eb-40c2-8b17-cee1e29d6196",
+      "name": "get base courses",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "nX2GY6CtGttP5mMO",
+          "name": "Miomente stage"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.all().map(r => r.json)\nconst data = res\n  .filter(r => r?.id)\n  .map(r => {\n  return {\n    ...r,\n    operator_ids: r.operator_ids.split(',')\n  }\n})\nreturn {data}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3760,
+        -2208
+      ],
+      "id": "7f61d447-a970-4182-8022-4be0a15addb9",
+      "name": "json"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    cpe.entity_id AS 'id',\n    cpev_name.value AS 'title',\n    cpev_location.value AS 'location',\n    cpe.sku AS 'sku',\n    CASE \n        WHEN cpei_status.value = 1 THEN 'active'\n        ELSE 'inactive'\n    END AS 'status',\n    cpet_desc.value AS 'description',\n    CONCAT('https://www.miomente.de/media/catalog/product', img.value) AS 'image',\n    ROUND(cpd_price.value, 2) AS 'basePrice',\n    op.customernumber AS 'customer_number',\n    (\n        SELECT GROUP_CONCAT(DISTINCT o2.operator_id ORDER BY o2.operator_id)\n        FROM miomente_pdf_operator AS o2\n        WHERE o2.customernumber = op.customernumber\n    ) AS 'operator_ids'\nFROM catalog_product_entity AS cpe\n-- Title\nINNER JOIN catalog_product_entity_varchar AS cpev_name \n    ON cpe.entity_id = cpev_name.entity_id \n    AND cpev_name.attribute_id = 60\n    AND cpev_name.store_id = 0\n-- Status\nLEFT JOIN catalog_product_entity_int AS cpei_status\n    ON cpe.entity_id = cpei_status.entity_id\n    AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4)\n    AND cpei_status.store_id = 0\n-- Description\nLEFT JOIN catalog_product_entity_text AS cpet_desc\n    ON cpe.entity_id = cpet_desc.entity_id\n    AND cpet_desc.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'description' AND entity_type_id = 4)\n    AND cpet_desc.store_id = 0\n-- Location\nLEFT JOIN catalog_product_entity_varchar AS cpev_location\n    ON cpe.entity_id = cpev_location.entity_id\n    AND cpev_location.attribute_id = 578\n    AND cpev_location.store_id = 0\n-- Image\nLEFT JOIN catalog_product_entity_varchar AS img\n    ON cpe.entity_id = img.entity_id\n    AND img.attribute_id = 74\n    AND img.store_id = 0\n-- Price\nLEFT JOIN catalog_product_entity_decimal AS cpd_price\n    ON cpe.entity_id = cpd_price.entity_id\n    AND cpd_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)\n    AND cpd_price.store_id = 0\n-- Operator (product -> operator_id)\nINNER JOIN catalog_product_entity_varchar AS cpev_operator \n    ON cpe.entity_id = cpev_operator.entity_id \n    AND cpev_operator.attribute_id = 700\n    AND cpev_operator.store_id = 0\n-- Operator table (operator_id -> customernumber)\nINNER JOIN miomente_pdf_operator AS op\n    ON cpev_operator.value = op.operator_id\nWHERE op.customernumber = {{ $json.customer_number.toString()}}\n  AND cpe.entity_id = {{ $('Webhook').item.json.body.course_id }}\n  AND cpe.type_id = 'configurable'\nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -3984,
+        -1760
+      ],
+      "id": "c8c8f9f1-17d5-4620-848e-9483c884d70b",
+      "name": "get base course",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "nX2GY6CtGttP5mMO",
+          "name": "Miomente stage"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.first().json\n\nif (!res) return {}\n\nconst data = {\n  ...res,\n  operator_ids: res.operator_ids ? res.operator_ids.split(',') : []\n}\nreturn {data}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3744,
+        -1760
+      ],
+      "id": "2ddcd2cb-b2f7-4ecd-b9d9-88a8c1c267f6",
+      "name": "json1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.all().map(r => r.json)\n\nconst data = res\n  .filter(r => r?.id)\n  .map(r => {\n  return {\n    ...r,\n    operator_ids: r.operator_ids.split(',')\n  }\n})\nreturn {data}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3728,
+        -864
+      ],
+      "id": "96b61585-feb4-4786-a398-a5b52595660c",
+      "name": "json2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    simple.entity_id AS 'id',\n    link.parent_id AS 'courseId',\n    CONCAT(\n        SUBSTRING_INDEX(cpev_name.value, '-', -3), \n        'T', \n        cpev_begin.value, \n        ':00Z'\n    ) AS 'dateTime',\n    CAST(IFNULL(cpev_seats.value, 0) AS UNSIGNED) AS 'capacity',\n    0 AS 'booked',\n    TIMESTAMPDIFF(\n        MINUTE,\n        STR_TO_DATE(cpev_begin.value, '%H:%i'),\n        STR_TO_DATE(cpev_end.value, '%H:%i')\n    ) AS 'duration',\n    ROUND(cpd_simple_price.value, 2) AS 'price',\n    op.customernumber AS 'customer_number',\n    (\n        SELECT GROUP_CONCAT(DISTINCT o2.operator_id ORDER BY o2.operator_id)\n        FROM miomente_pdf_operator AS o2\n        -- Price for this simple product (date)\nLEFT JOIN catalog_product_entity_decimal AS cpd_simple_price\n    ON simple.entity_id = cpd_simple_price.entity_id\n    AND cpd_simple_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)\n    AND cpd_simple_price.store_id = 0\n\nWHERE o2.customernumber = op.customernumber\n    ) AS 'operator_ids'\nFROM catalog_product_entity AS simple\n-- Link to configurable\nINNER JOIN catalog_product_super_link AS link\n    ON simple.entity_id = link.product_id\n-- Parent configurable\nINNER JOIN catalog_product_entity AS parent\n    ON link.parent_id = parent.entity_id\n-- Operator (from parent)\nINNER JOIN catalog_product_entity_varchar AS cpev_operator \n    ON parent.entity_id = cpev_operator.entity_id \n    AND cpev_operator.attribute_id = 700\n    AND cpev_operator.store_id = 0\n-- Operator table\nINNER JOIN miomente_pdf_operator AS op\n    ON cpev_operator.value = op.operator_id\n-- Name (to extract date)\nINNER JOIN catalog_product_entity_varchar AS cpev_name \n    ON simple.entity_id = cpev_name.entity_id \n    AND cpev_name.attribute_id = 60\n    AND cpev_name.store_id = 0\n-- Begin time\nLEFT JOIN catalog_product_entity_varchar AS cpev_begin\n    ON simple.entity_id = cpev_begin.entity_id \n    AND cpev_begin.attribute_id = 717\n    AND cpev_begin.store_id = 0\n-- End time\nLEFT JOIN catalog_product_entity_varchar AS cpev_end\n    ON simple.entity_id = cpev_end.entity_id \n    AND cpev_end.attribute_id = 718\n    AND cpev_end.store_id = 0\n-- Seats\nLEFT JOIN catalog_product_entity_varchar AS cpev_seats\n    ON simple.entity_id = cpev_seats.entity_id \n    AND cpev_seats.attribute_id = 720\n    AND cpev_seats.store_id = 0\nWHERE op.customernumber = {{ $json.customer_number.toString()}}\n  AND link.parent_id = {{ $('Webhook').item.json.body.course_id }}\n  AND simple.type_id = 'simple'\n  AND cpev_begin.value IS NOT NULL\n  AND STR_TO_DATE(\n      CONCAT(SUBSTRING_INDEX(cpev_name.value, '-', -3), ' ', cpev_begin.value),\n      '%Y-%m-%d %H:%i'\n  ) > NOW()\nGROUP BY simple.entity_id\nORDER BY STR_TO_DATE(\n    CONCAT(SUBSTRING_INDEX(cpev_name.value, '-', -3), ' ', cpev_begin.value),\n    '%Y-%m-%d %H:%i'\n) ASC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -4000,
+        -864
+      ],
+      "id": "771a8eed-a9ef-453a-b035-1aeca9460c85",
+      "name": "get events by base course",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "nX2GY6CtGttP5mMO",
+          "name": "Miomente stage"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "84c27a2a-8134-4362-8b00-2bce70f6bd20",
+              "leftValue": "={{ $('Webhook').item.json.body?.password ?? \"\" }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "4f08e817-a1e7-4aa2-8750-73643861f7a1",
+              "leftValue": "={{ $('Webhook').item.json.body?.newPassword ?? \"\" }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "65e8c9b4-03fc-4349-8fae-7706803eb7df",
+              "leftValue": "={{ $('Webhook').item.json.body?.password ?? \"\" }}",
+              "rightValue": "={{ $('Verify Token in DB').item.json.password }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3968,
+        -2624
+      ],
+      "id": "7f449556-bcd7-41af-9195-0a99ad0e647c",
+      "name": "passed?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "miomente_partner_portal_users",
+          "mode": "list",
+          "cachedResultName": "miomente_partner_portal_users"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "token": "={{ $json.token }}",
+            "password": "={{ $('Webhook').item.json.body.newPassword }}"
+          },
+          "matchingColumns": [
+            "token"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "password",
+              "displayName": "password",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "token",
+              "displayName": "token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "miomente_id",
+              "displayName": "miomente_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "customer_number",
+              "displayName": "customer_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9c1a00f0-0ada-4f61-a85c-317f6b1d7cc4",
+      "name": "Change password in DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -3648,
+        -2768
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "0Wh8S0Mv7yF5IDfG",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, message: 'Incorrect old password' }) }}",
+        "options": {}
+      },
+      "id": "38242fbb-fb67-46eb-8b62-80095866b569",
+      "name": "Change Password Response1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3456,
+        -2576
+      ],
+      "notesInFlow": true,
+      "notes": "TODO: Verify old password, hash new password, update DB"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "START TRANSACTION;\n\nUPDATE catalog_product_entity_varchar \nSET value = '{{ $('Webhook').item.json.body.title.trim()}}'\nWHERE entity_id = {{ $('Webhook').item.json.body.id }} \n  AND attribute_id = 60 \n  AND store_id = 0;\n\nUPDATE catalog_product_entity_decimal \nSET value = {{ $('Webhook').item.json.body.basePrice }}\nWHERE entity_id = {{ $('Webhook').item.json.body.id }}\n  AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)\n  AND store_id = 0;\n\nUPDATE catalog_product_entity_int \nSET value = CASE \n    WHEN '{{ $('Webhook').item.json.body.status }}' = 'active' THEN 1 \n    ELSE 2 \nEND\nWHERE entity_id = {{ $('Webhook').item.json.body.id }}\n  AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4)\n  AND store_id = 0;\n\nCOMMIT;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -3984,
+        -1296
+      ],
+      "id": "34c083a4-6737-44a3-8e0b-007ff189660e",
+      "name": "update course",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "nX2GY6CtGttP5mMO",
+          "name": "Miomente stage"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Parse input\nSET @parent_id = {{ $('Webhook').item.json.body.courseId }};\nSET @date_time = '{{ $('Webhook').item.json.body.dateTime }}';\nSET @capacity = {{ $('Webhook').item.json.body.capacity }};\nSET @duration = {{ $('Webhook').item.json.body.duration ?? 180 }};\n\n-- Extract date and time from ISO string\nSET @event_date = DATE_FORMAT(STR_TO_DATE(@date_time, '%Y-%m-%dT%H:%i:%s'), '%Y-%m-%d');\nSET @begin_time = DATE_FORMAT(STR_TO_DATE(@date_time, '%Y-%m-%dT%H:%i:%s'), '%H:%i');\nSET @end_time = DATE_FORMAT(DATE_ADD(STR_TO_DATE(@date_time, '%Y-%m-%dT%H:%i:%s'), INTERVAL @duration MINUTE), '%H:%i');\n\n-- Get parent course data\nSET @attribute_set_id = (SELECT attribute_set_id FROM catalog_product_entity WHERE entity_id = @parent_id);\nSET @parent_sku = (SELECT sku FROM catalog_product_entity WHERE entity_id = @parent_id);\nSET @parent_name = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 60 AND store_id = 0);\nSET @operator_id = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 700 AND store_id = 0);\nSET @location = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 578 AND store_id = 0);\nSET @tax_class_id = (SELECT value FROM catalog_product_entity_int WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'tax_class_id' AND entity_type_id = 4) AND store_id = 0);\nSET @price = (SELECT value FROM catalog_product_entity_decimal WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4) AND store_id = 0);\n\n-- Generate SKU and name\nSET @sku = CONCAT(@parent_sku, '-', @begin_time, '-', @event_date);\nSET @name = CONCAT(@parent_name, '-', @event_date);\n\nSTART TRANSACTION;\n\n-- 1. Insert main product entity\nINSERT INTO catalog_product_entity (\n    entity_type_id,\n    attribute_set_id,\n    type_id,\n    sku,\n    created_at,\n    updated_at\n) VALUES (\n    4,\n    @attribute_set_id,\n    'simple',\n    @sku,\n    NOW(),\n    NOW()\n);\n\nSET @new_id = LAST_INSERT_ID();\n\n-- 2. Insert VARCHAR attributes\nINSERT INTO catalog_product_entity_varchar (entity_type_id, attribute_id, store_id, entity_id, value)\nVALUES\n    (4, 60, 0, @new_id, @name),\n    (4, 700, 0, @new_id, @operator_id),\n    (4, 717, 0, @new_id, @begin_time),\n    (4, 718, 0, @new_id, @end_time),\n    (4, 720, 0, @new_id, @capacity),\n    (4, 578, 0, @new_id, @location);\n\n-- 3. Insert INT attributes\nINSERT INTO catalog_product_entity_int (entity_type_id, attribute_id, store_id, entity_id, value)\nVALUES\n    (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4), 0, @new_id, 1),\n    (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'visibility' AND entity_type_id = 4), 0, @new_id, 1),\n    (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'tax_class_id' AND entity_type_id = 4), 0, @new_id, @tax_class_id);\n\n-- 4. Insert DECIMAL attributes\nINSERT INTO catalog_product_entity_decimal (entity_type_id, attribute_id, store_id, entity_id, value)\nVALUES (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4), 0, @new_id, @price);\n\n-- 5. Link to parent\nINSERT INTO catalog_product_super_link (product_id, parent_id)\nVALUES (@new_id, @parent_id);\n\n-- 6. Insert stock item\nINSERT INTO cataloginventory_stock_item (\n    product_id, stock_id, qty, is_in_stock, manage_stock, use_config_manage_stock\n) VALUES (\n    @new_id, 1, @capacity, 1, 1, 1\n);\n\n-- 7. Insert stock status\nINSERT INTO cataloginventory_stock_status (\n    product_id, website_id, stock_id, qty, stock_status\n) VALUES (\n    @new_id, 1, 1, @capacity, 1\n);\n\nCOMMIT;\n\n-- Return new course date\nSELECT\n    @new_id AS 'id',\n    @parent_id AS 'courseId',\n    @date_time AS 'dateTime',\n    @capacity AS 'capacity',\n    0 AS 'booked',\n    @duration AS 'duration';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -4000,
+        -512
+      ],
+      "id": "b3c20236-59bd-4ca5-be71-9369ea7566d5",
+      "name": "Create Date SQL",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "nX2GY6CtGttP5mMO",
+          "name": "Miomente stage"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "e4248acc-e7a7-438e-a5b8-cdd38b038e87",
+      "name": "Create Date Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3728,
+        -512
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SET @event_id = {{ $('Webhook').item.json.body.date_id }};\n\nSTART TRANSACTION;\n\n-- Delete from EAV tables\nDELETE FROM catalog_product_entity_varchar WHERE entity_id = @event_id;\nDELETE FROM catalog_product_entity_text WHERE entity_id = @event_id;\nDELETE FROM catalog_product_entity_int WHERE entity_id = @event_id;\nDELETE FROM catalog_product_entity_decimal WHERE entity_id = @event_id;\nDELETE FROM catalog_product_entity_datetime WHERE entity_id = @event_id;\n\n-- Delete from link table\nDELETE FROM catalog_product_super_link WHERE product_id = @event_id;\n\n-- Delete from stock tables\nDELETE FROM cataloginventory_stock_item WHERE product_id = @event_id;\nDELETE FROM cataloginventory_stock_status WHERE product_id = @event_id;\n\n-- Delete from main entity table\nDELETE FROM catalog_product_entity WHERE entity_id = @event_id;\n\nCOMMIT;\n\nSELECT ROW_COUNT() AS 'deleted';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -4000,
+        -48
+      ],
+      "id": "e92b0c62-b2df-4667-b082-a24ddd08c711",
+      "name": "Delete Date SQL",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "nX2GY6CtGttP5mMO",
+          "name": "Miomente stage"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true }) }}",
+        "options": {}
+      },
+      "id": "d16675aa-1e9e-4c97-b81b-a0dc25bdc321",
+      "name": "Delete Date Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3728,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## CREATE COURSE DATE (TODO)",
+        "height": 368,
+        "width": 1360,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        -608
+      ],
+      "id": "6049e175-5328-4cd3-bb06-896bd4e2cfb3",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## DELETE COURSE DATE (TODO)",
+        "height": 368,
+        "width": 1360,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        -176
+      ],
+      "id": "605b09da-de06-4c90-b10a-70f4f1f5d2a4",
+      "name": "Sticky Note11"
+    },
+    {
+      "id": "update-date-sql-node-001",
+      "name": "Update Date SQL",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.4,
+      "position": [
+        2400,
+        1200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE catalog_product_entity_decimal \nSET value = {{ $('Webhook').item.json.body.price }}\nWHERE entity_id = {{ $('Webhook').item.json.body.date_id }}\n  AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)\n  AND store_id = 0;"
+      },
+      "credentials": {
+        "mySql": {
+          "id": "rOK8ngpIvxGSM7Yh",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "id": "update-date-response-node-001",
+      "name": "Update Date Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2600,
+        1200
+      ],
+      "parameters": {
+        "options": {},
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Date updated successfully\" } }}"
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Route by Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Action": {
+      "main": [
+        [
+          {
+            "node": "Find User by Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reset Password Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unknown Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find User by Email": {
+      "main": [
+        [
+          {
+            "node": "Verify Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Credentials": {
+      "main": [
+        [
+          {
+            "node": "Generate Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Login Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Token": {
+      "main": [
+        [
+          {
+            "node": "Save Token to DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Token to DB": {
+      "main": [
+        [
+          {
+            "node": "Login Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Token": {
+      "main": [
+        [
+          {
+            "node": "Verify Token in DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Token in DB": {
+      "main": [
+        [
+          {
+            "node": "Token Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token Valid?": {
+      "main": [
+        [
+          {
+            "node": "Protected Route Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "401 Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Protected Route Switch": {
+      "main": [
+        [
+          {
+            "node": "passed?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "get base courses",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "get base course",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "update course",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "get events by base course",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Date SQL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete Date SQL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contact Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ],
+      "update-date": [
+        [
+          {
+            "node": "Update Date SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get base courses": {
+      "main": [
+        [
+          {
+            "node": "json",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "json": {
+      "main": [
+        [
+          {
+            "node": "Get Courses Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get base course": {
+      "main": [
+        [
+          {
+            "node": "json1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "json1": {
+      "main": [
+        [
+          {
+            "node": "Get Course Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "json2": {
+      "main": [
+        [
+          {
+            "node": "Get Dates Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get events by base course": {
+      "main": [
+        [
+          {
+            "node": "json2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "passed?": {
+      "main": [
+        [
+          {
+            "node": "Change password in DB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Change Password Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Change password in DB": {
+      "main": [
+        [
+          {
+            "node": "Change Password Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update course": {
+      "main": [
+        [
+          {
+            "node": "Update Course Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Date SQL": {
+      "main": [
+        [
+          {
+            "node": "Create Date Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Date SQL": {
+      "main": [
+        [
+          {
+            "node": "Delete Date Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Date SQL": {
+      "main": [
+        [
+          {
+            "node": "Update Date Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5e1f4a4d-7050-4dc9-a94d-77bc86df0161",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f893a509eeee6b092086d07e58433a4356cbbf029f89f0eb3c157ad85ed9f33c"
+  },
+  "id": "eKL8d5pDOgdlo3xD",
+  "tags": [
+    {
+      "updatedAt": "2025-07-12T13:04:03.605Z",
+      "createdAt": "2025-07-12T13:04:03.605Z",
+      "id": "W9o8r7YeRbv678pp",
+      "name": "Vadim Tikhonov | 602"
+    }
+  ]
+}

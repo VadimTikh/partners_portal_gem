@@ -41,13 +41,13 @@ export const MOCK_COURSES: Course[] = [
 
 export const MOCK_DATES: Record<number, CourseDate[]> = {
   1: [
-    { id: 1, courseId: 1, dateTime: '2024-02-15T18:00:00Z', capacity: 12, booked: 8, duration: 180 },
-    { id: 2, courseId: 1, dateTime: '2024-02-22T18:00:00Z', capacity: 12, booked: 12, duration: 180 },
-    { id: 3, courseId: 1, dateTime: '2024-03-01T18:00:00Z', capacity: 12, booked: 4, duration: 180 },
+    { id: 1, courseId: 1, dateTime: '2024-02-15T18:00:00Z', capacity: 12, booked: 8, duration: 180, price: 89.00 },
+    { id: 2, courseId: 1, dateTime: '2024-02-22T18:00:00Z', capacity: 12, booked: 12, duration: 180, price: 89.00 },
+    { id: 3, courseId: 1, dateTime: '2024-03-01T18:00:00Z', capacity: 12, booked: 4, duration: 180, price: 129.00 },
   ],
   2: [
-    { id: 4, courseId: 2, dateTime: '2024-02-20T19:00:00Z', capacity: 20, booked: 15, duration: 120 },
-    { id: 5, courseId: 2, dateTime: '2024-03-05T19:00:00Z', capacity: 20, booked: 5, duration: 120 },
+    { id: 4, courseId: 2, dateTime: '2024-02-20T19:00:00Z', capacity: 20, booked: 15, duration: 120, price: 59.00 },
+    { id: 5, courseId: 2, dateTime: '2024-03-05T19:00:00Z', capacity: 20, booked: 5, duration: 120, price: 79.00 },
   ],
   3: []
 };
@@ -131,6 +131,17 @@ export const mockApi = {
       const index = MOCK_DATES[Number(courseId)].findIndex(d => d.id === dateId);
       if (index !== -1) {
         MOCK_DATES[Number(courseId)].splice(index, 1);
+        return;
+      }
+    }
+  },
+
+  updateDate: async (dateId: number, price: number): Promise<void> => {
+    await delay(400);
+    for (const courseId in MOCK_DATES) {
+      const date = MOCK_DATES[Number(courseId)].find(d => d.id === dateId);
+      if (date) {
+        date.price = price;
         return;
       }
     }

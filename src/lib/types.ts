@@ -17,6 +17,7 @@ export interface CourseDate {
   capacity: number;
   booked: number;
   duration?: number; // Duration in minutes
+  price: number; // Price for this specific date
 }
 
 export interface User {

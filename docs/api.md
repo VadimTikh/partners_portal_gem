@@ -268,7 +268,8 @@ Retrieve all available dates/events for a specific course.
     "dateTime": "2025-03-15T14:00:00.000Z",
     "capacity": 20,
     "booked": 5,
-    "duration": 180
+    "duration": 180,
+    "price": 99.99
   },
   {
     "id": 2,
@@ -276,7 +277,8 @@ Retrieve all available dates/events for a specific course.
     "dateTime": "2025-03-22T14:00:00.000Z",
     "capacity": 20,
     "booked": 12,
-    "duration": 180
+    "duration": 180,
+    "price": 149.99
   }
 ]
 ```
@@ -290,6 +292,7 @@ interface CourseDate {
   capacity: number;
   booked: number;
   duration?: number; // Duration in minutes
+  price: number; // Price for this specific date
 }
 ```
 
@@ -365,6 +368,38 @@ Delete an existing date/event from a course.
 **Notes:**
 - The date will be permanently deleted
 - This action cannot be undone
+
+---
+
+### 9. Update Course Date
+
+Update the price of an existing date/event.
+
+**Action:** `update-date`
+
+**URL:** `POST /api/proxy?action=update-date`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "date_id": 1,
+  "price": 149.99
+}
+```
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+**Notes:**
+- Only the price can be updated for an existing date
+- The price is specific to this date and can differ from the course's basePrice
+- Use this to set custom pricing for specific dates (e.g., holiday pricing, early bird rates)
 
 ---
 
@@ -530,6 +565,7 @@ interface CourseDate {
   capacity: number;
   booked: number;
   duration?: number; // Duration in minutes
+  price: number; // Price for this specific date (can differ from course basePrice)
 }
 ```
 
