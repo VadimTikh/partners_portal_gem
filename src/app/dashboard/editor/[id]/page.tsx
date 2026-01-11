@@ -162,6 +162,16 @@ export default function EditorPage() {
       toast.error('Please save the course first before adding dates');
       return;
     }
+
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() + 2);
+    minDate.setHours(0, 0, 0, 0);
+
+    if (newDateForm.dateTime < minDate) {
+      toast.error(`Date must be at least 2 days in the future (from ${format(minDate, 'PPP')})`);
+      return;
+    }
+
     try {
       await createDateMutation.mutateAsync({
         courseId: Number(id),
@@ -171,8 +181,12 @@ export default function EditorPage() {
         price: newDateForm.price,
       });
       setIsAddDateDialogOpen(false);
+      
+      const nextDate = new Date();
+      nextDate.setDate(nextDate.getDate() + 2);
+
       setNewDateForm({
-        dateTime: new Date(),
+        dateTime: nextDate,
         capacity: 10,
         duration: 180,
         price: course?.basePrice || 0,
@@ -348,8 +362,10 @@ export default function EditorPage() {
                     <Button
                         size="sm"
                         onClick={() => {
+                            const nextDate = new Date();
+                            nextDate.setDate(nextDate.getDate() + 2);
                             setNewDateForm({
-                                dateTime: new Date(),
+                                dateTime: nextDate,
                                 capacity: 10,
                                 duration: 180,
                                 price: course?.basePrice || 0,
@@ -507,6 +523,12 @@ export default function EditorPage() {
                         d.setHours(current.getHours(), current.getMinutes());
                         setNewDateForm({ ...newDateForm, dateTime: d });
                       }
+                    }}
+                    disabled={(date) => {
+                        const min = new Date();
+                        min.setDate(min.getDate() + 2);
+                        min.setHours(0, 0, 0, 0);
+                        return date < min;
                     }}
                     initialFocus
                   />
