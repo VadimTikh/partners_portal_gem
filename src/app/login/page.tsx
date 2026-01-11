@@ -115,10 +115,10 @@ export default function LoginPage() {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-center hidden">
+        <CardFooter className="flex justify-center">
           <Dialog open={isForgotPasswordOpen} onOpenChange={setIsForgotPasswordOpen}>
             <DialogTrigger asChild>
-              <Button variant="link" className="px-0 text-sm" disabled={true}>
+              <Button variant="link" className="px-0 text-sm">
                 {t.common.forgotPassword}
               </Button>
             </DialogTrigger>

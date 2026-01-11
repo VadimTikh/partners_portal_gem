@@ -148,6 +148,29 @@ export const api = {
     });
   },
 
+  verifyResetToken: async (token: string): Promise<{ valid: boolean; email?: string }> => {
+    if (USE_MOCK) return mockApi.verifyResetToken(token);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    const response = await axios.post(API_URL, { token }, {
+      params: { action: 'verify-reset-token' }
+    });
+    return response.data;
+  },
+
+  setNewPassword: async (token: string, newPassword: string): Promise<void> => {
+    if (USE_MOCK) return mockApi.setNewPassword(token, newPassword);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    const response = await axios.post(API_URL, { token, newPassword }, {
+      params: { action: 'set-new-password' }
+    });
+
+    if (response.data && response.data.success === false) {
+      throw new Error(response.data.message || 'Failed to set new password');
+    }
+  },
+
   sendContactMessage: async (subject: string, message: string): Promise<void> => {
     if (USE_MOCK) return mockApi.sendContactMessage(subject, message);
 

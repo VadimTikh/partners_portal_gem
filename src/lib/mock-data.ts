@@ -154,7 +154,26 @@ export const mockApi = {
 
   resetPassword: async (email: string): Promise<void> => {
     await delay(500);
-    console.log('Mock password reset for:', email);
+    console.log('Mock password reset request for:', email);
+    // In mock mode, always return success (no email actually sent)
+  },
+
+  verifyResetToken: async (token: string): Promise<{ valid: boolean; email?: string }> => {
+    await delay(300);
+    // Mock: accept any token starting with 'valid-'
+    if (token.startsWith('valid-')) {
+      return { valid: true, email: 'demo@miomente.com' };
+    }
+    return { valid: false };
+  },
+
+  setNewPassword: async (token: string, newPassword: string): Promise<void> => {
+    await delay(500);
+    console.log('Mock set new password:', { token, newPassword });
+    // Mock: accept any token starting with 'valid-'
+    if (!token.startsWith('valid-')) {
+      throw new Error('Invalid or expired reset token');
+    }
   },
 
   sendContactMessage: async (subject: string, message: string): Promise<void> => {
