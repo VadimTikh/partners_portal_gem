@@ -1,7 +1,9 @@
-NOTES ABOUT CREATE NEW COURSE (from partners perspective while filling request)
+# Task Complete
 
+Fixed error in manager dashboard:
+```
+Cannot read properties of undefined (reading 'toLowerCase')
+src/app/manager/requests/page.tsx (73:20)
+```
 
-Not to ask for sku at all
-Do not ask for course image at all
-Do not redirect back to courses list after partner pressed Save Changes, let him stay on that page and suggest adding dates
-in Events management at that page (creating new course) do not show Booked column
+**Solution**: Added optional chaining (`?.`) and null fallbacks for `request.name`, `request.partnerName`, `request.location`, `request.basePrice`, and `request.partnerDescription` to handle cases where these fields might be undefined.

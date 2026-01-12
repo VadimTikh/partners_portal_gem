@@ -69,10 +69,12 @@ export default function ManagerRequestsPage() {
   });
 
   const filteredRequests = requests?.filter((request: CourseRequest) => {
+    const search = searchQuery.toLowerCase();
     const matchesSearch =
-      request.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.partnerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.location.toLowerCase().includes(searchQuery.toLowerCase());
+      !searchQuery ||
+      (request.name?.toLowerCase().includes(search)) ||
+      (request.partnerName?.toLowerCase().includes(search)) ||
+      (request.location?.toLowerCase().includes(search));
 
     const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
 
@@ -139,10 +141,10 @@ export default function ManagerRequestsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-lg">{request.name}</CardTitle>
+                    <CardTitle className="text-lg">{request.name || '-'}</CardTitle>
                     <CardDescription className="mt-1">
-                      {request.partnerName} &middot; {request.location} &middot;{' '}
-                      {request.basePrice.toFixed(2)} €
+                      {request.partnerName || '-'} &middot; {request.location || '-'} &middot;{' '}
+                      {(request.basePrice ?? 0).toFixed(2)} €
                     </CardDescription>
                   </div>
                   {getStatusBadge(request.status, t)}
@@ -150,7 +152,7 @@ export default function ManagerRequestsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                  {request.partnerDescription}
+                  {request.partnerDescription || '-'}
                 </p>
 
                 <div className="flex items-center justify-between">
