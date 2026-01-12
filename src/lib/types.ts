@@ -38,6 +38,8 @@ export interface Partner {
   email: string;
   companyName: string;
   coursesCount: number;
+  activeCoursesCount?: number;
+  availableDatesCount?: number;
   pendingRequestsCount: number;
 }
 

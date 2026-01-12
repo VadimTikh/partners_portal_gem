@@ -22,10 +22,21 @@ export default function PartnersPage() {
   });
 
   const filteredPartners = partners?.filter((partner: Partner) =>
-    partner.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    partner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    partner.email.toLowerCase().includes(searchQuery.toLowerCase())
+    partner.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    partner.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    partner.email?.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
+
+  // Sort by: 1. available dates (desc), 2. active courses (desc)
+  const sortedPartners = [...filteredPartners].sort((a, b) => {
+    const datesA = a.availableDatesCount ?? 0;
+    const datesB = b.availableDatesCount ?? 0;
+    if (datesB !== datesA) return datesB - datesA;
+
+    const coursesA = a.activeCoursesCount ?? 0;
+    const coursesB = b.activeCoursesCount ?? 0;
+    return coursesB - coursesA;
+  });
 
   if (isLoading) {
     return (
@@ -55,7 +66,7 @@ export default function PartnersPage() {
         />
       </div>
 
-      {filteredPartners.length === 0 ? (
+      {sortedPartners.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <p className="text-lg font-medium">{t.manager.noPartners}</p>
@@ -63,7 +74,7 @@ export default function PartnersPage() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredPartners.map((partner: Partner) => (
+          {sortedPartners.map((partner: Partner) => (
             <Card key={partner.id}>
               <CardHeader>
                 <CardTitle>{partner.companyName}</CardTitle>
@@ -74,8 +85,12 @@ export default function PartnersPage() {
 
                 <div className="flex items-center gap-4 mb-4">
                   <div className="text-center">
-                    <p className="text-2xl font-bold">{partner.coursesCount}</p>
-                    <p className="text-xs text-muted-foreground">{t.manager.coursesCount}</p>
+                    <p className="text-2xl font-bold">{partner.availableDatesCount ?? 0}</p>
+                    <p className="text-xs text-muted-foreground">{t.manager.availableDates}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">{partner.activeCoursesCount ?? 0}</p>
+                    <p className="text-xs text-muted-foreground">{t.manager.activeCourses}</p>
                   </div>
                   {partner.pendingRequestsCount > 0 && (
                     <div className="text-center">

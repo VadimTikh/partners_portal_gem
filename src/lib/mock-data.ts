@@ -23,6 +23,8 @@ export const MOCK_PARTNERS: Partner[] = [
     email: 'demo@miomente.com',
     companyName: 'Food Atlas GmbH',
     coursesCount: 3,
+    activeCoursesCount: 2,
+    availableDatesCount: 5,
     pendingRequestsCount: 1,
   },
   {
@@ -31,6 +33,8 @@ export const MOCK_PARTNERS: Partner[] = [
     email: 'anna@weinschule.de',
     companyName: 'Weinschule Berlin',
     coursesCount: 5,
+    activeCoursesCount: 4,
+    availableDatesCount: 12,
     pendingRequestsCount: 2,
   },
   {
@@ -39,6 +43,8 @@ export const MOCK_PARTNERS: Partner[] = [
     email: 'marco@kochstudio.de',
     companyName: 'Kochstudio München',
     coursesCount: 8,
+    activeCoursesCount: 6,
+    availableDatesCount: 3,
     pendingRequestsCount: 0,
   },
 ];
