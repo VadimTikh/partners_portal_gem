@@ -27,11 +27,13 @@ const getStatusBadge = (status: CourseRequestStatus, t: ReturnType<typeof useI18
       label: t.requests.statusPending,
       variant: 'secondary' as const,
       icon: Clock,
+      className: undefined as string | undefined,
     },
     in_moderation: {
       label: t.requests.statusInModeration,
       variant: 'default' as const,
       icon: AlertCircle,
+      className: undefined as string | undefined,
     },
     approved: {
       label: t.requests.statusApproved,
@@ -43,6 +45,7 @@ const getStatusBadge = (status: CourseRequestStatus, t: ReturnType<typeof useI18
       label: t.requests.statusRejected,
       variant: 'destructive' as const,
       icon: XCircle,
+      className: undefined as string | undefined,
     },
   };
 
