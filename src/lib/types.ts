@@ -79,6 +79,8 @@ export interface CourseRequestDate {
 // Data for creating full course from request (manager fills)
 export interface CreateCourseFromRequest {
   requestId: number;
+  // Title from partner (manager can edit)
+  name?: string; // Course title - pre-filled from request, editable by manager
   // Required fields manager must fill
   description: string; // Full HTML description
   shortDescription: string; // Short teaser

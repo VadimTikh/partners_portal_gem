@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -40,6 +40,7 @@ import {
 import { toast } from 'sonner';
 
 const createCourseSchema = z.object({
+  name: z.string().min(3, 'Title is required'),
   subtitle: z.string().min(3, 'Subtitle is required'),
   description: z.string().min(50, 'Description must be at least 50 characters'),
   shortDescription: z.string().min(20, 'Short description must be at least 20 characters'),
@@ -116,10 +117,12 @@ export default function RequestDetailPage() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<CreateCourseFormData>({
     resolver: zodResolver(createCourseSchema),
     defaultValues: {
+      name: '',
       subtitle: '',
       description: '',
       shortDescription: '',
@@ -130,6 +133,23 @@ export default function RequestDetailPage() {
       categoryIds: '',
     },
   });
+
+  // Pre-fill form with request data when loaded
+  useEffect(() => {
+    if (request) {
+      reset({
+        name: request.name || '',
+        subtitle: '',
+        description: '',
+        shortDescription: request.partnerDescription || '',
+        beginTime: '18:00',
+        endTime: '21:00',
+        seats: '10',
+        participants: '2-10 Personen',
+        categoryIds: '',
+      });
+    }
+  }, [request, reset]);
 
   const updateStatusMutation = useMutation({
     mutationFn: ({
@@ -415,6 +435,16 @@ export default function RequestDetailPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit(onCreateCourse)} className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
+              {/* Course Title (from partner, editable) */}
+              <div className="col-span-2 space-y-2">
+                <Label>{t.manager.courseTitleLabel}</Label>
+                <Input {...register('name')} />
+                {errors.name && (
+                  <p className="text-sm text-destructive">{errors.name.message}</p>
+                )}
+                <p className="text-xs text-muted-foreground">{t.manager.courseTitleHint}</p>
+              </div>
+
               <div className="col-span-2 space-y-2">
                 <Label>{t.manager.subtitleLabel}</Label>
                 <Input placeholder={t.manager.subtitlePlaceholder} {...register('subtitle')} />
