@@ -5,7 +5,7 @@ export const dictionaries = {
     common: {
       dashboard: 'Dashboard',
       myCourses: 'Meine Kurse',
-      addNewCourse: 'Neuen Kurs anfragen',
+      addNewCourse: 'Neuen Kurs hinzufügen',
       myRequests: 'Meine Anfragen',
       contactSupport: 'Support kontaktieren',
       settings: 'Einstellungen',
@@ -126,7 +126,7 @@ export const dictionaries = {
     },
     // Course Request translations
     courseRequest: {
-      title: 'Neuen Kurs anfragen',
+      title: 'Neuen Kurs hinzufügen',
       description: 'Füllen Sie das Formular aus, um einen neuen Kurs zur Prüfung einzureichen. Unser Team wird Ihre Anfrage prüfen und Sie benachrichtigen.',
       nameLabel: 'Kursname',
       namePlaceholder: 'z.B. Veganes Sushi Workshop',
@@ -221,7 +221,7 @@ export const dictionaries = {
     common: {
       dashboard: 'Dashboard',
       myCourses: 'My Courses',
-      addNewCourse: 'Request New Course',
+      addNewCourse: 'Add New Course',
       myRequests: 'My Requests',
       contactSupport: 'Contact Support',
       settings: 'Settings',
@@ -342,7 +342,7 @@ export const dictionaries = {
     },
     // Course Request translations
     courseRequest: {
-      title: 'Request New Course',
+      title: 'Add New Course',
       description: 'Fill out the form to submit a new course for review. Our team will review your request and notify you.',
       nameLabel: 'Course Name',
       namePlaceholder: 'e.g. Vegan Sushi Workshop',
