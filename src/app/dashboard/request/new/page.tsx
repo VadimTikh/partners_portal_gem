@@ -202,14 +202,14 @@ export default function NewCourseRequestPage() {
                   className="grid grid-cols-2 md:grid-cols-6 gap-3 p-4 border rounded-lg bg-muted/30"
                 >
                   {/* Date Picker */}
-                  <div className="col-span-2">
+                  <div className="col-span-2 flex flex-col">
                     <Label className="text-xs">{t.courseRequest.dateLabel}</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            'w-full justify-start text-left font-normal mt-1',
+                            'w-full justify-start text-left font-normal mt-auto',
                             !reqDate.date && 'text-muted-foreground'
                           )}
                         >
@@ -230,18 +230,18 @@ export default function NewCourseRequestPage() {
                   </div>
 
                   {/* Time */}
-                  <div>
+                  <div className="flex flex-col">
                     <Label className="text-xs">{t.courseRequest.timeLabel}</Label>
                     <Input
                       type="time"
                       value={reqDate.time}
                       onChange={(e) => updateDate(reqDate.id, 'time', e.target.value)}
-                      className="mt-1"
+                      className="mt-auto"
                     />
                   </div>
 
                   {/* Duration */}
-                  <div>
+                  <div className="flex flex-col">
                     <Label className="text-xs">{t.courseRequest.durationLabel}</Label>
                     <Input
                       type="number"
@@ -249,26 +249,26 @@ export default function NewCourseRequestPage() {
                       step="30"
                       value={reqDate.duration}
                       onChange={(e) => updateDate(reqDate.id, 'duration', Number(e.target.value))}
-                      className="mt-1"
+                      className="mt-auto"
                     />
                   </div>
 
                   {/* Capacity */}
-                  <div>
+                  <div className="flex flex-col">
                     <Label className="text-xs">{t.courseRequest.capacityLabel}</Label>
                     <Input
                       type="number"
                       min="1"
                       value={reqDate.capacity}
                       onChange={(e) => updateDate(reqDate.id, 'capacity', Number(e.target.value))}
-                      className="mt-1"
+                      className="mt-auto"
                     />
                   </div>
 
                   {/* Custom Price + Delete */}
-                  <div>
+                  <div className="flex flex-col">
                     <Label className="text-xs">{t.courseRequest.customPriceLabel}</Label>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-auto">
                       <Input
                         type="number"
                         min="0"
