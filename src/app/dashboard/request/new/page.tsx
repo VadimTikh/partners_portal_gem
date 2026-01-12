@@ -79,7 +79,7 @@ export default function NewCourseRequestPage() {
     const formattedDates: CourseRequestDate[] = requestedDates
       .filter((d) => d.date)
       .map((d) => ({
-        dateTime: `${format(d.date!, 'yyyy-MM-dd')}T${d.time}:00Z`,
+        dateTime: `${format(d.date!, 'yyyy-MM-dd')}T${d.time}:00`,
         duration: d.duration,
         capacity: d.capacity,
         customPrice: d.customPrice,
