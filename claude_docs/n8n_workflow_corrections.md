@@ -198,16 +198,43 @@ GROUP BY customer_number;
 
 ## 4. Изменения в MySQL Queries (Magento)
 
+### ВАЖНО: Понимание структуры operator_id vs customernumber
+
+В Magento таблица `miomente_pdf_operator` имеет ДВА разных поля:
+- `operator_id` - уникальный ID каждой локации оператора (4489, 4490, 4491...)
+- `customernumber` - Kundennummer, группирует несколько операторов одного клиента ("126734")
+
+**Пример:**
+```
+Customer (customernumber: "126734")
+    ├── Operator 4489 (Food Atlas Hamburg)
+    ├── Operator 4490 (Food Atlas Berlin)
+    └── Operator 4491 (Food Atlas München)
+```
+
+**Соответствие:**
+- `customer_number` в PostgreSQL = `customernumber` в Magento (НЕ `operator_id`!)
+
 ### 4.1 Get Operators from Magento
 
-Здесь изменений нет, так как `operator_id` в Magento соответствует `customer_number` в PostgreSQL. Но нужно убедиться, что JOIN работает корректно:
+**Было (НЕПРАВИЛЬНО):**
+```sql
+SELECT
+    o.operator_id as id,
+    ...
+FROM miomente_pdf_operator o
+WHERE o.status = 1
+ORDER BY o.name;
+```
 
+**Должно быть (для получения операторов конкретного клиента):**
 ```sql
 SELECT
     o.operator_id as id,
     o.partnername as name,
     o.contact_email as email,
     o.name as companyName,
+    o.customernumber as customerNumber,
     (
         SELECT COUNT(*) FROM catalog_product_entity cpe
         INNER JOIN catalog_product_entity_varchar cpev
@@ -216,9 +243,59 @@ SELECT
         AND cpe.type_id = 'configurable'
     ) as coursesCount
 FROM miomente_pdf_operator o
-WHERE o.status = 1
+WHERE o.customernumber = '{{ $json.partnerInfo.customer_number }}'
+  AND o.status = 1
 ORDER BY o.name;
 ```
+
+### 4.2 Get Partner Courses (по customer_number)
+
+**Было (НЕПРАВИЛЬНО):**
+```sql
+WHERE cpev_op.value = '{{ $json.body.partner_id }}'
+```
+
+**Должно быть:**
+```sql
+SELECT
+    cpe.entity_id as id,
+    cpe.sku,
+    cpev_name.value as title,
+    cpev_location.value as location,
+    cped_price.value as basePrice,
+    cpei_status.value as status
+FROM catalog_product_entity cpe
+INNER JOIN catalog_product_entity_varchar cpev_op
+    ON cpe.entity_id = cpev_op.entity_id AND cpev_op.attribute_id = 700
+INNER JOIN miomente_pdf_operator op
+    ON cpev_op.value = op.operator_id
+LEFT JOIN catalog_product_entity_varchar cpev_name
+    ON cpe.entity_id = cpev_name.entity_id AND cpev_name.attribute_id = 60 AND cpev_name.store_id = 0
+LEFT JOIN catalog_product_entity_varchar cpev_location
+    ON cpe.entity_id = cpev_location.entity_id AND cpev_location.attribute_id = 578 AND cpev_location.store_id = 0
+LEFT JOIN catalog_product_entity_decimal cped_price
+    ON cpe.entity_id = cped_price.entity_id AND cped_price.attribute_id = 64 AND cped_price.store_id = 0
+LEFT JOIN catalog_product_entity_int cpei_status
+    ON cpe.entity_id = cpei_status.entity_id AND cpei_status.attribute_id = 84 AND cpei_status.store_id = 0
+WHERE cpe.type_id = 'configurable'
+    AND op.customernumber = '{{ $json.body.customer_number }}'
+ORDER BY cpe.created_at DESC;
+```
+
+### 4.3 Create Course - получение operator_id
+
+При создании курса нужно получить `operator_id` из `customernumber`:
+
+```sql
+-- Получить первый operator_id для данного customer_number
+SELECT operator_id
+FROM miomente_pdf_operator
+WHERE customernumber = '{{ $json.customer_number }}'
+  AND status = 1
+LIMIT 1;
+```
+
+Затем использовать этот `operator_id` при вставке в атрибут 700.
 
 ---
 
@@ -290,9 +367,21 @@ ALTER TABLE users RENAME COLUMN partner_id TO customer_number;
 | PostgreSQL колонка | `partner_id` | `customer_number` |
 | PostgreSQL индекс | `idx_course_requests_partner_id` | `idx_course_requests_customer_number` |
 | Code Node переменные | `partner_id`, `partnerId` | `customer_number` |
-| SQL запросы WHERE | `partner_id = ...` | `customer_number = ...` |
+| SQL запросы WHERE (PostgreSQL) | `partner_id = ...` | `customer_number = ...` |
+| SQL запросы WHERE (MySQL/Magento) | `operator_id = ...` | `op.customernumber = ...` (через JOIN) |
 | Login response | `partnerId: user.partner_id` | `partnerId: user.customer_number` |
 | partnerInfo в JWT | `partnerInfo.partnerId` | `partnerInfo.customer_number` |
+
+### Важно: Magento структура
+
+| Magento поле | Описание | Соответствие в PostgreSQL |
+|--------------|----------|---------------------------|
+| `operator_id` | Уникальный ID локации оператора | НЕ используется напрямую |
+| `customernumber` | Kundennummer (группа операторов) | `customer_number` |
+
+При создании курса в Magento:
+1. Получить `operator_id` по `customernumber`
+2. Записать `operator_id` в атрибут 700
 
 ---
 
