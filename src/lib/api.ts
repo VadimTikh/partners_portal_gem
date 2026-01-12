@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Course, CourseDate, User } from './types';
+import { Course, CourseDate, User, CourseRequest, Partner, CourseRequestDate, CreateCourseFromRequest } from './types';
 import { useAuthStore } from './auth';
 import { mockApi } from './mock-data';
 
@@ -175,9 +175,109 @@ export const api = {
     if (USE_MOCK) return mockApi.sendContactMessage(subject, message);
 
     if (!API_URL) throw new Error('API URL not configured');
-    await axios.post(API_URL, { subject, message }, { 
+    await axios.post(API_URL, { subject, message }, {
       ...getAuthConfig(),
       params: { action: 'contact' }
     });
-  }
+  },
+
+  // Course Request APIs
+  getCourseRequests: async (partnerId?: number): Promise<CourseRequest[]> => {
+    if (USE_MOCK) return mockApi.getCourseRequests(partnerId);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    const response = await axios.post(API_URL, { partner_id: partnerId }, {
+      ...getAuthConfig(),
+      params: { action: 'get-course-requests' }
+    });
+    return response.data;
+  },
+
+  getCourseRequest: async (id: number): Promise<CourseRequest | undefined> => {
+    if (USE_MOCK) return mockApi.getCourseRequest(id);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    const response = await axios.post(API_URL, { request_id: id }, {
+      ...getAuthConfig(),
+      params: { action: 'get-course-request' }
+    });
+    return response.data;
+  },
+
+  createCourseRequest: async (request: {
+    name: string;
+    location: string;
+    basePrice: number;
+    partnerDescription: string;
+    requestedDates?: CourseRequestDate[];
+  }): Promise<CourseRequest> => {
+    if (USE_MOCK) return mockApi.createCourseRequest(request);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    const response = await axios.post(API_URL, request, {
+      ...getAuthConfig(),
+      params: { action: 'create-course-request' }
+    });
+    return response.data;
+  },
+
+  updateCourseRequestStatus: async (
+    id: number,
+    status: 'in_moderation' | 'approved' | 'rejected',
+    data?: { rejectionReason?: string; rejectionRecommendations?: string; managerNotes?: string }
+  ): Promise<CourseRequest> => {
+    if (USE_MOCK) return mockApi.updateCourseRequestStatus(id, status, data);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    const response = await axios.post(API_URL, { request_id: id, status, ...data }, {
+      ...getAuthConfig(),
+      params: { action: 'update-course-request-status' }
+    });
+    return response.data;
+  },
+
+  createCourseFromRequest: async (data: CreateCourseFromRequest): Promise<Course> => {
+    if (USE_MOCK) return mockApi.createCourseFromRequest(data);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    const response = await axios.post(API_URL, data, {
+      ...getAuthConfig(),
+      params: { action: 'create-course-from-request' }
+    });
+    return response.data;
+  },
+
+  // Partner APIs (for manager)
+  getPartners: async (): Promise<Partner[]> => {
+    if (USE_MOCK) return mockApi.getPartners();
+
+    if (!API_URL) throw new Error('API URL not configured');
+    const response = await axios.post(API_URL, {}, {
+      ...getAuthConfig(),
+      params: { action: 'get-partners' }
+    });
+    return response.data;
+  },
+
+  getPartner: async (id: number): Promise<Partner | undefined> => {
+    if (USE_MOCK) return mockApi.getPartner(id);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    const response = await axios.post(API_URL, { partner_id: id }, {
+      ...getAuthConfig(),
+      params: { action: 'get-partner' }
+    });
+    return response.data;
+  },
+
+  getPartnerCourses: async (partnerId: number): Promise<Course[]> => {
+    if (USE_MOCK) return mockApi.getPartnerCourses(partnerId);
+
+    if (!API_URL) throw new Error('API URL not configured');
+    const response = await axios.post(API_URL, { partner_id: partnerId }, {
+      ...getAuthConfig(),
+      params: { action: 'get-partner-courses' }
+    });
+    return response.data;
+  },
 };

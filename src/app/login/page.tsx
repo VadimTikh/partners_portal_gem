@@ -47,7 +47,12 @@ export default function LoginPage() {
       const user = await api.login(data.email, data.password);
       login(user, user.token);
       toast.success(t.login.successMessage);
-      router.push('/dashboard');
+      // Redirect based on user role
+      if (user.role === 'manager') {
+        router.push('/manager');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (error) {
       console.error(error);
       toast.error(t.login.invalidCredentials);

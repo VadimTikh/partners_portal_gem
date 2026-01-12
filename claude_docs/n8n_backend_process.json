@@ -14,8 +14,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3136,
-        608
+        -2816,
+        -448
       ]
     },
     {
@@ -30,8 +30,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -7280,
-        -2368
+        -7312,
+        -2304
       ],
       "webhookId": "partner-portal-webhook"
     },
@@ -49,7 +49,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.query.action }}",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
                     "rightValue": "login",
                     "operator": {
                       "type": "string",
@@ -73,7 +73,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.query.action }}",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
                     "rightValue": "reset-password",
                     "operator": {
                       "type": "string",
@@ -97,7 +97,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.query.action }}",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
                     "rightValue": "change-password",
                     "operator": {
                       "type": "string",
@@ -121,7 +121,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.query.action }}",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
                     "rightValue": "get-courses",
                     "operator": {
                       "type": "string",
@@ -145,7 +145,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.query.action }}",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
                     "rightValue": "get-course",
                     "operator": {
                       "type": "string",
@@ -169,7 +169,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.query.action }}",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
                     "rightValue": "update-course",
                     "operator": {
                       "type": "string",
@@ -193,7 +193,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.query.action }}",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
                     "rightValue": "get-dates",
                     "operator": {
                       "type": "string",
@@ -217,7 +217,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.query.action }}",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
                     "rightValue": "create-date",
                     "operator": {
                       "type": "string",
@@ -242,7 +242,7 @@
                 "conditions": [
                   {
                     "id": "d32f817d-1ee7-4e3c-b2d5-c8514d0fe800",
-                    "leftValue": "={{ $json.query.action }}",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
                     "rightValue": "delete-date",
                     "operator": {
                       "type": "string",
@@ -266,7 +266,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.query.action }}",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
                     "rightValue": "contact",
                     "operator": {
                       "type": "string",
@@ -291,7 +291,7 @@
                 "conditions": [
                   {
                     "id": "aabc7063-2a6e-4490-a6c2-4edeb30c1e0b",
-                    "leftValue": "={{ $json.query.action }}",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
                     "rightValue": "update-date",
                     "operator": {
                       "type": "string",
@@ -304,6 +304,56 @@
               },
               "renameOutput": true,
               "outputKey": "update-date"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f0d903f8-427d-4c5f-8c8f-1847f334e1d7",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
+                    "rightValue": "verify-reset-token",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "verify-reset-token"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ae6ce40b-a4c6-478b-83c2-aa4d401ad455",
+                    "leftValue": "={{ $('Webhook').item.json.query.action }}",
+                    "rightValue": "set-new-password",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "set-new-password"
             }
           ]
         },
@@ -349,8 +399,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -4000,
-        -3536
+        -3680,
+        -4592
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -398,8 +448,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -3680,
-        -3536
+        -3360,
+        -4592
       ]
     },
     {
@@ -412,8 +462,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3392,
-        -3552
+        -3072,
+        -4608
       ]
     },
     {
@@ -510,8 +560,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -3152,
-        -3552
+        -2832,
+        -4608
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -532,8 +582,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -2912,
-        -3552
+        -2592,
+        -4608
       ]
     },
     {
@@ -549,26 +599,9 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3680,
-        -3680
+        -3360,
+        -4736
       ]
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ success: true, message: 'Password reset email sent' }) }}",
-        "options": {}
-      },
-      "id": "a2ef7478-4c3f-4608-b725-718e182fc014",
-      "name": "Reset Password Response",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.1,
-      "position": [
-        -4000,
-        -3104
-      ],
-      "notesInFlow": true,
-      "notes": "TODO: Add email sending logic before this node"
     },
     {
       "parameters": {
@@ -580,8 +613,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -5648,
-        -1440
+        -5328,
+        -2496
       ]
     },
     {
@@ -614,8 +647,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -5424,
-        -1440
+        -5104,
+        -2496
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -653,8 +686,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -5200,
-        -1440
+        -4880,
+        -2496
       ]
     },
     {
@@ -670,8 +703,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -5200,
-        -1616
+        -4880,
+        -2672
       ]
     },
     {
@@ -905,8 +938,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -4768,
-        -1536
+        -4448,
+        -2592
       ]
     },
     {
@@ -920,8 +953,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3456,
-        -2768
+        -3136,
+        -3824
       ],
       "notesInFlow": true,
       "notes": "TODO: Verify old password, hash new password, update DB"
@@ -937,8 +970,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3520,
-        -2208
+        -3200,
+        -3264
       ],
       "notesInFlow": true,
       "notes": "TODO: Query courses table WHERE user_id = verified user ID"
@@ -954,8 +987,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3536,
-        -1760
+        -3216,
+        -2816
       ],
       "notesInFlow": true,
       "notes": "TODO: Query single course by ID, verify ownership"
@@ -971,8 +1004,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3728,
-        -1296
+        -3408,
+        -2352
       ],
       "notesInFlow": true,
       "notes": "TODO: Upsert course (INSERT or UPDATE based on id existence)"
@@ -988,8 +1021,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3472,
-        -864
+        -3152,
+        -1920
       ],
       "notesInFlow": true,
       "notes": "TODO: Query course_dates WHERE courseId = input"
@@ -1007,8 +1040,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -5648,
-        -944
+        -5344,
+        -912
       ]
     },
     {
@@ -1021,8 +1054,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4048,
-        -3696
+        -3728,
+        -4752
       ],
       "id": "2bc4daa9-c015-4ffd-82f2-13e88b390dd2",
       "name": "Sticky Note"
@@ -1037,8 +1070,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4048,
-        -3216
+        -3728,
+        -4272
       ],
       "id": "0821d51c-f1c3-4bde-9c9e-68a5f0c025bb",
       "name": "Sticky Note1"
@@ -1053,8 +1086,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4048,
-        -2784
+        -3728,
+        -3840
       ],
       "id": "cd55d509-f562-4c5b-8089-5bd271ac49c6",
       "name": "Sticky Note2"
@@ -1069,8 +1102,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4048,
-        -2352
+        -3728,
+        -3408
       ],
       "id": "62b894f7-c95a-4312-9d8f-32048f4607f6",
       "name": "Sticky Note3"
@@ -1085,8 +1118,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4048,
-        -1888
+        -3728,
+        -2944
       ],
       "id": "3679cdaa-cc19-4970-b53b-45d65c361f48",
       "name": "Sticky Note4"
@@ -1101,8 +1134,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4048,
-        -1440
+        -3728,
+        -2496
       ],
       "id": "a1dd297b-f457-4e49-a075-d6fc9840cd2e",
       "name": "Sticky Note5"
@@ -1117,8 +1150,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4048,
-        -1024
+        -3728,
+        -2080
       ],
       "id": "99371296-a95d-4ec3-b52c-491ab9343935",
       "name": "Sticky Note6"
@@ -1133,8 +1166,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4048,
-        256
+        -3728,
+        -800
       ],
       "id": "b12ac5e9-ab7b-48f0-8dc6-9792b9e09630",
       "name": "Sticky Note8"
@@ -1149,8 +1182,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -5728,
-        -1632
+        -5408,
+        -2688
       ],
       "id": "c92de2cd-896f-4f13-bba3-b880888b82b3",
       "name": "Sticky Note9"
@@ -1164,8 +1197,8 @@
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        -3968,
-        -2208
+        -3648,
+        -3264
       ],
       "id": "774337f0-22eb-40c2-8b17-cee1e29d6196",
       "name": "get base courses",
@@ -1185,8 +1218,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3760,
-        -2208
+        -3440,
+        -3264
       ],
       "id": "7f61d447-a970-4182-8022-4be0a15addb9",
       "name": "json"
@@ -1200,8 +1233,8 @@
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        -3984,
-        -1760
+        -3664,
+        -2816
       ],
       "id": "c8c8f9f1-17d5-4620-848e-9483c884d70b",
       "name": "get base course",
@@ -1221,8 +1254,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3744,
-        -1760
+        -3424,
+        -2816
       ],
       "id": "2ddcd2cb-b2f7-4ecd-b9d9-88a8c1c267f6",
       "name": "json1"
@@ -1234,8 +1267,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3728,
-        -864
+        -3408,
+        -1920
       ],
       "id": "96b61585-feb4-4786-a398-a5b52595660c",
       "name": "json2"
@@ -1243,14 +1276,14 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT \n    simple.entity_id AS 'id',\n    link.parent_id AS 'courseId',\n    CONCAT(\n        SUBSTRING_INDEX(cpev_name.value, '-', -3), \n        'T', \n        cpev_begin.value, \n        ':00Z'\n    ) AS 'dateTime',\n    CAST(IFNULL(cpev_seats.value, 0) AS UNSIGNED) AS 'capacity',\n    0 AS 'booked',\n    TIMESTAMPDIFF(\n        MINUTE,\n        STR_TO_DATE(cpev_begin.value, '%H:%i'),\n        STR_TO_DATE(cpev_end.value, '%H:%i')\n    ) AS 'duration',\n    ROUND(cpd_simple_price.value, 2) AS 'price',\n    op.customernumber AS 'customer_number',\n    (\n        SELECT GROUP_CONCAT(DISTINCT o2.operator_id ORDER BY o2.operator_id)\n        FROM miomente_pdf_operator AS o2\n        WHERE o2.customernumber = op.customernumber\n    ) AS 'operator_ids'\nFROM catalog_product_entity AS simple\n-- Link to configurable\nINNER JOIN catalog_product_super_link AS link\n    ON simple.entity_id = link.product_id\n-- Parent configurable\nINNER JOIN catalog_product_entity AS parent\n    ON link.parent_id = parent.entity_id\n-- Operator (from parent)\nINNER JOIN catalog_product_entity_varchar AS cpev_operator \n    ON parent.entity_id = cpev_operator.entity_id \n    AND cpev_operator.attribute_id = 700\n    AND cpev_operator.store_id = 0\n-- Operator table\nINNER JOIN miomente_pdf_operator AS op\n    ON cpev_operator.value = op.operator_id\n-- Name (to extract date)\nINNER JOIN catalog_product_entity_varchar AS cpev_name \n    ON simple.entity_id = cpev_name.entity_id \n    AND cpev_name.attribute_id = 60\n    AND cpev_name.store_id = 0\n-- Begin time\nLEFT JOIN catalog_product_entity_varchar AS cpev_begin\n    ON simple.entity_id = cpev_begin.entity_id \n    AND cpev_begin.attribute_id = 717\n    AND cpev_begin.store_id = 0\n-- End time\nLEFT JOIN catalog_product_entity_varchar AS cpev_end\n    ON simple.entity_id = cpev_end.entity_id \n    AND cpev_end.attribute_id = 718\n    AND cpev_end.store_id = 0\n-- Seats\nLEFT JOIN catalog_product_entity_varchar AS cpev_seats\n    ON simple.entity_id = cpev_seats.entity_id \n    AND cpev_seats.attribute_id = 720\n    AND cpev_seats.store_id = 0\n-- Price for simple product\nLEFT JOIN catalog_product_entity_decimal AS cpd_simple_price\n    ON simple.entity_id = cpd_simple_price.entity_id\n    AND cpd_simple_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)\n    AND cpd_simple_price.store_id = 0\nWHERE op.customernumber = {{ $('Token Valid?').item.json.customer_number }}\n  AND link.parent_id = {{ $('Route by Action').item.json.body.course_id }}\n  AND simple.type_id = 'simple'\n  AND cpev_begin.value IS NOT NULL\n  AND STR_TO_DATE(\n      CONCAT(SUBSTRING_INDEX(cpev_name.value, '-', -3), ' ', cpev_begin.value),\n      '%Y-%m-%d %H:%i'\n  ) > NOW()\nGROUP BY simple.entity_id\nORDER BY STR_TO_DATE(\n    CONCAT(SUBSTRING_INDEX(cpev_name.value, '-', -3), ' ', cpev_begin.value),\n    '%Y-%m-%d %H:%i'\n) ASC;",
+        "query": "SELECT \n    simple.entity_id AS 'id',\n    link.parent_id AS 'courseId',\n    CONCAT(\n        SUBSTRING_INDEX(cpev_name.value, '-', -3), \n        'T', \n        cpev_begin.value, \n        ':00Z'\n    ) AS 'dateTime',\n    CAST(IFNULL(cpev_seats.value, 0) AS UNSIGNED) AS 'capacity',\n    0 AS 'booked',\n    TIMESTAMPDIFF(\n        MINUTE,\n        STR_TO_DATE(cpev_begin.value, '%H:%i'),\n        STR_TO_DATE(cpev_end.value, '%H:%i')\n    ) AS 'duration',\n    ROUND(cpd_simple_price.value, 2) AS 'price',\n    op.customernumber AS 'customer_number',\n    (\n        SELECT GROUP_CONCAT(DISTINCT o2.operator_id ORDER BY o2.operator_id)\n        FROM miomente_pdf_operator AS o2\n        WHERE o2.customernumber = op.customernumber\n    ) AS 'operator_ids'\nFROM catalog_product_entity AS simple\n-- Link to configurable\nINNER JOIN catalog_product_super_link AS link\n    ON simple.entity_id = link.product_id\n-- Parent configurable\nINNER JOIN catalog_product_entity AS parent\n    ON link.parent_id = parent.entity_id\n-- Operator (from parent)\nINNER JOIN catalog_product_entity_varchar AS cpev_operator \n    ON parent.entity_id = cpev_operator.entity_id \n    AND cpev_operator.attribute_id = 700\n    AND cpev_operator.store_id = 0\n-- Operator table\nINNER JOIN miomente_pdf_operator AS op\n    ON cpev_operator.value = op.operator_id\n-- Name (to extract date)\nINNER JOIN catalog_product_entity_varchar AS cpev_name \n    ON simple.entity_id = cpev_name.entity_id \n    AND cpev_name.attribute_id = 60\n    AND cpev_name.store_id = 0\n-- Begin time\nLEFT JOIN catalog_product_entity_varchar AS cpev_begin\n    ON simple.entity_id = cpev_begin.entity_id \n    AND cpev_begin.attribute_id = 717\n    AND cpev_begin.store_id = 0\n-- End time\nLEFT JOIN catalog_product_entity_varchar AS cpev_end\n    ON simple.entity_id = cpev_end.entity_id \n    AND cpev_end.attribute_id = 718\n    AND cpev_end.store_id = 0\n-- Seats\nLEFT JOIN catalog_product_entity_varchar AS cpev_seats\n    ON simple.entity_id = cpev_seats.entity_id \n    AND cpev_seats.attribute_id = 720\n    AND cpev_seats.store_id = 0\n-- Price for simple product\nLEFT JOIN catalog_product_entity_decimal AS cpd_simple_price\n    ON simple.entity_id = cpd_simple_price.entity_id\n    AND cpd_simple_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)\n    AND cpd_simple_price.store_id = 0\nWHERE op.customernumber = {{ $('Token Valid?').item.json.customer_number }}\n  AND link.parent_id = {{ $('Webhook').item.json.body.course_id }}\n  AND simple.type_id = 'simple'\n  AND cpev_begin.value IS NOT NULL\n  AND STR_TO_DATE(\n      CONCAT(SUBSTRING_INDEX(cpev_name.value, '-', -3), ' ', cpev_begin.value),\n      '%Y-%m-%d %H:%i'\n  ) > NOW()\nGROUP BY simple.entity_id\nORDER BY STR_TO_DATE(\n    CONCAT(SUBSTRING_INDEX(cpev_name.value, '-', -3), ' ', cpev_begin.value),\n    '%Y-%m-%d %H:%i'\n) ASC;",
         "options": {}
       },
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        -4000,
-        -864
+        -3680,
+        -1920
       ],
       "id": "771a8eed-a9ef-453a-b035-1aeca9460c85",
       "name": "get events by base course",
@@ -1310,8 +1343,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -3968,
-        -2624
+        -3648,
+        -3680
       ],
       "id": "7f449556-bcd7-41af-9195-0a99ad0e647c",
       "name": "passed?"
@@ -1430,8 +1463,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -3648,
-        -2768
+        -3328,
+        -3824
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -1452,8 +1485,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3456,
-        -2576
+        -3136,
+        -3632
       ],
       "notesInFlow": true,
       "notes": "TODO: Verify old password, hash new password, update DB"
@@ -1467,8 +1500,8 @@
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        -3984,
-        -1296
+        -3664,
+        -2352
       ],
       "id": "34c083a4-6737-44a3-8e0b-007ff189660e",
       "name": "update course",
@@ -1492,8 +1525,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3520,
-        -560
+        -3200,
+        -1616
       ]
     },
     {
@@ -1505,8 +1538,8 @@
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        -4000,
-        -48
+        -3680,
+        -1104
       ],
       "id": "e92b0c62-b2df-4667-b082-a24ddd08c711",
       "name": "Delete Date SQL",
@@ -1530,8 +1563,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3728,
-        -48
+        -3408,
+        -1104
       ]
     },
     {
@@ -1544,8 +1577,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4048,
-        -608
+        -3728,
+        -1664
       ],
       "id": "6049e175-5328-4cd3-bb06-896bd4e2cfb3",
       "name": "Sticky Note10"
@@ -1560,8 +1593,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4048,
-        -176
+        -3728,
+        -1232
       ],
       "id": "605b09da-de06-4c90-b10a-70f4f1f5d2a4",
       "name": "Sticky Note11"
@@ -1577,8 +1610,8 @@
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.4,
       "position": [
-        -4000,
-        1248
+        -3680,
+        192
       ],
       "credentials": {
         "mySql": {
@@ -1598,8 +1631,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3744,
-        1248
+        -3424,
+        192
       ]
     },
     {
@@ -1612,8 +1645,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4048,
-        1104
+        -3728,
+        48
       ],
       "id": "dd8c6111-c3bd-45b9-bafd-bb5c97170649",
       "name": "Sticky Note7"
@@ -1627,8 +1660,8 @@
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        -3072,
-        -400
+        -2752,
+        -1456
       ],
       "id": "1b132dc2-18bd-4ac5-bbd9-51ac7985904a",
       "name": "Create Date SQL old",
@@ -1650,8 +1683,8 @@
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        -3728,
-        -560
+        -3408,
+        -1616
       ],
       "id": "62b01c9a-d759-4415-9b20-20524d629ffb",
       "name": "Create Date SQL Claude",
@@ -1702,8 +1735,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -4000,
-        -464
+        -3680,
+        -1520
       ],
       "id": "634b1e0b-48aa-47cc-8474-44a146d3caa1",
       "name": "date valid?"
@@ -1719,8 +1752,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -3520,
-        -384
+        -3200,
+        -1440
       ],
       "notesInFlow": true,
       "notes": "TODO: Verify old password, hash new password, update DB"
@@ -1746,8 +1779,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2528,
-        816
+        -2208,
+        -240
       ],
       "id": "ce87bec7-168c-4fd1-8979-61c88d3ea93d",
       "name": "Create Ticket"
@@ -1780,8 +1813,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -2848,
-        432
+        -2528,
+        -624
       ],
       "id": "7cb4c07c-a3e4-4670-8fac-b72030b1719e",
       "name": "Has Contact ?"
@@ -1812,8 +1845,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2608,
-        448
+        -2288,
+        -608
       ],
       "id": "d157e313-aaf2-4684-a78b-d6ce48879d40",
       "name": "Create Contact",
@@ -1827,8 +1860,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1888,
-        464
+        -1568,
+        -592
       ],
       "id": "e595a741-c859-48c4-a5c1-8194c26661a7",
       "name": "contact_id"
@@ -1840,8 +1873,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2064,
-        416
+        -1744,
+        -640
       ],
       "id": "52f30a0e-3b9c-4ed4-bcc9-e341fbaabe4c",
       "name": "contact_id1"
@@ -1856,8 +1889,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -3424,
-        288
+        -3104,
+        -768
       ],
       "id": "c03848df-2051-4988-964f-5e6377d8d719",
       "name": "Sticky Note12"
@@ -1888,8 +1921,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -3344,
-        416
+        -3024,
+        -640
       ],
       "id": "b953ea1b-1202-4888-a8a3-4f3e4144a6eb",
       "name": "Get Contact Odoo by Email",
@@ -1898,28 +1931,15 @@
     },
     {
       "parameters": {
-        "jsCode": "const ODOO = {\n  api: {\n    prod: {\n      \"api\": \"8f28785e94ba549ca20da26528e6d667587c2634\",\n      \"id_user_api\": \"2\",\n      \"url\": \"https://odoo.boni.tools/jsonrpc\",\n      \"name_sql\": \"boni-brands-boni-odoo-prod-16259222\",\n      \"website_id\": 240\n    },\n    storage: {\n      \"api\": \"8f28785e94ba549ca20da26528e6d667587c2634\",\n      \"id_user_api\": \"2\",\n      \"url\": \"https://boni-storage-25119769.dev.odoo.com/jsonrpc\",\n      \"name_sql\": \"boni-storage-25119769\",\n      \"website_id\": 213\n    },\n    fresh: {\n      \"api\": \"8f28785e94ba549ca20da26528e6d667587c2634\",\n      \"id_user_api\": \"2\",\n      \"url\": \"https://boni-fresh-27349097.dev.odoo.com/jsonrpc\",\n      \"name_sql\": \"boni-fresh-27349097\",\n      \"website_id\": 240\n    }\n  }\n}\n\nconst SEND_GRID = {\n  api_key: "YOUR_SENDGRID_API_KEY"\n}\n\nreturn {ODOO, SEND_GRID}"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -3984,
-        416
-      ],
-      "id": "2951077d-35f6-455b-82f5-7275dc55640a",
-      "name": "CONSTANTS"
-    },
-    {
-      "parameters": {
         "mode": "raw",
-        "jsonOutput": "={{ $json.ODOO.api.fresh }}",
+        "jsonOutput": "={{ $('CONSTANTS1').item.json.ODOO.api.fresh }}",
         "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -3744,
-        416
+        -3520,
+        -640
       ],
       "id": "04889d23-f5ff-4258-b621-be80739613fa",
       "name": "ODOO"
@@ -1928,14 +1948,14 @@
       "parameters": {
         "content": "## Окружение Odoo (stage/prod)",
         "height": 208,
-        "width": 480,
+        "width": 400,
         "color": 6
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -4016,
-        352
+        -3680,
+        -704
       ],
       "id": "96d05ab0-dca3-4359-8050-2cfa1b02b73e",
       "name": "Sticky Note13"
@@ -1951,8 +1971,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -1552,
-        848
+        -1232,
+        -208
       ]
     },
     {
@@ -1983,8 +2003,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -3136,
-        416
+        -2816,
+        -640
       ],
       "id": "31526e7f-3cb0-44ef-88e8-0537440b379f",
       "name": "error"
@@ -2002,8 +2022,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -2384,
-        304
+        -2064,
+        -752
       ]
     },
     {
@@ -2034,8 +2054,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -2384,
-        448
+        -2064,
+        -608
       ],
       "id": "f938a96c-bf4b-4ca5-b397-da8fc7cb29c3",
       "name": "error1"
@@ -2053,8 +2073,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -2288,
-        672
+        -1968,
+        -384
       ]
     },
     {
@@ -2085,8 +2105,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -2288,
-        816
+        -1968,
+        -240
       ],
       "id": "52636c5f-6839-4710-8ef5-6f8224732270",
       "name": "error2"
@@ -2104,8 +2124,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        -1824,
-        688
+        -1504,
+        -368
       ]
     },
     {
@@ -2136,8 +2156,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -1824,
-        832
+        -1504,
+        -224
       ],
       "id": "91931eb6-65e3-497f-bdb4-fd52ee630b3f",
       "name": "error3"
@@ -2163,11 +2183,714 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2064,
-        832
+        -1744,
+        -224
       ],
       "id": "047745af-37da-4e5b-bda4-4a4242e62b6e",
       "name": "Post message"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "miomente_partner_portal_users",
+          "mode": "list"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "reset_token",
+              "value": "={{ $('Webhook').first().json.body.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "43e1c552-c235-48e4-8202-9d46eacbb242",
+      "name": "Find User by Reset Token",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -5344,
+        -1936
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "0Wh8S0Mv7yF5IDfG",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Verify Reset Token (TODO)",
+        "height": 464,
+        "width": 800,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -5408,
+        -2080
+      ],
+      "id": "4cc2a919-8a16-48d8-919b-cbebc95bcf61",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "miomente_partner_portal_users",
+          "mode": "list",
+          "cachedResultName": "miomente_partner_portal_users"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "email",
+              "value": "={{ $('Webhook').first().json.body.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "19fcef30-532b-44a0-b968-71b644283fcc",
+      "name": "Find User for Reset1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -3648,
+        -4144
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "0Wh8S0Mv7yF5IDfG",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const generateToken = (length = 64) => {\n  const chars = 'abcdef0123456789';\n  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');\n};\n\nconst email = $('Webhook').first().json.body.email;\nconst token = generateToken(64);\nconst expires = new Date(Date.now() + 3600000);\n\nreturn {\n  email: email,\n  name: $input.first().json.name,\n  id: $input.first().json.id,\n  reset_token: token,\n  reset_token_expires: expires.toISOString()\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3440,
+        -4144
+      ],
+      "id": "aec3ff3d-49af-4538-a1c5-63b08e07c9a3",
+      "name": "Generate Reset Token1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "miomente_partner_portal_users",
+          "mode": "list",
+          "cachedResultName": "miomente_partner_portal_users"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "reset_token": "={{ $json.reset_token }}",
+            "reset_token_expires": "={{ $json.reset_token_expires }}",
+            "id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "password",
+              "displayName": "password",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "token",
+              "displayName": "token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "miomente_id",
+              "displayName": "miomente_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "customer_number",
+              "displayName": "customer_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reset_token",
+              "displayName": "reset_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reset_token_expires",
+              "displayName": "reset_token_expires",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "80769fbe-2409-4890-9609-347fd34b7c5e",
+      "name": "Save Reset Token1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -3248,
+        -4144
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "0Wh8S0Mv7yF5IDfG",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.sendgrid.com/v3/mail/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('CONSTANTS1').item.json.SEND_GRID.api_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"personalizations\": [{\n    \"to\": [{ \"email\": \"{{ $json.email }}\" }],\n    \"subject\": \"Passwort zurücksetzen - Miomente Partner-Portal\"\n  }],\n  \"from\": {\n    \"email\": \"bestellung@miomente.de\",\n    \"name\": \"Miomente Partner-Portal\"\n  },\n  \"content\": [{\n    \"type\": \"text/html\",\n    \"value\": \"<div style='background-color: #f9f9f9; padding: 40px 0; font-family: Helvetica, Arial, sans-serif;'> <table align='center' border='0' cellpadding='0' cellspacing='0' width='600' style='background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #eeeeee;'> <tr> <td align='center' style='padding: 30px 0; background-color: #ffffff;'> <img src='https://www.miomente.de/skin/frontend/ultimo/default/images/goldenwebage/logo.png' alt='Miomente' width='180' style='display: block;'> </td> </tr> <tr> <td style='padding: 40px 30px;'> <h2 style='color: #333333; font-size: 24px; margin-top: 0;'>Passwort zurücksetzen</h2> <p style='color: #666666; font-size: 16px; line-height: 1.5;'>Hallo {{ $json.name }},</p> <p style='color: #666666; font-size: 16px; line-height: 1.5;'>wir haben eine Anfrage zum Zurücksetzen Ihres Passworts erhalten. Klicken Sie auf den untenstehenden Button, um ein neues Passwort festzulegen:</p> <div style='padding: 30px 0; text-align: center;'> <a href=\\\"{{ $('CONSTANTS1').item.json.APP.domain }}/reset-password?token={{ $json.reset_token }}\\\" style='background-color: #e4002b; color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;'>Passwort jetzt zurücksetzen</a> </div> <p style='color: #999999; font-size: 14px; line-height: 1.5;'>Dieser Link ist für <strong>1 Stunde</strong> gültig. Falls Sie dies nicht angefragt haben, können Sie diese E-Mail einfach ignorieren.</p> </td> </tr> <tr> <td style='padding: 20px 30px; background-color: #f1f1f1; color: #888888; font-size: 12px; text-align: center;'> <p style='margin: 0;'>Herzliche Grüße,<br><strong>Ihr Miomente-Team</strong></p> <p style='margin-top: 15px;'>Boni-Shop GmbH | <a href='https://www.miomente.de' style='color: #888888;'>www.miomente.de</a></p> </td> </tr> </table> </div>\"\n  }],\n  \"tracking_settings\": {\n    \"click_tracking\": {\n      \"enable\": false,\n      \"enable_text\": false\n    },\n    \"open_tracking\": {\n      \"enable\": false\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "4603f0a4-4401-438f-8695-914bd60e2c8e",
+      "name": "Send Reset Email1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3040,
+        -4144
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: 'If an account exists with this email, a reset link has been sent.' }) }}",
+        "options": {}
+      },
+      "id": "c1907580-5af0-4592-b145-2aefba4002ad",
+      "name": "Reset Password Success Response1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -2816,
+        -4144
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5062101a-22d7-44df-8ea6-540c5112bfee",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "fc719928-45fc-4ca4-a283-a4784324f881",
+              "leftValue": "={{ DateTime.fromISO($json.reset_token_expires) > $now }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -5136,
+        -1936
+      ],
+      "id": "651294c9-d82b-45f2-8e18-3d100407b6ee",
+      "name": "Check Token Valid"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ valid: true, email: $json.email }) }}",
+        "options": {}
+      },
+      "id": "8085b4d1-7bdb-4802-b0cb-6c7f3b136ebe",
+      "name": "Respond Valid Token",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -4896,
+        -2032
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ valid: false, message: 'Invalid or expired reset token' }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "f8745cd5-6351-4705-ac0f-7869445f3cec",
+      "name": "Respond Invalid Token",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -4896,
+        -1856
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Set New Password (TODO)",
+        "height": 464,
+        "width": 976,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -5408,
+        -1520
+      ],
+      "id": "a6e9c074-d48b-4773-ae66-09f6e92e504a",
+      "name": "Sticky Note16"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ valid: false, message: 'Invalid or expired reset token' }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "5d820a98-8591-4d3f-aed4-ed884942ded9",
+      "name": "Respond Invalid Token1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -4848,
+        -1232
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5062101a-22d7-44df-8ea6-540c5112bfee",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "fc719928-45fc-4ca4-a283-a4784324f881",
+              "leftValue": "={{ DateTime.fromISO($json.reset_token_expires) > $now }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -5136,
+        -1344
+      ],
+      "id": "f92c5a40-4fd8-422d-896d-58e0bd4f78a4",
+      "name": "Validate Token for Password"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "miomente_partner_portal_users",
+          "mode": "list"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "reset_token",
+              "value": "={{ $('Webhook').first().json.body.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "24cc7116-71d1-4863-a17f-2c2791e59ffc",
+      "name": "Find User for Password Update",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -5344,
+        -1344
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "0Wh8S0Mv7yF5IDfG",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "miomente_partner_portal_users",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "password": "={{ $('Webhook').item.json.body.newPassword }}",
+            "id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "password",
+              "displayName": "password",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "token",
+              "displayName": "token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "miomente_id",
+              "displayName": "miomente_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "customer_number",
+              "displayName": "customer_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reset_token",
+              "displayName": "reset_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reset_token_expires",
+              "displayName": "reset_token_expires",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "4211f674-ca9d-4e84-ab41-d13acd46296e",
+      "name": "Update Password",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -4848,
+        -1408
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "0Wh8S0Mv7yF5IDfG",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const crypto = require('crypto');\nconst newPassword = $('Webhook').item.json.body.newPassword;\nconst hashedPassword = crypto.createHash('sha256').update(newPassword).digest('hex');\n\nreturn { json: { hashedPassword, userId: $('Find User by Reset Token').item.json.id } };"
+      },
+      "id": "d9810cc5-26a4-488f-b529-b3cfdbf7a63a",
+      "name": "Hash Password",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -5344,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## TO DO HASH PASSWORDS",
+        "height": 304,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -5392,
+        -656
+      ],
+      "id": "5e0dec02-4939-4d39-a2cf-1800d4635b3b",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: 'Password updated successfully' }) }}",
+        "options": {}
+      },
+      "id": "3a6d2a58-5459-43e8-aca8-b0579b490026",
+      "name": "Respond Password Updated",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -4624,
+        -1408
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "NiYySod5lrKmEcYX",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/NiYySod5lrKmEcYX",
+          "cachedResultName": "[Miomente] Secrets"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -7104,
+        -2304
+      ],
+      "id": "8f1aeead-158f-4e47-b750-21fbebdce64b",
+      "name": "CONSTANTS"
     }
   ],
   "pinData": {
@@ -2176,31 +2899,30 @@
         "json": {
           "headers": {
             "host": "n8n.boni.tools",
-            "x-real-ip": "162.158.102.69",
-            "x-real-port": "13893",
-            "x-forwarded-for": "62.16.23.125, 162.158.102.69",
-            "remote-host": "162.158.102.69",
+            "x-real-ip": "162.158.172.108",
+            "x-real-port": "9489",
+            "x-forwarded-for": "34.34.242.35, 162.158.172.108",
+            "remote-host": "162.158.172.108",
             "connection": "upgrade",
-            "content-length": "82",
+            "content-length": "20",
             "accept": "application/json, text/plain, */*",
             "content-type": "application/json",
             "accept-encoding": "gzip, br",
             "user-agent": "axios/1.13.2",
-            "cf-ray": "9bc4d4e06a7434cd-WAW",
-            "authorization": "Bearer info-1768062447604-ob97hujrrqq",
+            "cf-ray": "9bc63c9f789fb5fd-WAW",
+            "authorization": "Bearer info-1768153577714-icszxe7nmw",
             "cdn-loop": "cloudflare; loops=1",
-            "cf-connecting-ip": "62.16.23.125",
-            "cf-ipcountry": "UA",
+            "cf-connecting-ip": "34.34.242.35",
+            "cf-ipcountry": "PL",
             "cf-visitor": "{\"scheme\":\"https\"}",
             "x-forwarded-proto": "https"
           },
           "params": {},
           "query": {
-            "action": "contact"
+            "action": "get-dates"
           },
           "body": {
-            "subject": "Vouchers issues'' \"",
-            "message": "\"Hello. 123456. Can you assist me?"
+            "course_id": 110626
           },
           "webhookUrl": "https://n8n.boni.tools/webhook/partner-portal",
           "executionMode": "production"
@@ -2213,7 +2935,7 @@
       "main": [
         [
           {
-            "node": "Route by Action",
+            "node": "CONSTANTS",
             "type": "main",
             "index": 0
           }
@@ -2231,7 +2953,7 @@
         ],
         [
           {
-            "node": "Reset Password Response",
+            "node": "Find User for Reset1",
             "type": "main",
             "index": 0
           }
@@ -2295,6 +3017,20 @@
         [
           {
             "node": "Extract Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find User by Reset Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find User for Password Update",
             "type": "main",
             "index": 0
           }
@@ -2452,7 +3188,7 @@
         ],
         [
           {
-            "node": "CONSTANTS",
+            "node": "ODOO",
             "type": "main",
             "index": 0
           }
@@ -2696,17 +3432,6 @@
         ]
       ]
     },
-    "CONSTANTS": {
-      "main": [
-        [
-          {
-            "node": "ODOO",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "ODOO": {
       "main": [
         [
@@ -2800,13 +3525,137 @@
           }
         ]
       ]
+    },
+    "Find User for Reset1": {
+      "main": [
+        [
+          {
+            "node": "Generate Reset Token1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Reset Token1": {
+      "main": [
+        [
+          {
+            "node": "Save Reset Token1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Reset Token1": {
+      "main": [
+        [
+          {
+            "node": "Send Reset Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reset Email1": {
+      "main": [
+        [
+          {
+            "node": "Reset Password Success Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find User by Reset Token": {
+      "main": [
+        [
+          {
+            "node": "Check Token Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Token Valid": {
+      "main": [
+        [
+          {
+            "node": "Respond Valid Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Invalid Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Token for Password": {
+      "main": [
+        [
+          {
+            "node": "Update Password",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Invalid Token1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find User for Password Update": {
+      "main": [
+        [
+          {
+            "node": "Validate Token for Password",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Password": {
+      "main": [
+        [
+          {
+            "node": "Respond Password Updated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CONSTANTS": {
+      "main": [
+        [
+          {
+            "node": "Route by Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "881f707b-1116-47a5-801a-a6aef56ee612",
+  "versionId": "1238bbc5-d245-4669-b435-7cfe58855577",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f893a509eeee6b092086d07e58433a4356cbbf029f89f0eb3c157ad85ed9f33c"
