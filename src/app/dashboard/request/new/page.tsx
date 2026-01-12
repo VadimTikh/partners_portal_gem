@@ -245,8 +245,8 @@ export default function NewCourseRequestPage() {
                     <Label className="text-xs">{t.courseRequest.durationLabel}</Label>
                     <Input
                       type="number"
-                      min="30"
-                      step="30"
+                      min="10"
+                      max="288"
                       value={reqDate.duration}
                       onChange={(e) => updateDate(reqDate.id, 'duration', Number(e.target.value))}
                       className="mt-auto"
