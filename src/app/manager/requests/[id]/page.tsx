@@ -1,11 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import Link from 'next/link';
@@ -20,14 +17,15 @@ import {
   Euro,
   User,
   Mail,
+  Users,
+  Timer,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
-import { CourseRequestStatus, CreateCourseFromRequest } from '@/lib/types';
+import { CourseRequestStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -38,24 +36,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-
-const createCourseSchema = z.object({
-  name: z.string().min(3, 'Title is required'),
-  subtitle: z.string().min(3, 'Subtitle is required'),
-  description: z.string().min(50, 'Description must be at least 50 characters'),
-  shortDescription: z.string().min(20, 'Short description must be at least 20 characters'),
-  beginTime: z.string().min(1, 'Start time is required'),
-  endTime: z.string().min(1, 'End time is required'),
-  seats: z.string().min(1, 'Capacity is required'),
-  participants: z.string().min(1, 'Participants text is required'),
-  categoryIds: z.string().min(1, 'At least one category is required'),
-  keyword: z.string().optional(),
-  metaTitle: z.string().optional(),
-  metaDescription: z.string().optional(),
-  image: z.string().optional(),
-});
-
-type CreateCourseFormData = z.infer<typeof createCourseSchema>;
 
 const getStatusBadge = (status: CourseRequestStatus, t: ReturnType<typeof useI18n>['t']) => {
   const statusConfig = {
@@ -101,7 +81,7 @@ export default function RequestDetailPage() {
   const dateLocale = locale === 'de' ? de : enUS;
 
   const [showRejectDialog, setShowRejectDialog] = useState(false);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showApproveDialog, setShowApproveDialog] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [rejectionRecommendations, setRejectionRecommendations] = useState('');
   const [managerNotes, setManagerNotes] = useState('');
@@ -114,43 +94,6 @@ export default function RequestDetailPage() {
     enabled: !!requestId,
   });
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<CreateCourseFormData>({
-    resolver: zodResolver(createCourseSchema),
-    defaultValues: {
-      name: '',
-      subtitle: '',
-      description: '',
-      shortDescription: '',
-      beginTime: '18:00',
-      endTime: '21:00',
-      seats: '10',
-      participants: '2-10 Personen',
-      categoryIds: '',
-    },
-  });
-
-  // Pre-fill form with request data when loaded
-  useEffect(() => {
-    if (request) {
-      reset({
-        name: request.name || '',
-        subtitle: '',
-        description: '',
-        shortDescription: request.partnerDescription || '',
-        beginTime: '18:00',
-        endTime: '21:00',
-        seats: '10',
-        participants: '2-10 Personen',
-        categoryIds: '',
-      });
-    }
-  }, [request, reset]);
-
   const updateStatusMutation = useMutation({
     mutationFn: ({
       status,
@@ -159,28 +102,22 @@ export default function RequestDetailPage() {
       status: 'in_moderation' | 'approved' | 'rejected';
       data?: { rejectionReason?: string; rejectionRecommendations?: string; managerNotes?: string };
     }) => api.updateCourseRequestStatus(requestId, status, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['course-request', requestId] });
       queryClient.invalidateQueries({ queryKey: ['all-course-requests'] });
-      toast.success(t.manager.statusUpdated);
+
+      if (variables.status === 'approved') {
+        toast.success(t.manager.courseCreated);
+        router.push('/manager/requests');
+      } else {
+        toast.success(t.manager.statusUpdated);
+      }
+
       setShowRejectDialog(false);
+      setShowApproveDialog(false);
     },
     onError: () => {
       toast.error(t.manager.statusUpdateError);
-    },
-  });
-
-  const createCourseMutation = useMutation({
-    mutationFn: (data: CreateCourseFromRequest) => api.createCourseFromRequest(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['course-request', requestId] });
-      queryClient.invalidateQueries({ queryKey: ['all-course-requests'] });
-      toast.success(t.manager.courseCreated);
-      setShowCreateDialog(false);
-      router.push('/manager/requests');
-    },
-    onError: () => {
-      toast.error(t.manager.courseCreateError);
     },
   });
 
@@ -201,10 +138,10 @@ export default function RequestDetailPage() {
     });
   };
 
-  const onCreateCourse = (data: CreateCourseFormData) => {
-    createCourseMutation.mutate({
-      requestId,
-      ...data,
+  const handleCourseCreated = () => {
+    updateStatusMutation.mutate({
+      status: 'approved',
+      data: { managerNotes },
     });
   };
 
@@ -239,7 +176,7 @@ export default function RequestDetailPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{request.name}</h1>
+          <h1 className="text-2xl font-bold">{request.name || '-'}</h1>
           <p className="text-muted-foreground mt-1">
             {t.requests.submittedOn}{' '}
             {format(new Date(request.createdAt), 'PPP', { locale: dateLocale })}
@@ -257,11 +194,11 @@ export default function RequestDetailPage() {
           <CardContent className="space-y-3">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
-              <span>{request.partnerName}</span>
+              <span>{request.partnerName || '-'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-muted-foreground" />
-              <span>{request.partnerEmail}</span>
+              <span>{request.partnerEmail || '-'}</span>
             </div>
           </CardContent>
         </Card>
@@ -272,9 +209,6 @@ export default function RequestDetailPage() {
             <CardTitle className="text-lg">{t.manager.courseInfo}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="font-medium">{request.name || '-'}</span>
-            </div>
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-muted-foreground" />
               <span>{request.location || '-'}</span>
@@ -293,7 +227,7 @@ export default function RequestDetailPage() {
           <CardTitle className="text-lg">{t.courseRequest.descriptionLabel}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="whitespace-pre-wrap">{request.partnerDescription}</p>
+          <p className="whitespace-pre-wrap">{request.partnerDescription || '-'}</p>
         </CardContent>
       </Card>
 
@@ -304,23 +238,36 @@ export default function RequestDetailPage() {
             <CardTitle className="text-lg">{t.manager.requestedDates}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {request.requestedDates.map((date, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  className="p-4 bg-muted/50 rounded-lg"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 mb-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>{format(new Date(date.dateTime), 'PPP', { locale: dateLocale })}</span>
+                    <span className="font-medium">
+                      {format(new Date(date.dateTime), 'PPP', { locale: dateLocale })}
+                    </span>
                     <span className="text-muted-foreground">
                       {format(new Date(date.dateTime), 'HH:mm')}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{date.duration} min</span>
-                    <span>{date.capacity} Plätze</span>
-                    {date.customPrice && <span>{date.customPrice.toFixed(2)} €</span>}
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground ml-8">
+                    <div className="flex items-center gap-1">
+                      <Timer className="h-3 w-3" />
+                      <span>{date.duration} min</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      <span>{date.capacity} {t.manager.seats}</span>
+                    </div>
+                    {date.customPrice && (
+                      <div className="flex items-center gap-1">
+                        <Euro className="h-3 w-3" />
+                        <span>{date.customPrice.toFixed(2)} €</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -378,7 +325,13 @@ export default function RequestDetailPage() {
 
       {request.status === 'in_moderation' && (
         <div className="flex gap-4 mt-6">
-          <Button onClick={() => setShowCreateDialog(true)}>{t.manager.createCourse}</Button>
+          <Button
+            onClick={() => setShowApproveDialog(true)}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            <CheckCircle2 className="mr-2 h-4 w-4" />
+            {t.manager.courseCreatedBtn}
+          </Button>
           <Button variant="destructive" onClick={() => setShowRejectDialog(true)}>
             {t.manager.rejectRequest}
           </Button>
@@ -429,111 +382,28 @@ export default function RequestDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Create Course Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      {/* Approve/Course Created Dialog */}
+      <Dialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t.manager.createCourseTitle}</DialogTitle>
-            <DialogDescription>{t.manager.createCourseDescription}</DialogDescription>
+            <DialogTitle>{t.manager.confirmCourseCreated}</DialogTitle>
+            <DialogDescription>
+              {t.manager.confirmCourseCreatedDesc}
+            </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit(onCreateCourse)} className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              {/* Course Title (from partner, editable) */}
-              <div className="col-span-2 space-y-2">
-                <Label>{t.manager.courseTitleLabel}</Label>
-                <Input {...register('name')} />
-                {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name.message}</p>
-                )}
-                <p className="text-xs text-muted-foreground">{t.manager.courseTitleHint}</p>
-              </div>
-
-              <div className="col-span-2 space-y-2">
-                <Label>{t.manager.subtitleLabel}</Label>
-                <Input placeholder={t.manager.subtitlePlaceholder} {...register('subtitle')} />
-                {errors.subtitle && (
-                  <p className="text-sm text-destructive">{errors.subtitle.message}</p>
-                )}
-              </div>
-
-              <div className="col-span-2 space-y-2">
-                <Label>{t.manager.fullDescriptionLabel}</Label>
-                <textarea
-                  className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  {...register('description')}
-                />
-                {errors.description && (
-                  <p className="text-sm text-destructive">{errors.description.message}</p>
-                )}
-              </div>
-
-              <div className="col-span-2 space-y-2">
-                <Label>{t.manager.shortDescriptionLabel}</Label>
-                <textarea
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  {...register('shortDescription')}
-                />
-                {errors.shortDescription && (
-                  <p className="text-sm text-destructive">{errors.shortDescription.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t.manager.beginTimeLabel}</Label>
-                <Input type="time" {...register('beginTime')} />
-                {errors.beginTime && (
-                  <p className="text-sm text-destructive">{errors.beginTime.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t.manager.endTimeLabel}</Label>
-                <Input type="time" {...register('endTime')} />
-                {errors.endTime && (
-                  <p className="text-sm text-destructive">{errors.endTime.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t.manager.seatsLabel}</Label>
-                <Input type="number" {...register('seats')} />
-                {errors.seats && (
-                  <p className="text-sm text-destructive">{errors.seats.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t.manager.participantsLabel}</Label>
-                <Input placeholder={t.manager.participantsPlaceholder} {...register('participants')} />
-                {errors.participants && (
-                  <p className="text-sm text-destructive">{errors.participants.message}</p>
-                )}
-              </div>
-
-              <div className="col-span-2 space-y-2">
-                <Label>{t.manager.categoryIdsLabel}</Label>
-                <Input placeholder={t.manager.categoryIdsPlaceholder} {...register('categoryIds')} />
-                {errors.categoryIds && (
-                  <p className="text-sm text-destructive">{errors.categoryIds.message}</p>
-                )}
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowCreateDialog(false)}
-              >
-                {t.common.cancel}
-              </Button>
-              <Button type="submit" disabled={createCourseMutation.isPending}>
-                {createCourseMutation.isPending
-                  ? t.manager.publishing
-                  : t.manager.publishCourse}
-              </Button>
-            </DialogFooter>
-          </form>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowApproveDialog(false)}>
+              {t.common.cancel}
+            </Button>
+            <Button
+              onClick={handleCourseCreated}
+              disabled={updateStatusMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              {t.manager.confirmApprove}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
