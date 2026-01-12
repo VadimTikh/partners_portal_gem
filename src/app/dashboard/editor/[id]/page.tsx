@@ -25,7 +25,7 @@ import { useI18n } from '@/lib/i18n';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  sku: z.string().min(1, 'SKU is required'),
+  sku: z.string().optional(), // SKU is auto-generated, not required from partner
   location: z.string().min(1, 'Location is required'),
   description: z.string().min(1, 'Description is required'),
   basePrice: z.number().min(0, 'Price must be positive'),
@@ -131,15 +131,18 @@ export default function EditorPage() {
   const onSubmit = async (data: CourseFormValues) => {
     try {
       if (isNew) {
-        await createCourseMutation.mutateAsync({
+        const newCourse = await createCourseMutation.mutateAsync({
           title: data.title,
-          sku: data.sku,
+          sku: data.sku || `NEW-${Date.now()}`, // Auto-generate SKU if not provided
           location: data.location,
           description: data.description,
           basePrice: data.basePrice,
           status: data.status,
           image: data.image || '',
         });
+        toast.success(t.editor.successSaved);
+        // Navigate to the edit page of the newly created course to add dates
+        router.push(`/dashboard/editor/${newCourse.id}`);
       } else {
         await updateCourseMutation.mutateAsync({
           id: Number(id),
@@ -147,10 +150,8 @@ export default function EditorPage() {
           status: data.status,
           basePrice: data.basePrice,
         });
+        toast.success(t.editor.successSaved);
       }
-
-      toast.success(t.editor.successSaved);
-      router.push('/dashboard');
     } catch (error) {
       toast.error(t.editor.failedSave);
       console.error(error);
@@ -288,20 +289,18 @@ export default function EditorPage() {
                             </SelectContent>
                         </Select>
                     </div>
+                    {/* SKU field - only show for existing courses (read-only) */}
+                    {!isNew && (
                     <div className="grid gap-2">
                         <Label htmlFor="sku" className="flex items-center gap-2">
                             {t.editor.skuLabel}
-                            {!isNew && <Lock className="h-3 w-3 text-muted-foreground" />}
+                            <Lock className="h-3 w-3 text-muted-foreground" />
                         </Label>
-                        {isNew ? (
-                            <Input id="sku" {...form.register('sku')} />
-                        ) : (
-                             <div className="rounded-md border border-input bg-muted px-3 py-2 text-sm cursor-not-allowed text-muted-foreground">
-                                {form.watch('sku')}
-                            </div>
-                        )}
-                         {form.formState.errors.sku && <p className="text-sm text-destructive">{form.formState.errors.sku.message}</p>}
+                        <div className="rounded-md border border-input bg-muted px-3 py-2 text-sm cursor-not-allowed text-muted-foreground">
+                            {form.watch('sku')}
+                        </div>
                     </div>
+                    )}
                     <div className="grid gap-2">
                         <Label htmlFor="location" className="flex items-center gap-2">
                             {t.editor.locationLabel}
@@ -331,6 +330,8 @@ export default function EditorPage() {
                         )}
                          {form.formState.errors.description && <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>}
                     </div>
+                    {/* Image field - only show for existing courses */}
+                    {!isNew && (
                      <div className="grid gap-2">
                         <Label htmlFor="image">{t.editor.imageLabel}</Label>
                         <div className="flex flex-col gap-4">
@@ -348,6 +349,7 @@ export default function EditorPage() {
                             </div>
                         </div>
                     </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
@@ -391,7 +393,6 @@ export default function EditorPage() {
                                     <TableHead>{t.editor.timeHeader}</TableHead>
                                     <TableHead className="w-[100px]">{t.editor.durationHeader}</TableHead>
                                     <TableHead className="w-[90px]">{t.editor.capacityHeader}</TableHead>
-                                    <TableHead className="w-[100px]">{t.editor.bookedHeader}</TableHead>
                                     <TableHead className="w-[110px]">Price</TableHead>
                                     <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
@@ -399,7 +400,7 @@ export default function EditorPage() {
                             <TableBody>
                                 {dates.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} className="text-center text-muted-foreground h-24">
+                                        <TableCell colSpan={6} className="text-center text-muted-foreground h-24">
                                             {t.editor.noDates}
                                         </TableCell>
                                     </TableRow>
@@ -420,14 +421,6 @@ export default function EditorPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <span className="text-sm">{date.capacity}</span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2 whitespace-nowrap">
-                                                    <span className="text-sm font-medium">{date.booked}</span>
-                                                    <span className="text-xs text-muted-foreground">
-                                                         / {date.capacity - date.booked}
-                                                    </span>
-                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 {editingPriceId === date.id ? (
