@@ -266,9 +266,9 @@ export default function NewCourseRequestPage() {
                   </div>
 
                   {/* Custom Price + Delete */}
-                  <div className="flex items-end gap-2">
-                    <div className="flex-1">
-                      <Label className="text-xs">{t.courseRequest.customPriceLabel}</Label>
+                  <div>
+                    <Label className="text-xs">{t.courseRequest.customPriceLabel}</Label>
+                    <div className="flex items-center gap-2 mt-1">
                       <Input
                         type="number"
                         min="0"
@@ -282,18 +282,18 @@ export default function NewCourseRequestPage() {
                             e.target.value ? Number(e.target.value) : undefined
                           )
                         }
-                        className="mt-1"
+                        className="flex-1"
                       />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeDate(reqDate.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeDate(reqDate.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
               ))}
