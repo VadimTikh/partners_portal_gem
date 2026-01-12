@@ -273,12 +273,15 @@ export default function RequestDetailPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center gap-2">
+              <span className="font-medium">{request.name || '-'}</span>
+            </div>
+            <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-muted-foreground" />
-              <span>{request.location}</span>
+              <span>{request.location || '-'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Euro className="h-4 w-4 text-muted-foreground" />
-              <span>{request.basePrice.toFixed(2)} €</span>
+              <span>{(request.basePrice ?? 0).toFixed(2)} €</span>
             </div>
           </CardContent>
         </Card>
