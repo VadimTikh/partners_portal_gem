@@ -46,4 +46,4 @@ next-env.d.ts
 
 /claude_docs
 /claude_task
-/docstmpclaude-*
+tmpclaude-*
