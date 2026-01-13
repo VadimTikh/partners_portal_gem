@@ -2,7 +2,9 @@
 .gitignore
 node_modules/
 .next/
-.env*
+.env
+.end.production
+.env.development
 .DS_Store
 .vscode/
 .idea/

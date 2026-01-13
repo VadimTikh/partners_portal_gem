@@ -6,7 +6,9 @@
 .gcloudignore
 **/*.log
 .DS_Store
-.env*
+.env
+.end.production
+.env.development
 nul
 .vscode
 .idea

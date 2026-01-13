@@ -23,6 +23,8 @@ Thumbs.db
 .env.development.local
 .env.test.local
 .env.production.local
+.end.production
+.env.development
 
 # Version control
 .git/
