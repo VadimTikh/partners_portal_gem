@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Edit, Plus } from 'lucide-react';
+import { Search, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
@@ -64,14 +64,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-primary">{t.dashboard.title}</h1>
-        <Button asChild>
-            <Link href="/dashboard/editor/new" className="gap-2">
-                <Plus className="h-4 w-4" /> {t.common.addNewCourse}
-            </Link>
-        </Button>
-      </div>
+      <h1 className="text-3xl font-bold tracking-tight text-primary">{t.dashboard.title}</h1>
 
       <div className="space-y-4">
         <div className="relative">
