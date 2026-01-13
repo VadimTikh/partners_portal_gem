@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_USE_REAL_API: "true"
+    ports:
+      - "3000:8080"
+    environment:
+      NODE_ENV: production
+      APP_URL: http://localhost:3000
+
+      # PostgreSQL (Supabase)
+      DATABASE_URL: ${DATABASE_URL}
+
+      # MySQL (Magento)
+      MAGENTO_DB_HOST: ${MAGENTO_DB_HOST}
+      MAGENTO_DB_PORT: ${MAGENTO_DB_PORT:-3306}
+      MAGENTO_DB_USER: ${MAGENTO_DB_USER}
+      MAGENTO_DB_PASSWORD: ${MAGENTO_DB_PASSWORD}
+      MAGENTO_DB_NAME: ${MAGENTO_DB_NAME}
+
+      # Authentication
+      JWT_SECRET: ${JWT_SECRET}
+
+      # Email
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM:-bestellung@miomente.de}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Miomente}
+      DEV_EMAIL_OVERRIDE: ${DEV_EMAIL_OVERRIDE:-}
+
+      # Odoo
+      ODOO_URL: ${ODOO_URL}
+      ODOO_DB: ${ODOO_DB}
+      ODOO_USER_ID: ${ODOO_USER_ID}
+      ODOO_API_KEY: ${ODOO_API_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # For local development with hot reload
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      NODE_ENV: development
+      APP_URL: http://localhost:3000
+
+      # PostgreSQL (Supabase)
+      DATABASE_URL: ${DATABASE_URL}
+
+      # MySQL (Magento)
+      MAGENTO_DB_HOST: ${MAGENTO_DB_HOST}
+      MAGENTO_DB_PORT: ${MAGENTO_DB_PORT:-3306}
+      MAGENTO_DB_USER: ${MAGENTO_DB_USER}
+      MAGENTO_DB_PASSWORD: ${MAGENTO_DB_PASSWORD}
+      MAGENTO_DB_NAME: ${MAGENTO_DB_NAME}
+
+      # Authentication
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-minimum-32-characters-long}
+
+      # Email
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM:-bestellung@miomente.de}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Miomente}
+      DEV_EMAIL_OVERRIDE: ${DEV_EMAIL_OVERRIDE}
+
+      # Odoo
+      ODOO_URL: ${ODOO_URL}
+      ODOO_DB: ${ODOO_DB}
+      ODOO_USER_ID: ${ODOO_USER_ID}
+      ODOO_API_KEY: ${ODOO_API_KEY}
+    profiles:
+      - dev

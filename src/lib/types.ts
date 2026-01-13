@@ -23,6 +23,7 @@ export interface CourseDate {
 export type UserRole = 'partner' | 'manager';
 
 export interface User {
+  id?: string; // User ID from database
   email: string;
   name: string;
   token?: string;

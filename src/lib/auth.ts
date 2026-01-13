@@ -7,6 +7,7 @@ interface AuthState {
   token: string | null;
   login: (user: User, token?: string) => void;
   logout: () => void;
+  setToken: (token: string) => void;
   isAuthenticated: boolean;
   isManager: boolean;
   isPartner: boolean;
@@ -35,6 +36,7 @@ export const useAuthStore = create<AuthState>()(
           isPartner: user.role === 'partner',
           role: user.role,
         }),
+      setToken: (token: string) => set({ token, isAuthenticated: !!token }),
       logout: () => set({
         user: null,
         token: null,
@@ -52,3 +54,7 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+// Note: Server-side auth utilities (jwt, password, middleware) should be imported
+// directly from '@/lib/auth/jwt', '@/lib/auth/password', '@/lib/auth/middleware'
+// to avoid pulling server-only modules into client bundles.

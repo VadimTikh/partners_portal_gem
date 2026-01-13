@@ -125,7 +125,7 @@ export default function EditorPage() {
   });
 
   const deleteDateMutation = useMutation({
-    mutationFn: api.deleteDate,
+    mutationFn: (dateId: number) => api.deleteDate(dateId, Number(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dates', id] });
     },

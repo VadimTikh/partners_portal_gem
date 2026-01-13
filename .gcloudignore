@@ -3,6 +3,7 @@
 node_modules/
 .next/
 .env
+.env.local
 .end.production
 .env.development
 .DS_Store
