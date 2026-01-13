@@ -482,11 +482,11 @@ export default function EditorPage() {
                                                     </div>
                                                 ) : (
                                                     <div
-                                                        className="group flex items-center gap-1 cursor-pointer hover:bg-accent/50 rounded px-2 py-1 border border-transparent hover:border-muted-foreground/20 transition-all"
+                                                        className="group flex items-center gap-1 cursor-pointer hover:bg-accent/50 rounded px-2 py-1 border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 transition-all"
                                                         onClick={() => startEditingSeats(date.id, date.capacity)}
                                                     >
-                                                        <span className="text-sm">{date.capacity}</span>
-                                                        <Pencil className="h-3 w-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        <span className="text-sm underline decoration-dotted decoration-muted-foreground/40 underline-offset-2">{date.capacity}</span>
+                                                        <Pencil className="h-3 w-3 text-muted-foreground/30 group-hover:text-muted-foreground/70 transition-colors" />
                                                     </div>
                                                 )}
                                             </TableCell>
@@ -521,10 +521,10 @@ export default function EditorPage() {
                                                     </div>
                                                 ) : (
                                                     <div
-                                                        className="group flex items-center gap-1 cursor-pointer hover:bg-accent/50 rounded px-2 py-1 border border-transparent hover:border-muted-foreground/20 transition-all"
+                                                        className="group flex items-center gap-1 cursor-pointer hover:bg-accent/50 rounded px-2 py-1 border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 transition-all"
                                                         onClick={() => startEditingPrice(date.id, date.price)}
                                                     >
-                                                        <span className={`text-sm font-medium ${date.price !== course?.basePrice ? 'text-amber-600 dark:text-amber-400' : ''}`}>
+                                                        <span className={`text-sm font-medium underline decoration-dotted decoration-muted-foreground/40 underline-offset-2 ${date.price !== course?.basePrice ? 'text-amber-600 dark:text-amber-400 decoration-amber-400/40' : ''}`}>
                                                             €{Number(date.price).toFixed(2)}
                                                         </span>
                                                         {date.price !== course?.basePrice && (
@@ -532,7 +532,7 @@ export default function EditorPage() {
                                                                 Custom
                                                             </span>
                                                         )}
-                                                        <Pencil className="h-3 w-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        <Pencil className="h-3 w-3 text-muted-foreground/30 group-hover:text-muted-foreground/70 transition-colors" />
                                                     </div>
                                                 )}
                                             </TableCell>
