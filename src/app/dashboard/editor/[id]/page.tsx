@@ -53,6 +53,8 @@ export default function EditorPage() {
   });
   const [editingPriceId, setEditingPriceId] = useState<number | null>(null);
   const [editedPrice, setEditedPrice] = useState<number>(0);
+  const [editingSeatsId, setEditingSeatsId] = useState<number | null>(null);
+  const [editedSeats, setEditedSeats] = useState<number>(0);
   const hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   const { data: course, isLoading: isCourseLoading } = useQuery({
@@ -125,6 +127,13 @@ export default function EditorPage() {
 
   const updateDateMutation = useMutation({
     mutationFn: ({ dateId, price }: { dateId: number; price: number }) => api.updateDate(dateId, price),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dates', id] });
+    },
+  });
+
+  const updateSeatsMutation = useMutation({
+    mutationFn: ({ dateId, seats }: { dateId: number; seats: number }) => api.updateSeats(dateId, seats),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dates', id] });
     },
@@ -225,6 +234,22 @@ export default function EditorPage() {
   const startEditingPrice = (dateId: number, currentPrice: number) => {
     setEditingPriceId(dateId);
     setEditedPrice(currentPrice);
+  };
+
+  const handleUpdateSeats = async (dateId: number, seats: number) => {
+    try {
+      await updateSeatsMutation.mutateAsync({ dateId, seats });
+      setEditingSeatsId(null);
+      toast.success('Seats updated successfully');
+    } catch (error) {
+      toast.error('Failed to update seats');
+      console.error(error);
+    }
+  };
+
+  const startEditingSeats = (dateId: number, currentSeats: number) => {
+    setEditingSeatsId(dateId);
+    setEditedSeats(currentSeats);
   };
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -422,7 +447,41 @@ export default function EditorPage() {
                                                 <span className="text-sm">{date.duration || 0} min</span>
                                             </TableCell>
                                             <TableCell>
-                                                <span className="text-sm">{date.capacity}</span>
+                                                {editingSeatsId === date.id ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <Input
+                                                            type="number"
+                                                            min="1"
+                                                            className="w-16 h-8 text-sm"
+                                                            value={editedSeats}
+                                                            onChange={(e) => setEditedSeats(parseInt(e.target.value) || 1)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleUpdateSeats(date.id, editedSeats);
+                                                                } else if (e.key === 'Escape') {
+                                                                    setEditingSeatsId(null);
+                                                                }
+                                                            }}
+                                                            autoFocus
+                                                        />
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-8 w-8"
+                                                            onClick={() => handleUpdateSeats(date.id, editedSeats)}
+                                                            disabled={updateSeatsMutation.isPending}
+                                                        >
+                                                            ✓
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        className="cursor-pointer hover:bg-accent/50 rounded px-2 py-1"
+                                                        onClick={() => startEditingSeats(date.id, date.capacity)}
+                                                    >
+                                                        <span className="text-sm">{date.capacity}</span>
+                                                    </div>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 {editingPriceId === date.id ? (
