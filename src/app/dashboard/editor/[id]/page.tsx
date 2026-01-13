@@ -574,7 +574,7 @@ export default function EditorPage() {
                     onSelect={(d) => {
                       if (d) {
                         const current = newDateForm.dateTime;
-                        d.setHours(current.getHours(), current.getMinutes());
+                        d.setHours(current.getHours(), current.getMinutes(), 0, 0);
                         setNewDateForm({ ...newDateForm, dateTime: d });
                       }
                     }}
@@ -597,8 +597,7 @@ export default function EditorPage() {
                 onChange={(e) => {
                   const [hours, minutes] = e.target.value.split(':').map(Number);
                   const newDate = new Date(newDateForm.dateTime);
-                  newDate.setHours(hours);
-                  newDate.setMinutes(minutes);
+                  newDate.setHours(hours, minutes, 0, 0);
                   setNewDateForm({ ...newDateForm, dateTime: newDate });
                 }}
               />
