@@ -167,7 +167,7 @@ export default function NewCourseRequestPage() {
                 type="number"
                 min="1"
                 step="0.01"
-                {...register('basePrice')}
+                {...register('basePrice', { valueAsNumber: true })}
               />
               {errors.basePrice && (
                 <p className="text-sm text-destructive">{errors.basePrice.message}</p>
