@@ -55,12 +55,13 @@ const getStatusBadge = (status: CourseRequestStatus, t: ReturnType<typeof useI18
 export default function RequestsPage() {
   const { t, locale } = useI18n();
   const user = useAuthStore((state) => state.user);
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
   const dateLocale = locale === 'de' ? de : enUS;
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ['course-requests', user?.partnerId],
     queryFn: () => api.getCourseRequests(user?.partnerId),
-    enabled: !!user?.partnerId,
+    enabled: hasHydrated && !!user?.partnerId,
   });
 
   if (isLoading) {

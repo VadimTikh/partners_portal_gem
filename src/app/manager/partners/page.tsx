@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Search } from 'lucide-react';
 import { useState } from 'react';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { Partner } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -15,10 +16,12 @@ import { Badge } from '@/components/ui/badge';
 export default function PartnersPage() {
   const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   const { data: partners, isLoading } = useQuery({
     queryKey: ['partners'],
     queryFn: () => api.getPartners(),
+    enabled: hasHydrated,
   });
 
   const filteredPartners = partners?.filter((partner: Partner) =>

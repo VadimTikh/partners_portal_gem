@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Clock, CheckCircle2, XCircle, AlertCircle, Search } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { CourseRequest, CourseRequestStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -64,11 +65,13 @@ export default function ManagerRequestsPage() {
   const { t, locale } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
   const dateLocale = locale === 'de' ? de : enUS;
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ['all-course-requests'],
     queryFn: () => api.getCourseRequests(),
+    enabled: hasHydrated,
   });
 
   const filteredRequests = requests?.filter((request: CourseRequest) => {

@@ -21,6 +21,7 @@ import {
   Timer,
 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { CourseRequestStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -90,11 +91,12 @@ export default function RequestDetailPage() {
   const [managerNotes, setManagerNotes] = useState('');
 
   const requestId = Number(params.id);
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   const { data: request, isLoading } = useQuery({
     queryKey: ['course-request', requestId],
     queryFn: () => api.getCourseRequest(requestId),
-    enabled: !!requestId,
+    enabled: hasHydrated && !!requestId,
   });
 
   const updateStatusMutation = useMutation({

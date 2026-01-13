@@ -4,21 +4,25 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Users, FileText, Clock, CheckCircle2 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function ManagerDashboardPage() {
   const { t } = useI18n();
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   const { data: partners } = useQuery({
     queryKey: ['partners'],
     queryFn: () => api.getPartners(),
+    enabled: hasHydrated,
   });
 
   const { data: requests } = useQuery({
     queryKey: ['all-course-requests'],
     queryFn: () => api.getCourseRequests(),
+    enabled: hasHydrated,
   });
 
   const pendingRequests = requests?.filter((r) => r.status === 'pending') || [];

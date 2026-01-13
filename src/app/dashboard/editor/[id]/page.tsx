@@ -9,6 +9,7 @@ import * as z from 'zod';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Trash2, Plus, Upload, Lock } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/lib/auth';
 import { CourseDate } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,17 +53,18 @@ export default function EditorPage() {
   });
   const [editingPriceId, setEditingPriceId] = useState<number | null>(null);
   const [editedPrice, setEditedPrice] = useState<number>(0);
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   const { data: course, isLoading: isCourseLoading } = useQuery({
     queryKey: ['course', id],
     queryFn: () => api.getCourse(id),
-    enabled: !!id && !isNew,
+    enabled: hasHydrated && !!id && !isNew,
   });
 
   const { data: existingDates, isLoading: isDatesLoading } = useQuery({
     queryKey: ['dates', id],
     queryFn: () => api.getDates(id),
-    enabled: !!id && !isNew,
+    enabled: hasHydrated && !!id && !isNew,
   });
 
   const form = useForm<CourseFormValues>({

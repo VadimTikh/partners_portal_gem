@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -18,9 +19,11 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [datesFilter, setDatesFilter] = useState<'all' | 'with-dates' | 'without-dates'>('all');
   const { t } = useI18n();
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
   const { data: courses, isLoading } = useQuery({
     queryKey: ['courses'],
     queryFn: api.getCourses,
+    enabled: hasHydrated,
   });
 
   const stripHtml = (html: string) => {
