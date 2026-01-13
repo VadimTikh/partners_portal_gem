@@ -36,6 +36,12 @@ const courseSchema = z.object({
 
 type CourseFormValues = z.infer<typeof courseSchema>;
 
+// Parse datetime string without timezone conversion (treat as local time)
+const parseAsLocalTime = (dateTimeStr: string) => {
+  // Remove Z suffix to prevent UTC conversion
+  return new Date(dateTimeStr.replace('Z', ''));
+};
+
 export default function EditorPage() {
   const params = useParams();
   const router = useRouter();
@@ -437,11 +443,11 @@ export default function EditorPage() {
                                             <TableCell>
                                                 <div className="flex items-center text-sm">
                                                     <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                                                    <span>{format(new Date(date.dateTime), "PPP")}</span>
+                                                    <span>{format(parseAsLocalTime(date.dateTime), "PPP")}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <span className="text-sm">{format(new Date(date.dateTime), 'HH:mm')}</span>
+                                                <span className="text-sm">{format(parseAsLocalTime(date.dateTime), 'HH:mm')}</span>
                                             </TableCell>
                                             <TableCell>
                                                 <span className="text-sm">{date.duration || 0} min</span>
