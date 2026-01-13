@@ -176,7 +176,7 @@ export default function EditorPage() {
     try {
       await createDateMutation.mutateAsync({
         courseId: Number(id),
-        dateTime: format(newDateForm.dateTime, "yyyy-MM-dd'T'HH:mm:ss"),
+        dateTime: format(newDateForm.dateTime, "yyyy-MM-dd'T'HH:mm:ssxxx"),
         capacity: newDateForm.capacity,
         duration: newDateForm.duration,
         price: newDateForm.price,
