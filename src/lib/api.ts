@@ -135,13 +135,23 @@ export const api = {
     });
   },
 
-  updateDateDetails: async (dateId: number, data: { dateTime?: string; duration?: number }): Promise<void> => {
+  updateDateTime: async (dateId: number, dateTime: string): Promise<void> => {
     if (USE_MOCK) return; // Mock doesn't need implementation
 
     if (!API_URL) throw new Error('API URL not configured');
-    await axios.post(API_URL, { date_id: dateId, ...data }, {
+    await axios.post(API_URL, { date_id: dateId, dateTime }, {
       ...getAuthConfig(),
-      params: { action: 'update-date-details' }
+      params: { action: 'update-date-time' }
+    });
+  },
+
+  updateDuration: async (dateId: number, duration: number): Promise<void> => {
+    if (USE_MOCK) return; // Mock doesn't need implementation
+
+    if (!API_URL) throw new Error('API URL not configured');
+    await axios.post(API_URL, { date_id: dateId, duration }, {
+      ...getAuthConfig(),
+      params: { action: 'update-duration' }
     });
   },
 

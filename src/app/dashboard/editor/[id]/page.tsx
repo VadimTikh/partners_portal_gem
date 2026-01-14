@@ -151,9 +151,17 @@ export default function EditorPage() {
     },
   });
 
-  const updateDateDetailsMutation = useMutation({
-    mutationFn: ({ dateId, data }: { dateId: number; data: { dateTime?: string; duration?: number } }) =>
-      api.updateDateDetails(dateId, data),
+  const updateDateTimeMutation = useMutation({
+    mutationFn: ({ dateId, dateTime }: { dateId: number; dateTime: string }) =>
+      api.updateDateTime(dateId, dateTime),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dates', id] });
+    },
+  });
+
+  const updateDurationMutation = useMutation({
+    mutationFn: ({ dateId, duration }: { dateId: number; duration: number }) =>
+      api.updateDuration(dateId, duration),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dates', id] });
     },
@@ -282,7 +290,7 @@ export default function EditorPage() {
       const currentTime = parseAsLocalTime(currentDateTime);
       newDate.setHours(currentTime.getHours(), currentTime.getMinutes(), 0, 0);
       const dateTimeStr = format(newDate, "yyyy-MM-dd'T'HH:mm:ss");
-      await updateDateDetailsMutation.mutateAsync({ dateId, data: { dateTime: dateTimeStr } });
+      await updateDateTimeMutation.mutateAsync({ dateId, dateTime: dateTimeStr });
       setEditingDateId(null);
       toast.success('Date updated successfully');
     } catch (error) {
@@ -302,7 +310,7 @@ export default function EditorPage() {
       const newDateTime = parseAsLocalTime(currentDateTime);
       newDateTime.setHours(hours, minutes, 0, 0);
       const dateTimeStr = format(newDateTime, "yyyy-MM-dd'T'HH:mm:ss");
-      await updateDateDetailsMutation.mutateAsync({ dateId, data: { dateTime: dateTimeStr } });
+      await updateDateTimeMutation.mutateAsync({ dateId, dateTime: dateTimeStr });
       setEditingTimeId(null);
       toast.success('Time updated successfully');
     } catch (error) {
@@ -318,7 +326,7 @@ export default function EditorPage() {
 
   const handleUpdateDuration = async (dateId: number, duration: number) => {
     try {
-      await updateDateDetailsMutation.mutateAsync({ dateId, data: { duration } });
+      await updateDurationMutation.mutateAsync({ dateId, duration });
       setEditingDurationId(null);
       toast.success('Duration updated successfully');
     } catch (error) {
@@ -535,7 +543,7 @@ export default function EditorPage() {
                                                             variant="ghost"
                                                             className="h-8 w-8"
                                                             onClick={() => handleUpdateDate(date.id, editedDate, date.dateTime)}
-                                                            disabled={updateDateDetailsMutation.isPending}
+                                                            disabled={updateDateTimeMutation.isPending}
                                                         >
                                                             ✓
                                                         </Button>
@@ -583,7 +591,7 @@ export default function EditorPage() {
                                                             variant="ghost"
                                                             className="h-8 w-8"
                                                             onClick={() => handleUpdateTime(date.id, editedTime, date.dateTime)}
-                                                            disabled={updateDateDetailsMutation.isPending}
+                                                            disabled={updateDateTimeMutation.isPending}
                                                         >
                                                             ✓
                                                         </Button>
@@ -623,7 +631,7 @@ export default function EditorPage() {
                                                             variant="ghost"
                                                             className="h-8 w-8"
                                                             onClick={() => handleUpdateDuration(date.id, editedDuration)}
-                                                            disabled={updateDateDetailsMutation.isPending}
+                                                            disabled={updateDurationMutation.isPending}
                                                         >
                                                             ✓
                                                         </Button>
