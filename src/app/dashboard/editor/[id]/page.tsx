@@ -524,14 +524,9 @@ export default function EditorPage() {
                                                         className="group flex items-center gap-1 cursor-pointer hover:bg-accent/50 rounded px-2 py-1 border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 transition-all"
                                                         onClick={() => startEditingPrice(date.id, date.price)}
                                                     >
-                                                        <span className={`text-sm font-medium underline decoration-dotted decoration-muted-foreground/40 underline-offset-2 ${date.price !== course?.basePrice ? 'text-amber-600 dark:text-amber-400 decoration-amber-400/40' : ''}`}>
+                                                        <span className="text-sm underline decoration-dotted decoration-muted-foreground/40 underline-offset-2">
                                                             €{Number(date.price).toFixed(2)}
                                                         </span>
-                                                        {date.price !== course?.basePrice && (
-                                                            <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">
-                                                                Custom
-                                                            </span>
-                                                        )}
                                                         <Pencil className="h-3 w-3 text-muted-foreground/30 group-hover:text-muted-foreground/70 transition-colors" />
                                                     </div>
                                                 )}
