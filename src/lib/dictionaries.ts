@@ -34,7 +34,7 @@ export const dictionaries = {
       actions: 'Aktionen',
       orders: 'Bestellungen',
       accounting: 'Buchhaltung',
-      comingSoon: 'In Entwicklung. Coming soon.',
+      comingSoon: 'In Entwicklung. Demnächst verfügbar.',
     },
     login: {
       title: 'Partner Login',
