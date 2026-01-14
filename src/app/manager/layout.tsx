@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
@@ -46,8 +47,16 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
       {/* Sidebar */}
       <aside className="hidden w-64 flex-col border-r bg-muted/20 md:flex">
         <div className="flex h-16 items-center border-b px-6">
-          <Link href="/manager/requests" className="flex items-center gap-2 font-bold text-primary text-xl">
-            Miomente Manager
+          <Link href="/manager/requests" className="flex items-center gap-2">
+            <Image
+              src="https://www.miomente.de/skin/frontend/ultimo/default/images/goldenwebage/logo.png"
+              alt="Miomente"
+              width={140}
+              height={40}
+              className="h-10 w-auto"
+              priority
+            />
+            <span className="font-bold text-primary text-xl">Manager</span>
           </Link>
         </div>
         <div className="flex-1 overflow-y-auto py-4">
