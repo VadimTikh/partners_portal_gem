@@ -135,6 +135,16 @@ export const api = {
     });
   },
 
+  updateDateDetails: async (dateId: number, data: { dateTime?: string; duration?: number }): Promise<void> => {
+    if (USE_MOCK) return; // Mock doesn't need implementation
+
+    if (!API_URL) throw new Error('API URL not configured');
+    await axios.post(API_URL, { date_id: dateId, ...data }, {
+      ...getAuthConfig(),
+      params: { action: 'update-date-details' }
+    });
+  },
+
   changePassword: async (password: string, newPassword: string): Promise<void> => {
     if (USE_MOCK) return mockApi.changePassword(password, newPassword);
 
