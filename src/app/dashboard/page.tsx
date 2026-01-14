@@ -82,55 +82,55 @@ export default function DashboardPage() {
 
         <div className="flex flex-wrap gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Status:</span>
+            <span className="text-sm font-medium">{t.common.status}:</span>
             <div className="flex gap-1">
               <Button
                 size="sm"
                 variant={statusFilter === 'all' ? 'default' : 'outline'}
                 onClick={() => setStatusFilter('all')}
               >
-                All
+                {t.dashboard.filterAll}
               </Button>
               <Button
                 size="sm"
                 variant={statusFilter === 'active' ? 'default' : 'outline'}
                 onClick={() => setStatusFilter('active')}
               >
-                Active
+                {t.common.active}
               </Button>
               <Button
                 size="sm"
                 variant={statusFilter === 'inactive' ? 'default' : 'outline'}
                 onClick={() => setStatusFilter('inactive')}
               >
-                Inactive
+                {t.common.inactive}
               </Button>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Available Dates:</span>
+            <span className="text-sm font-medium">{t.dashboard.filterAvailableDates}:</span>
             <div className="flex gap-1">
               <Button
                 size="sm"
                 variant={datesFilter === 'all' ? 'default' : 'outline'}
                 onClick={() => setDatesFilter('all')}
               >
-                All
+                {t.dashboard.filterAll}
               </Button>
               <Button
                 size="sm"
                 variant={datesFilter === 'with-dates' ? 'default' : 'outline'}
                 onClick={() => setDatesFilter('with-dates')}
               >
-                With Dates
+                {t.dashboard.filterWithDates}
               </Button>
               <Button
                 size="sm"
                 variant={datesFilter === 'without-dates' ? 'default' : 'outline'}
                 onClick={() => setDatesFilter('without-dates')}
               >
-                Without Dates
+                {t.dashboard.filterWithoutDates}
               </Button>
             </div>
           </div>
@@ -193,7 +193,7 @@ export default function DashboardPage() {
                   </Badge>
                   {hasNoDates && course.status === 'active' && (
                     <Badge className="absolute top-2 left-2 bg-amber-500 hover:bg-amber-600 animate-pulse">
-                      No Dates
+                      {t.dashboard.noDates}
                     </Badge>
                   )}
                 </div>
@@ -214,7 +214,7 @@ export default function DashboardPage() {
                         </div>
                     </div>
                     <div className="text-xs font-medium text-muted-foreground">
-                      {course.available_dates || 0} available {(course.available_dates || 0) === 1 ? 'date' : 'dates'}
+                      {course.available_dates || 0} {(course.available_dates || 0) === 1 ? t.dashboard.availableDate : t.dashboard.availableDates}
                     </div>
                   </div>
                 </CardHeader>
