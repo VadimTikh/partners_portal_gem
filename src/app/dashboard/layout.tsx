@@ -36,8 +36,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navigation = [
     { name: t.common.myCourses, href: '/dashboard', icon: LayoutDashboard },
     { name: t.common.addNewCourse, href: '/dashboard/requests', icon: PlusCircle },
-    { name: t.common.orders, href: '/dashboard/orders', icon: ShoppingCart },
-    { name: t.common.accounting, href: '/dashboard/accounting', icon: Receipt },
+    { name: t.common.orders, href: '/dashboard/orders', icon: ShoppingCart, badge: 'Soon' },
+    { name: t.common.accounting, href: '/dashboard/accounting', icon: Receipt, badge: 'Soon' },
     { name: t.common.contactSupport, href: '/dashboard/contact', icon: LifeBuoy },
     { name: t.common.settings, href: '/dashboard/settings', icon: Settings },
   ];
@@ -73,6 +73,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               >
                 <item.icon className="h-4 w-4" />
                 {item.name}
+                {item.badge && (
+                  <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 font-medium">
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             ))}
           </nav>
