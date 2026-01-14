@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - main
+      - dev
 
 env:
-  IMAGE: hajusag/miomente-portal
+  IMAGE: ${{ github.ref_name == 'main' && 'hajusag/miomente-portal' || 'hajusag/miomente-portal-dev' }}
+  CONTAINER_NAME: ${{ github.ref_name == 'main' && 'miomente-portal' || 'miomente-portal-dev' }}
+  PORT: ${{ github.ref_name == 'main' && '5972' || '5973' }}
+  N8N_URL: ${{ github.ref_name == 'main' && 'https://n8n.boni.tools/webhook/partner-portal' || 'https://n8n.boni.tools/webhook/partner-portal-dev' }}
 
 jobs:
   deploy:
@@ -34,7 +38,7 @@ jobs:
             ${{ env.IMAGE }}:${{ steps.version.outputs.TAG }}
             ${{ env.IMAGE }}:latest
           build-args: |
-            NEXT_PUBLIC_N8N_API_URL=https://n8n.boni.tools/webhook/partner-portal
+            NEXT_PUBLIC_N8N_API_URL=${{ env.N8N_URL }}
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v1
@@ -44,12 +48,12 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             docker pull ${{ env.IMAGE }}:${{ steps.version.outputs.TAG }}
-            docker stop miomente-portal 2>/dev/null || true
-            docker rm miomente-portal 2>/dev/null || true
+            docker stop ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+            docker rm ${{ env.CONTAINER_NAME }} 2>/dev/null || true
             docker run -d \
-              --name miomente-portal \
-              -p 127.0.0.1:5972:8080 \
-              -e NEXT_PUBLIC_N8N_API_URL="https://n8n.boni.tools/webhook/partner-portal" \
+              --name ${{ env.CONTAINER_NAME }} \
+              -p 127.0.0.1:${{ env.PORT }}:8080 \
+              -e NEXT_PUBLIC_N8N_API_URL="${{ env.N8N_URL }}" \
               --restart unless-stopped \
               ${{ env.IMAGE }}:${{ steps.version.outputs.TAG }}
             docker image prune -f
