@@ -32,6 +32,9 @@ export const dictionaries = {
       approve: 'Genehmigen',
       reject: 'Ablehnen',
       actions: 'Aktionen',
+      orders: 'Bestellungen',
+      accounting: 'Buchhaltung',
+      comingSoon: 'In Entwicklung. Coming soon.',
     },
     login: {
       title: 'Partner Login',
@@ -265,6 +268,9 @@ export const dictionaries = {
       approve: 'Approve',
       reject: 'Reject',
       actions: 'Actions',
+      orders: 'Orders',
+      accounting: 'Accounting',
+      comingSoon: 'In development. Coming soon.',
     },
     login: {
       title: 'Partner Login',
