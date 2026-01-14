@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { FileText, LogOut, Languages, Settings } from 'lucide-react';
+import { FileText, LogOut, Languages, Settings, LayoutDashboard, Users } from 'lucide-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
@@ -38,7 +38,9 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
   if (!isAuthenticated || !isManager) return null;
 
   const navigation = [
+    { name: t.manager.dashboard, href: '/manager', icon: LayoutDashboard },
     { name: t.manager.courseRequests, href: '/manager/requests', icon: FileText },
+    { name: t.manager.partners, href: '/manager/partners', icon: Users },
     { name: t.common.settings, href: '/manager/settings', icon: Settings },
   ];
 
