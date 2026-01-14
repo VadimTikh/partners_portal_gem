@@ -23,15 +23,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isManager = useAuthStore((state) => state.isManager);
   const { t, locale, setLocale } = useI18n();
 
   useEffect(() => {
     if (!isAuthenticated) {
-        router.push('/login');
+      router.push('/login');
+    } else if (isManager) {
+      // Redirect managers to their dashboard
+      router.push('/manager');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isManager, router]);
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated || isManager) return null;
 
   const navigation = [
     { name: t.common.myCourses, href: '/dashboard', icon: LayoutDashboard },
