@@ -61,6 +61,12 @@ export default function EditorPage() {
   const [editedPrice, setEditedPrice] = useState<number>(0);
   const [editingSeatsId, setEditingSeatsId] = useState<number | null>(null);
   const [editedSeats, setEditedSeats] = useState<number>(0);
+  const [editingDateId, setEditingDateId] = useState<number | null>(null);
+  const [editedDate, setEditedDate] = useState<Date>(new Date());
+  const [editingTimeId, setEditingTimeId] = useState<number | null>(null);
+  const [editedTime, setEditedTime] = useState<string>('00:00');
+  const [editingDurationId, setEditingDurationId] = useState<number | null>(null);
+  const [editedDuration, setEditedDuration] = useState<number>(0);
   const hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   const { data: course, isLoading: isCourseLoading } = useQuery({
@@ -140,6 +146,14 @@ export default function EditorPage() {
 
   const updateSeatsMutation = useMutation({
     mutationFn: ({ dateId, seats }: { dateId: number; seats: number }) => api.updateSeats(dateId, seats),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dates', id] });
+    },
+  });
+
+  const updateDateDetailsMutation = useMutation({
+    mutationFn: ({ dateId, data }: { dateId: number; data: { dateTime?: string; duration?: number } }) =>
+      api.updateDateDetails(dateId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dates', id] });
     },
@@ -256,6 +270,61 @@ export default function EditorPage() {
   const startEditingSeats = (dateId: number, currentSeats: number) => {
     setEditingSeatsId(dateId);
     setEditedSeats(currentSeats);
+  };
+
+  const startEditingDate = (dateId: number, currentDateTime: string) => {
+    setEditingDateId(dateId);
+    setEditedDate(parseAsLocalTime(currentDateTime));
+  };
+
+  const handleUpdateDate = async (dateId: number, newDate: Date, currentDateTime: string) => {
+    try {
+      const currentTime = parseAsLocalTime(currentDateTime);
+      newDate.setHours(currentTime.getHours(), currentTime.getMinutes(), 0, 0);
+      const dateTimeStr = format(newDate, "yyyy-MM-dd'T'HH:mm:ss");
+      await updateDateDetailsMutation.mutateAsync({ dateId, data: { dateTime: dateTimeStr } });
+      setEditingDateId(null);
+      toast.success('Date updated successfully');
+    } catch (error) {
+      toast.error('Failed to update date');
+      console.error(error);
+    }
+  };
+
+  const startEditingTime = (dateId: number, currentDateTime: string) => {
+    setEditingTimeId(dateId);
+    setEditedTime(format(parseAsLocalTime(currentDateTime), 'HH:mm'));
+  };
+
+  const handleUpdateTime = async (dateId: number, newTime: string, currentDateTime: string) => {
+    try {
+      const [hours, minutes] = newTime.split(':').map(Number);
+      const newDateTime = parseAsLocalTime(currentDateTime);
+      newDateTime.setHours(hours, minutes, 0, 0);
+      const dateTimeStr = format(newDateTime, "yyyy-MM-dd'T'HH:mm:ss");
+      await updateDateDetailsMutation.mutateAsync({ dateId, data: { dateTime: dateTimeStr } });
+      setEditingTimeId(null);
+      toast.success('Time updated successfully');
+    } catch (error) {
+      toast.error('Failed to update time');
+      console.error(error);
+    }
+  };
+
+  const startEditingDuration = (dateId: number, currentDuration: number) => {
+    setEditingDurationId(dateId);
+    setEditedDuration(currentDuration || 0);
+  };
+
+  const handleUpdateDuration = async (dateId: number, duration: number) => {
+    try {
+      await updateDateDetailsMutation.mutateAsync({ dateId, data: { duration } });
+      setEditingDurationId(null);
+      toast.success('Duration updated successfully');
+    } catch (error) {
+      toast.error('Failed to update duration');
+      console.error(error);
+    }
   };
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -441,16 +510,135 @@ export default function EditorPage() {
                                     dates.map((date) => (
                                         <TableRow key={date.id}>
                                             <TableCell>
-                                                <div className="flex items-center text-sm">
-                                                    <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                                                    <span>{format(parseAsLocalTime(date.dateTime), "PPP")}</span>
-                                                </div>
+                                                {editingDateId === date.id ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <Popover>
+                                                            <PopoverTrigger asChild>
+                                                                <Button variant="outline" className="h-8 text-sm px-2">
+                                                                    <CalendarIcon className="mr-1 h-3 w-3" />
+                                                                    {format(editedDate, "PPP")}
+                                                                </Button>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-auto p-0">
+                                                                <Calendar
+                                                                    mode="single"
+                                                                    selected={editedDate}
+                                                                    onSelect={(d) => {
+                                                                        if (d) setEditedDate(d);
+                                                                    }}
+                                                                    initialFocus
+                                                                />
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-8 w-8"
+                                                            onClick={() => handleUpdateDate(date.id, editedDate, date.dateTime)}
+                                                            disabled={updateDateDetailsMutation.isPending}
+                                                        >
+                                                            ✓
+                                                        </Button>
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-8 w-8"
+                                                            onClick={() => setEditingDateId(null)}
+                                                        >
+                                                            ✕
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        className="group flex items-center gap-1 cursor-pointer hover:bg-accent/50 rounded px-2 py-1 border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 transition-all"
+                                                        onClick={() => startEditingDate(date.id, date.dateTime)}
+                                                    >
+                                                        <CalendarIcon className="mr-1 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                                                        <span className="text-sm underline decoration-dotted decoration-muted-foreground/40 underline-offset-2">
+                                                            {format(parseAsLocalTime(date.dateTime), "PPP")}
+                                                        </span>
+                                                        <Pencil className="h-3 w-3 text-muted-foreground/30 group-hover:text-muted-foreground/70 transition-colors" />
+                                                    </div>
+                                                )}
                                             </TableCell>
                                             <TableCell>
-                                                <span className="text-sm">{format(parseAsLocalTime(date.dateTime), 'HH:mm')}</span>
+                                                {editingTimeId === date.id ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <Input
+                                                            type="time"
+                                                            className="w-24 h-8 text-sm"
+                                                            value={editedTime}
+                                                            onChange={(e) => setEditedTime(e.target.value)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleUpdateTime(date.id, editedTime, date.dateTime);
+                                                                } else if (e.key === 'Escape') {
+                                                                    setEditingTimeId(null);
+                                                                }
+                                                            }}
+                                                            autoFocus
+                                                        />
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-8 w-8"
+                                                            onClick={() => handleUpdateTime(date.id, editedTime, date.dateTime)}
+                                                            disabled={updateDateDetailsMutation.isPending}
+                                                        >
+                                                            ✓
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        className="group flex items-center gap-1 cursor-pointer hover:bg-accent/50 rounded px-2 py-1 border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 transition-all"
+                                                        onClick={() => startEditingTime(date.id, date.dateTime)}
+                                                    >
+                                                        <span className="text-sm underline decoration-dotted decoration-muted-foreground/40 underline-offset-2">
+                                                            {format(parseAsLocalTime(date.dateTime), 'HH:mm')}
+                                                        </span>
+                                                        <Pencil className="h-3 w-3 text-muted-foreground/30 group-hover:text-muted-foreground/70 transition-colors" />
+                                                    </div>
+                                                )}
                                             </TableCell>
                                             <TableCell>
-                                                <span className="text-sm">{date.duration || 0} min</span>
+                                                {editingDurationId === date.id ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <Input
+                                                            type="number"
+                                                            min="1"
+                                                            className="w-16 h-8 text-sm"
+                                                            value={editedDuration}
+                                                            onChange={(e) => setEditedDuration(parseInt(e.target.value) || 1)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleUpdateDuration(date.id, editedDuration);
+                                                                } else if (e.key === 'Escape') {
+                                                                    setEditingDurationId(null);
+                                                                }
+                                                            }}
+                                                            autoFocus
+                                                        />
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-8 w-8"
+                                                            onClick={() => handleUpdateDuration(date.id, editedDuration)}
+                                                            disabled={updateDateDetailsMutation.isPending}
+                                                        >
+                                                            ✓
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        className="group flex items-center gap-1 cursor-pointer hover:bg-accent/50 rounded px-2 py-1 border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 transition-all"
+                                                        onClick={() => startEditingDuration(date.id, date.duration || 0)}
+                                                    >
+                                                        <span className="text-sm underline decoration-dotted decoration-muted-foreground/40 underline-offset-2">
+                                                            {date.duration || 0} min
+                                                        </span>
+                                                        <Pencil className="h-3 w-3 text-muted-foreground/30 group-hover:text-muted-foreground/70 transition-colors" />
+                                                    </div>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 {editingSeatsId === date.id ? (
