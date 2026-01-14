@@ -8,18 +8,21 @@ export default function HomePage() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isManager = useAuthStore((state) => state.isManager);
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
     if (isAuthenticated) {
       if (isManager) {
-        router.push('/manager');
+        router.replace('/manager');
       } else {
-        router.push('/dashboard');
+        router.replace('/dashboard');
       }
     } else {
-      router.push('/login');
+      router.replace('/login');
     }
-  }, [isAuthenticated, isManager, router]);
+  }, [isAuthenticated, isManager, hasHydrated, router]);
 
   return null;
 }

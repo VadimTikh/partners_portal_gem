@@ -24,18 +24,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isManager = useAuthStore((state) => state.isManager);
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
   const { t, locale, setLocale } = useI18n();
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
     if (!isAuthenticated) {
-      router.push('/login');
+      router.replace('/login');
     } else if (isManager) {
       // Redirect managers to their dashboard
-      router.push('/manager');
+      router.replace('/manager');
     }
-  }, [isAuthenticated, isManager, router]);
+  }, [isAuthenticated, isManager, hasHydrated, router]);
 
-  if (!isAuthenticated || isManager) return null;
+  if (!hasHydrated || !isAuthenticated || isManager) return null;
 
   const navigation = [
     { name: t.common.myCourses, href: '/dashboard', icon: LayoutDashboard },
