@@ -1,29 +1,62 @@
 /**
- * PostgreSQL (Supabase) database connection
+ * PostgreSQL database connection
  * Used for: users, sessions, course requests
+ *
+ * Supports two connection modes:
+ * 1. Individual params: POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DATABASE
+ * 2. Connection string: DATABASE_URL (fallback for backwards compatibility)
  */
 
-import { Pool, QueryResult, QueryResultRow } from 'pg';
+import { Pool, PoolConfig, QueryResult, QueryResultRow } from 'pg';
 
 let pool: Pool | null = null;
 
-function getPool(): Pool {
-  if (!pool) {
-    const connectionString = process.env.DATABASE_URL;
+function getPoolConfig(): PoolConfig {
+  // Prefer individual params over connection string
+  const host = process.env.POSTGRES_HOST;
+  const port = process.env.POSTGRES_PORT;
+  const user = process.env.POSTGRES_USER;
+  const password = process.env.POSTGRES_PASSWORD;
+  const database = process.env.POSTGRES_DATABASE;
 
-    if (!connectionString) {
-      throw new Error('DATABASE_URL environment variable is not set');
-    }
-
-    pool = new Pool({
-      connectionString,
-      ssl: process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: false }
-        : false,
+  if (host && user && password && database) {
+    return {
+      host,
+      port: port ? parseInt(port, 10) : 5432,
+      user,
+      password,
+      database,
       max: 10,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,
-    });
+    };
+  }
+
+  // Fallback to connection string (backwards compatibility with Supabase)
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    throw new Error(
+      'PostgreSQL connection not configured. Set either POSTGRES_HOST/USER/PASSWORD/DATABASE or DATABASE_URL'
+    );
+  }
+
+  return {
+    connectionString,
+    ssl: process.env.NODE_ENV === 'production'
+      ? { rejectUnauthorized: false }
+      : false,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  };
+}
+
+function getPool(): Pool {
+  if (!pool) {
+    const config = getPoolConfig();
+
+    pool = new Pool(config);
 
     // Handle pool errors
     pool.on('error', (err) => {
