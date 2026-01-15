@@ -56,7 +56,7 @@ export const MOCK_COURSES: Course[] = [
     sku: 'IT-COOK-001',
     status: 'active',
     description: 'Learn the secrets of authentic Italian cuisine from pasta to tiramisu.',
-    image: 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?auto=format&fit=crop&q=80&w=1000',
+    image: 'https://images.unsplash.com/photo-1498579150354-977475b7ea0b?auto=format&fit=crop&q=80&w=1000',
     basePrice: 89.00,
     location: 'München',
   },
@@ -372,7 +372,7 @@ export const mockApi = {
       sku: `NEW-${Date.now()}`,
       status: 'active',
       description: data.description,
-      image: data.image || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?auto=format&fit=crop&q=80&w=1000',
+      image: data.image || 'https://images.unsplash.com/photo-1498579150354-977475b7ea0b?auto=format&fit=crop&q=80&w=1000',
       basePrice: request.basePrice,
       location: request.location,
     };

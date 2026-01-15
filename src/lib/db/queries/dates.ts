@@ -563,3 +563,115 @@ export function isValidFutureDate(dateTime: string): boolean {
 
   return date >= twoDaysFromNow;
 }
+
+/**
+ * Update date datetime (date and time)
+ *
+ * This complex query:
+ * - Parses the new datetime
+ * - Gets current begin/end to calculate existing duration
+ * - Calculates new end time maintaining same duration
+ * - Updates product name with new date
+ * - Finds or creates date option for the new date
+ * - Updates multiple EAV attributes (name, begin_time, date option)
+ * - Updates wishdatefinder index
+ */
+export async function updateDateTime(dateId: number, dateTime: string): Promise<void> {
+  await execute(`
+    -- Parse input
+    SET @event_id = ?;
+    SET @date_time = ?;
+
+    -- Extract date and time
+    SET @event_date = DATE_FORMAT(STR_TO_DATE(@date_time, '%Y-%m-%dT%H:%i:%s'), '%Y-%m-%d');
+    SET @begin_time = DATE_FORMAT(STR_TO_DATE(@date_time, '%Y-%m-%dT%H:%i:%s'), '%H:%i');
+
+    -- Get current end time to calculate duration
+    SET @current_begin = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 717 AND store_id = 0);
+    SET @current_end = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 718 AND store_id = 0);
+    SET @duration = TIMESTAMPDIFF(MINUTE, STR_TO_DATE(@current_begin, '%H:%i'), STR_TO_DATE(@current_end, '%H:%i'));
+
+    -- Calculate new end time (keep same duration)
+    SET @end_time = DATE_FORMAT(DATE_ADD(STR_TO_DATE(@date_time, '%Y-%m-%dT%H:%i:%s'), INTERVAL @duration MINUTE), '%H:%i');
+
+    -- Get parent name for new product name
+    SET @parent_name = (
+        SELECT cpev.value
+        FROM catalog_product_super_link sl
+        JOIN catalog_product_entity_varchar cpev ON sl.parent_id = cpev.entity_id
+        WHERE sl.product_id = @event_id AND cpev.attribute_id = 60 AND cpev.store_id = 0
+    );
+    SET @new_name = CONCAT(@parent_name, '-', @event_date);
+
+    -- Find or create date option
+    SET @existing_date_option = (
+        SELECT ao.option_id
+        FROM eav_attribute_option ao
+        JOIN eav_attribute_option_value aov ON ao.option_id = aov.option_id
+        WHERE ao.attribute_id = 525 AND aov.value = @event_date
+        LIMIT 1
+    );
+
+    SET @date_option_id = @existing_date_option;
+    IF @date_option_id IS NULL THEN
+        INSERT INTO eav_attribute_option (attribute_id, sort_order) VALUES (525, 0);
+        SET @date_option_id = LAST_INSERT_ID();
+        INSERT INTO eav_attribute_option_value (option_id, store_id, value) VALUES (@date_option_id, 0, @event_date);
+    END IF;
+
+    -- Calculate if weekend for wishdatefinder
+    SET @is_weekend = (DAYOFWEEK(STR_TO_DATE(@event_date, '%Y-%m-%d')) IN (1, 7));
+
+    -- 1. Update name
+    UPDATE catalog_product_entity_varchar
+    SET value = @new_name
+    WHERE entity_id = @event_id AND attribute_id = 60 AND store_id = 0;
+
+    -- 2. Update begin time
+    UPDATE catalog_product_entity_varchar
+    SET value = @begin_time
+    WHERE entity_id = @event_id AND attribute_id = 717 AND store_id = 0;
+
+    -- 3. Update end time
+    UPDATE catalog_product_entity_varchar
+    SET value = @end_time
+    WHERE entity_id = @event_id AND attribute_id = 718 AND store_id = 0;
+
+    -- 4. Update date option
+    UPDATE catalog_product_entity_int
+    SET value = @date_option_id
+    WHERE entity_id = @event_id AND attribute_id = 525 AND store_id = 0;
+
+    -- 5. Update wishdatefinder index
+    UPDATE miomente_wishdatefinder_index
+    SET simple_product_date = @event_date,
+        we = @is_weekend,
+        updated = NOW()
+    WHERE simple_product_id = @event_id;
+  `, [dateId, dateTime]);
+}
+
+/**
+ * Update date duration
+ *
+ * Updates the end time based on begin time + new duration.
+ * This preserves the begin time and just extends/shortens the event.
+ */
+export async function updateDuration(dateId: number, duration: number): Promise<void> {
+  await execute(`
+    -- Parse input
+    SET @event_id = ?;
+    SET @duration = ?;
+
+    -- Get current begin time
+    SET @begin_time = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 717 AND store_id = 0);
+
+    -- Calculate new end time
+    SET @end_time = DATE_FORMAT(DATE_ADD(STR_TO_DATE(@begin_time, '%H:%i'), INTERVAL @duration MINUTE), '%H:%i');
+
+    -- Update end time
+    UPDATE catalog_product_entity_varchar
+    SET value = @end_time
+    WHERE entity_id = @event_id AND attribute_id = 718 AND store_id = 0;
+  `, [dateId, duration]);
+}

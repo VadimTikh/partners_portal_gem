@@ -49,9 +49,9 @@ export default function LoginPage() {
       toast.success(t.login.successMessage);
       // Redirect based on user role
       if (user.role === 'manager') {
-        router.push('/manager');
+        router.replace('/manager');
       } else {
-        router.push('/dashboard');
+        router.replace('/dashboard');
       }
     } catch (error) {
       console.error(error);

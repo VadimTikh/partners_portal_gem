@@ -60,8 +60,8 @@ export default function RequestsPage() {
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ['course-requests', user?.partnerId],
-    queryFn: () => api.getCourseRequests(),
-    enabled: hasHydrated && !!user?.partnerId,
+    queryFn: () => api.getCourseRequests(user?.partnerId),
+    enabled: hasHydrated && !!user,
   });
 
   if (isLoading) {

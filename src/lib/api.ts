@@ -197,6 +197,22 @@ export const api = {
     await apiClient.patch(`/partner/courses/${courseId}/dates/${dateId}`, { seats });
   },
 
+  updateDateTime: async (dateId: number, dateTime: string, courseId?: number): Promise<void> => {
+    if (USE_MOCK) return;
+    if (!courseId) {
+      throw new Error('Course ID is required to update datetime');
+    }
+    await apiClient.patch(`/partner/courses/${courseId}/dates/${dateId}/datetime`, { dateTime });
+  },
+
+  updateDuration: async (dateId: number, duration: number, courseId?: number): Promise<void> => {
+    if (USE_MOCK) return;
+    if (!courseId) {
+      throw new Error('Course ID is required to update duration');
+    }
+    await apiClient.patch(`/partner/courses/${courseId}/dates/${dateId}/duration`, { duration });
+  },
+
   // ==================== Partner: Contact ====================
 
   sendContactMessage: async (subject: string, message: string): Promise<void> => {
@@ -206,8 +222,8 @@ export const api = {
 
   // ==================== Partner: Course Requests ====================
 
-  getCourseRequests: async (): Promise<CourseRequest[]> => {
-    if (USE_MOCK) return mockApi.getCourseRequests();
+  getCourseRequests: async (partnerId?: number): Promise<CourseRequest[]> => {
+    if (USE_MOCK) return mockApi.getCourseRequests(partnerId);
     const response = await apiClient.get<{ success: boolean; requests: CourseRequest[] }>('/partner/requests');
     return response.data.requests;
   },
