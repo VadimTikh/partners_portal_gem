@@ -1,4 +1,4 @@
-# Dockerfile for Next.js App
+# Dockerfile for Miomente Partner Portal (Fullstack Next.js)
 
 # 1. Base image
 FROM node:20-alpine AS base
@@ -22,10 +22,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# --- ADDED FOR N8N API URL ---
-ARG NEXT_PUBLIC_N8N_API_URL
-ENV NEXT_PUBLIC_N8N_API_URL=$NEXT_PUBLIC_N8N_API_URL
-# -----------------------------
+# Build-time environment variables
+ARG NEXT_PUBLIC_USE_REAL_API=true
+ENV NEXT_PUBLIC_USE_REAL_API=$NEXT_PUBLIC_USE_REAL_API
 
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
@@ -50,5 +49,21 @@ EXPOSE 8080
 
 ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
+
+# Runtime environment variables (set these when running the container):
+# - DATABASE_URL: PostgreSQL connection string (Supabase)
+# - MAGENTO_DB_HOST: MySQL host
+# - MAGENTO_DB_PORT: MySQL port (default 3306)
+# - MAGENTO_DB_USER: MySQL user
+# - MAGENTO_DB_PASSWORD: MySQL password
+# - MAGENTO_DB_NAME: MySQL database name
+# - JWT_SECRET: Secret for JWT signing (min 32 chars)
+# - SENDGRID_API_KEY: SendGrid API key for emails
+# - EMAIL_FROM: From email address
+# - APP_URL: Base URL of the application
+# - ODOO_URL: Odoo JSON-RPC URL
+# - ODOO_DB: Odoo database name
+# - ODOO_USER_ID: Odoo user ID
+# - ODOO_API_KEY: Odoo API key
 
 CMD ["node", "server.js"]

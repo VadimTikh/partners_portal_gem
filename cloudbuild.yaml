@@ -6,7 +6,7 @@ steps:
       - '-t'
       - 'gcr.io/$PROJECT_ID/partners-portal-gem:latest'
       - '--build-arg'
-      - 'NEXT_PUBLIC_N8N_API_URL=$_N8N_URL'
+      - 'NEXT_PUBLIC_USE_REAL_API=true'
       - '.'
 
   # 2. Push the container image to Container Registry
@@ -26,10 +26,32 @@ steps:
       - 'europe-central2'
       - '--allow-unauthenticated'
       - '--set-env-vars'
-      - 'NEXT_PUBLIC_N8N_API_URL=$_N8N_URL'
+      - 'NODE_ENV=production,APP_URL=$_APP_URL,DATABASE_URL=$_DATABASE_URL,MAGENTO_DB_HOST=$_MAGENTO_DB_HOST,MAGENTO_DB_PORT=$_MAGENTO_DB_PORT,MAGENTO_DB_USER=$_MAGENTO_DB_USER,MAGENTO_DB_PASSWORD=$_MAGENTO_DB_PASSWORD,MAGENTO_DB_NAME=$_MAGENTO_DB_NAME,JWT_SECRET=$_JWT_SECRET,SENDGRID_API_KEY=$_SENDGRID_API_KEY,EMAIL_FROM=$_EMAIL_FROM,ODOO_URL=$_ODOO_URL,ODOO_DB=$_ODOO_DB,ODOO_USER_ID=$_ODOO_USER_ID,ODOO_API_KEY=$_ODOO_API_KEY'
 
 images:
   - 'gcr.io/$PROJECT_ID/partners-portal-gem:latest'
 
 substitutions:
-  _N8N_URL: 'https://n8n.boni.tools/webhook/partner-portal'
+  _APP_URL: 'https://partner.miomente.de'
+  _DATABASE_URL: ''
+  _MAGENTO_DB_HOST: ''
+  _MAGENTO_DB_PORT: '3306'
+  _MAGENTO_DB_USER: ''
+  _MAGENTO_DB_PASSWORD: ''
+  _MAGENTO_DB_NAME: ''
+  _JWT_SECRET: ''
+  _SENDGRID_API_KEY: ''
+  _EMAIL_FROM: 'bestellung@miomente.de'
+  _ODOO_URL: ''
+  _ODOO_DB: ''
+  _ODOO_USER_ID: ''
+  _ODOO_API_KEY: ''
+
+# Note: Set sensitive substitution values using Cloud Build triggers or
+# gcloud builds submit --substitutions command:
+#
+# gcloud builds submit --substitutions=\
+#   _DATABASE_URL=postgresql://...,\
+#   _MAGENTO_DB_HOST=xxx,\
+#   _JWT_SECRET=xxx,\
+#   ...
