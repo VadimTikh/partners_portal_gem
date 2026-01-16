@@ -6,6 +6,7 @@ import {
   updateDateSeats,
   deleteDate,
 } from '@/lib/db/queries/dates';
+import { logDateEdited, logDateDeleted, getIpFromRequest } from '@/lib/services/activity-logger';
 
 interface RouteParams {
   params: Promise<{ id: string; dateId: string }>;
@@ -30,7 +31,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      if (!user.customerNumber) {
+      if (user.customerNumbers.length === 0) {
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
@@ -38,7 +39,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
 
       // Verify date ownership
-      const isOwner = await verifyDateOwnership(dateIdNum, user.customerNumber);
+      const isOwner = await verifyDateOwnership(dateIdNum, user.customerNumbers);
 
       if (!isOwner) {
         return NextResponse.json(
@@ -50,6 +51,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       const body = await req.json();
       const { price, seats } = body;
 
+      const changedFields: Record<string, { old: unknown; new: unknown }> = {};
+
       // Update price if provided
       if (price !== undefined) {
         if (typeof price !== 'number' || price < 0) {
@@ -59,6 +62,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           );
         }
         await updateDatePrice(dateIdNum, price);
+        changedFields.price = { old: null, new: price };
       }
 
       // Update seats if provided
@@ -70,6 +74,19 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           );
         }
         await updateDateSeats(dateIdNum, seats);
+        changedFields.seats = { old: null, new: seats };
+      }
+
+      // Log activity if anything changed
+      if (Object.keys(changedFields).length > 0) {
+        await logDateEdited(
+          { id: user.userId, email: user.email, name: user.name },
+          dateIdNum,
+          courseId,
+          changedFields,
+          user.customerNumbers[0] || user.customerNumber || '',
+          getIpFromRequest(request)
+        );
       }
 
       return NextResponse.json({
@@ -105,7 +122,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      if (!user.customerNumber) {
+      if (user.customerNumbers.length === 0) {
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
@@ -113,7 +130,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       }
 
       // Verify date ownership
-      const isOwner = await verifyDateOwnership(dateIdNum, user.customerNumber);
+      const isOwner = await verifyDateOwnership(dateIdNum, user.customerNumbers);
 
       if (!isOwner) {
         return NextResponse.json(
@@ -124,6 +141,15 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
       // Delete the date
       await deleteDate(dateIdNum);
+
+      // Log activity
+      await logDateDeleted(
+        { id: user.userId, email: user.email, name: user.name },
+        dateIdNum,
+        courseId,
+        user.customerNumbers[0] || user.customerNumber || '',
+        getIpFromRequest(request)
+      );
 
       return NextResponse.json({
         success: true,

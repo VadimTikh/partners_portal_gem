@@ -7,6 +7,7 @@ import {
   getResetPasswordEmailSubject,
 } from '@/lib/email/templates/reset-password';
 import { config } from '@/lib/config';
+import { logPasswordResetRequested, getIpFromRequest } from '@/lib/services/activity-logger';
 
 /**
  * POST /api/auth/reset-password
@@ -53,6 +54,12 @@ export async function POST(request: NextRequest) {
         subject: getResetPasswordEmailSubject(),
         html: emailHtml,
       });
+
+      // Log activity
+      await logPasswordResetRequested(
+        { id: user.id, email: user.email, name: user.name },
+        getIpFromRequest(request)
+      );
     }
 
     // Always return success (security best practice)

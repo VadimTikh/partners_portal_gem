@@ -152,7 +152,7 @@ export async function createSupportTicket(data: {
   message?: string;
 }): Promise<{ ticketId: number; contactId: number }> {
   // Find or create contact
-  let contact = await findContactByEmail(data.userEmail);
+  const contact = await findContactByEmail(data.userEmail);
   let contactId: number;
 
   if (contact) {

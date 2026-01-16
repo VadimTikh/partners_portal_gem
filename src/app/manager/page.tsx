@@ -21,7 +21,7 @@ export default function ManagerDashboardPage() {
 
   const { data: requests } = useQuery({
     queryKey: ['all-course-requests'],
-    queryFn: () => api.getCourseRequests(),
+    queryFn: () => api.getAllCourseRequests(),
     enabled: hasHydrated,
   });
 
@@ -132,7 +132,7 @@ export default function ManagerDashboardPage() {
                     className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                   >
                     <div>
-                      <p className="font-medium">{partner.companyName}</p>
+                      <p className="font-medium">{partner.name}</p>
                       <p className="text-sm text-muted-foreground">
                         {partner.coursesCount} {t.manager.coursesCount}
                       </p>

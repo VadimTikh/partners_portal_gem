@@ -18,30 +18,30 @@ export const MOCK_MANAGER_USER: User = {
 
 export const MOCK_PARTNERS: Partner[] = [
   {
-    id: 1,
-    name: 'Hans Mueller',
+    id: 'mock-uuid-1',
+    name: 'Hans Mueller (Food Atlas GmbH)',
     email: 'demo@miomente.com',
-    companyName: 'Food Atlas GmbH',
+    customerNumbers: ['12345'],
     coursesCount: 3,
     activeCoursesCount: 2,
     availableDatesCount: 5,
     pendingRequestsCount: 1,
   },
   {
-    id: 2,
-    name: 'Anna Schmidt',
+    id: 'mock-uuid-2',
+    name: 'Anna Schmidt (Weinschule Berlin)',
     email: 'anna@weinschule.de',
-    companyName: 'Weinschule Berlin',
+    customerNumbers: ['23456'],
     coursesCount: 5,
     activeCoursesCount: 4,
     availableDatesCount: 12,
     pendingRequestsCount: 2,
   },
   {
-    id: 3,
-    name: 'Marco Rossi',
+    id: 'mock-uuid-3',
+    name: 'Marco Rossi (Kochstudio München)',
     email: 'marco@kochstudio.de',
-    companyName: 'Kochstudio München',
+    customerNumbers: ['34567', '34568'],
     coursesCount: 8,
     activeCoursesCount: 6,
     availableDatesCount: 3,
@@ -410,12 +410,12 @@ export const mockApi = {
     return [...MOCK_PARTNERS];
   },
 
-  getPartner: async (id: number): Promise<Partner | undefined> => {
+  getPartner: async (id: string): Promise<Partner | undefined> => {
     await delay(300);
     return MOCK_PARTNERS.find(p => p.id === id);
   },
 
-  getPartnerCourses: async (partnerId: number): Promise<Course[]> => {
+  getPartnerCourses: async (partnerId: string): Promise<Course[]> => {
     await delay(400);
     // In mock, return all courses for any partner
     return [...MOCK_COURSES];

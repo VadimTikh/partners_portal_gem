@@ -24,7 +24,7 @@ export interface DbCourse extends RowDataPacket {
 }
 
 /**
- * Get all courses for a partner by customer number
+ * Get all courses for a partner by customer numbers
  *
  * This query joins across multiple Magento EAV tables to get course data:
  * - catalog_product_entity (main product table)
@@ -35,8 +35,17 @@ export interface DbCourse extends RowDataPacket {
  * - miomente_pdf_operator (partner mapping)
  *
  * Also includes a subquery to count available future dates.
+ *
+ * @param customerNumbers - Array of customer numbers (supports multiple for one user)
  */
-export async function getCoursesByPartner(customerNumber: string): Promise<DbCourse[]> {
+export async function getCoursesByPartner(customerNumbers: string[]): Promise<DbCourse[]> {
+  if (customerNumbers.length === 0) {
+    return [];
+  }
+
+  // Build dynamic placeholders for IN clause
+  const placeholders = customerNumbers.map(() => '?').join(', ');
+
   const courses = await query<DbCourse[]>(`
     SELECT
       cpe.entity_id AS id,
@@ -116,21 +125,31 @@ export async function getCoursesByPartner(customerNumber: string): Promise<DbCou
     -- Operator table (operator_id -> customernumber)
     INNER JOIN miomente_pdf_operator AS op
       ON cpev_operator.value = op.operator_id
-    WHERE op.customernumber = ?
+    WHERE op.customernumber IN (${placeholders})
       AND cpe.type_id = 'configurable'
     GROUP BY cpe.entity_id
-  `, [customerNumber]);
+  `, customerNumbers);
 
   return courses;
 }
 
 /**
- * Get a single course by ID, verifying ownership by customer number
+ * Get a single course by ID, verifying ownership by customer numbers
+ *
+ * @param courseId - The course entity ID
+ * @param customerNumbers - Array of customer numbers to verify ownership against
  */
 export async function getCourseById(
   courseId: number,
-  customerNumber: string
+  customerNumbers: string[]
 ): Promise<DbCourse | null> {
+  if (customerNumbers.length === 0) {
+    return null;
+  }
+
+  // Build dynamic placeholders for IN clause
+  const placeholders = customerNumbers.map(() => '?').join(', ');
+
   const course = await queryOne<DbCourse>(`
     SELECT
       cpe.entity_id AS id,
@@ -189,11 +208,11 @@ export async function getCourseById(
     -- Operator table (operator_id -> customernumber)
     INNER JOIN miomente_pdf_operator AS op
       ON cpev_operator.value = op.operator_id
-    WHERE op.customernumber = ?
+    WHERE op.customernumber IN (${placeholders})
       AND cpe.entity_id = ?
       AND cpe.type_id = 'configurable'
     LIMIT 1
-  `, [customerNumber, courseId]);
+  `, [...customerNumbers, courseId]);
 
   return course;
 }
@@ -347,17 +366,26 @@ export async function createConfigurableCourse(
 }
 
 /**
- * Get operator ID for a customer number
+ * Get operator ID for customer numbers (returns first match)
+ *
+ * @param customerNumbers - Array of customer numbers to look up
  */
 export async function getOperatorIdByCustomerNumber(
-  customerNumber: string
+  customerNumbers: string[]
 ): Promise<string | null> {
+  if (customerNumbers.length === 0) {
+    return null;
+  }
+
+  // Build dynamic placeholders for IN clause
+  const placeholders = customerNumbers.map(() => '?').join(', ');
+
   const result = await queryOne<{ operator_id: string } & RowDataPacket>(`
     SELECT operator_id
     FROM miomente_pdf_operator
-    WHERE customernumber = ?
+    WHERE customernumber IN (${placeholders})
     LIMIT 1
-  `, [customerNumber]);
+  `, customerNumbers);
 
   return result?.operator_id || null;
 }

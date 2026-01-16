@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/auth/middleware';
 import { verifyDateOwnership, updateDateTime } from '@/lib/db/queries/dates';
+import { logDateEdited, getIpFromRequest } from '@/lib/services/activity-logger';
 
 interface RouteParams {
   params: Promise<{ id: string; dateId: string }>;
@@ -26,7 +27,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      if (!user.customerNumber) {
+      if (user.customerNumbers.length === 0) {
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
@@ -34,7 +35,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
 
       // Verify date ownership
-      const isOwner = await verifyDateOwnership(dateIdNum, user.customerNumber);
+      const isOwner = await verifyDateOwnership(dateIdNum, user.customerNumbers);
 
       if (!isOwner) {
         return NextResponse.json(
@@ -63,6 +64,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
 
       await updateDateTime(dateIdNum, dateTime);
+
+      // Log activity
+      await logDateEdited(
+        { id: user.userId, email: user.email, name: user.name },
+        dateIdNum,
+        courseId,
+        { dateTime: { old: null, new: dateTime } },
+        user.customerNumbers[0] || user.customerNumber || '',
+        getIpFromRequest(request)
+      );
 
       return NextResponse.json({
         success: true,

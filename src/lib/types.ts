@@ -34,10 +34,10 @@ export interface User {
 
 // Partner information for manager view
 export interface Partner {
-  id: number;
+  id: string;  // Portal user UUID
   name: string;
   email: string;
-  companyName: string;
+  customerNumbers?: string[];  // All assigned customer numbers
   coursesCount: number;
   activeCoursesCount?: number;
   availableDatesCount?: number;

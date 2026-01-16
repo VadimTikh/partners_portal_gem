@@ -254,14 +254,27 @@ export const api = {
     return response.data.partners;
   },
 
+  createPartner: async (data: {
+    name: string;
+    email: string;
+    customerNumbers: string[];
+  }): Promise<{ partner: { id: string; name: string; email: string }; generatedPassword: string }> => {
+    const response = await apiClient.post<{
+      success: boolean;
+      partner: { id: string; name: string; email: string };
+      generatedPassword: string;
+    }>('/manager/partners', data);
+    return { partner: response.data.partner, generatedPassword: response.data.generatedPassword };
+  },
+
   getPartner: async (id: number | string): Promise<Partner | undefined> => {
-    if (USE_MOCK) return mockApi.getPartner(Number(id));
+    if (USE_MOCK) return mockApi.getPartner(String(id));
     const response = await apiClient.get<{ success: boolean; partner: Partner }>(`/manager/partners/${id}`);
     return response.data.partner;
   },
 
   getPartnerCourses: async (partnerId: number | string): Promise<Course[]> => {
-    if (USE_MOCK) return mockApi.getPartnerCourses(Number(partnerId));
+    if (USE_MOCK) return mockApi.getPartnerCourses(String(partnerId));
     const response = await apiClient.get<{ success: boolean; courses: Course[] }>(`/manager/partners/${partnerId}/courses`);
     return response.data.courses;
   },
@@ -272,6 +285,12 @@ export const api = {
     if (USE_MOCK) return mockApi.getCourseRequests();
     const response = await apiClient.get<{ success: boolean; requests: CourseRequest[] }>('/manager/requests');
     return response.data.requests;
+  },
+
+  getManagerCourseRequest: async (id: number): Promise<CourseRequest | undefined> => {
+    if (USE_MOCK) return mockApi.getCourseRequest(id);
+    const response = await apiClient.get<{ success: boolean; request: CourseRequest }>(`/manager/requests/${id}`);
+    return response.data.request;
   },
 
   updateCourseRequestStatus: async (
@@ -300,5 +319,71 @@ export const api = {
       shortDescription: data.shortDescription,
     });
     return response.data.course;
+  },
+
+  // ==================== Manager: Activity Logs ====================
+
+  getActivityLogs: async (params: {
+    userId?: string;
+    actionType?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<{
+    logs: Array<{
+      id: number;
+      userId: string;
+      partnerEmail: string;
+      partnerName: string;
+      actionType: string;
+      entityType: string | null;
+      entityId: number | null;
+      details: Record<string, unknown> | null;
+      customerNumber: string | null;
+      ipAddress: string | null;
+      createdAt: string;
+    }>;
+    total: number;
+    partners: Array<{ userId: string; name: string; email: string }>;
+    pagination: { limit: number; offset: number; hasMore: boolean };
+  }> => {
+    const searchParams = new URLSearchParams();
+    if (params.userId) searchParams.set('userId', params.userId);
+    if (params.actionType) searchParams.set('actionType', params.actionType);
+    if (params.startDate) searchParams.set('startDate', params.startDate);
+    if (params.endDate) searchParams.set('endDate', params.endDate);
+    if (params.limit) searchParams.set('limit', params.limit.toString());
+    if (params.offset !== undefined) searchParams.set('offset', params.offset.toString());
+
+    const response = await apiClient.get(`/manager/activity-logs?${searchParams.toString()}`);
+    return response.data;
+  },
+
+  // ==================== Manager: Customer Numbers ====================
+
+  getPartnerUsers: async (partnerId: string): Promise<Array<{
+    id: string;
+    email: string;
+    name: string;
+    customerNumbers: Array<{
+      id: number;
+      userId: string;
+      customerNumber: string;
+      label: string | null;
+      isPrimary: boolean;
+      createdAt: string;
+    }>;
+  }>> => {
+    const response = await apiClient.get(`/manager/partners/${partnerId}/users`);
+    return response.data.users || [];
+  },
+
+  addCustomerNumber: async (userId: string, customerNumber: string, label?: string): Promise<void> => {
+    await apiClient.post(`/manager/partners/${userId}/customer-numbers`, { customerNumber, label });
+  },
+
+  removeCustomerNumber: async (userId: string, cnId: number): Promise<void> => {
+    await apiClient.delete(`/manager/partners/${userId}/customer-numbers/${cnId}`);
   },
 };

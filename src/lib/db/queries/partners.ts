@@ -1,12 +1,15 @@
 /**
  * Partner database queries
  *
- * Partners are stored in Magento's miomente_pdf_operator table.
- * This module queries partner data for the manager view.
+ * Partners can be queried from:
+ * - Magento's miomente_pdf_operator table (legacy)
+ * - PostgreSQL's miomente_partner_portal_users table (portal users)
+ *
+ * This module supports both approaches.
  */
 
 import { query } from '../mysql';
-import { queryAll } from '../postgres';
+import { queryAll, queryOne } from '../postgres';
 import { RowDataPacket } from 'mysql2';
 
 export interface DbPartner extends RowDataPacket {
@@ -23,6 +26,20 @@ export interface PartnerWithStats {
   email: string;
   companyName: string;
   coursesCount: number;
+  pendingRequestsCount: number;
+}
+
+/**
+ * Portal partner - a partner from the portal users database
+ */
+export interface PortalPartner {
+  id: string;           // Portal user ID (UUID)
+  name: string;         // User name from portal
+  email: string;        // User email
+  customerNumbers: string[]; // All assigned customer numbers
+  coursesCount: number;
+  activeCoursesCount: number;
+  availableDatesCount: number;
   pendingRequestsCount: number;
 }
 
@@ -154,5 +171,300 @@ export function transformPartner(partner: PartnerWithStats): {
     companyName: partner.companyName,
     coursesCount: partner.coursesCount,
     pendingRequestsCount: partner.pendingRequestsCount,
+  };
+}
+
+/**
+ * Get all portal users who are partners (not managers)
+ *
+ * Returns users from miomente_partner_portal_users with their customer numbers
+ * and aggregated stats from Magento.
+ */
+export async function getAllPortalPartners(): Promise<PortalPartner[]> {
+  // Get all partner users (non-managers) from PostgreSQL
+  const portalUsers = await queryAll<{
+    id: string;
+    name: string;
+    email: string;
+    customer_number: string | null;
+  }>(
+    `SELECT id, name, email, customer_number
+     FROM miomente_partner_portal_users
+     WHERE is_manager = false
+     ORDER BY name`
+  );
+
+  if (portalUsers.length === 0) {
+    return [];
+  }
+
+  // Get all customer numbers for all users
+  const allCustomerNumbers = await queryAll<{
+    user_id: string;
+    customer_number: string;
+  }>(
+    `SELECT user_id, customer_number
+     FROM miomente_partner_customer_numbers
+     ORDER BY user_id, is_primary DESC, created_at ASC`
+  );
+
+  // Build a map of user_id -> customer_numbers
+  const customerNumbersMap = new Map<string, string[]>();
+  allCustomerNumbers.forEach(cn => {
+    const existing = customerNumbersMap.get(cn.user_id) || [];
+    existing.push(cn.customer_number);
+    customerNumbersMap.set(cn.user_id, existing);
+  });
+
+  // Include legacy customer_number field if not already in the list
+  portalUsers.forEach(user => {
+    if (user.customer_number) {
+      const existing = customerNumbersMap.get(user.id) || [];
+      if (!existing.includes(user.customer_number)) {
+        existing.push(user.customer_number);
+        customerNumbersMap.set(user.id, existing);
+      }
+    }
+  });
+
+  // Collect all unique customer numbers for Magento query
+  const allUniqueCustomerNumbers = new Set<string>();
+  customerNumbersMap.forEach(numbers => {
+    numbers.forEach(cn => allUniqueCustomerNumbers.add(cn));
+  });
+
+  // Get course stats from Magento for all customer numbers
+  let courseStatsMap = new Map<string, { coursesCount: number; activeCoursesCount: number; availableDatesCount: number }>();
+
+  if (allUniqueCustomerNumbers.size > 0) {
+    const customerNumbersArray = Array.from(allUniqueCustomerNumbers);
+    const placeholders = customerNumbersArray.map(() => '?').join(', ');
+
+    const courseStats = await query<Array<{
+      customernumber: string;
+      courses_count: number;
+      active_courses_count: number;
+      available_dates_count: number;
+    } & RowDataPacket>>(`
+      SELECT
+        op.customernumber,
+        COUNT(DISTINCT cpe.entity_id) as courses_count,
+        COUNT(DISTINCT CASE WHEN cpei_status.value = 1 THEN cpe.entity_id END) as active_courses_count,
+        (
+          SELECT COUNT(*)
+          FROM catalog_product_entity AS s
+          INNER JOIN catalog_product_super_link AS sl ON s.entity_id = sl.product_id
+          INNER JOIN catalog_product_entity AS parent ON sl.parent_id = parent.entity_id
+          INNER JOIN catalog_product_entity_varchar AS pop ON parent.entity_id = pop.entity_id
+            AND pop.attribute_id = 700 AND pop.store_id = 0
+          INNER JOIN miomente_pdf_operator AS op2 ON pop.value = op2.operator_id
+          INNER JOIN catalog_product_entity_varchar AS sn ON s.entity_id = sn.entity_id
+            AND sn.attribute_id = 60 AND sn.store_id = 0
+          INNER JOIN catalog_product_entity_varchar AS sb ON s.entity_id = sb.entity_id
+            AND sb.attribute_id = 717 AND sb.store_id = 0
+          WHERE op2.customernumber = op.customernumber
+            AND s.type_id = 'simple'
+            AND sb.value IS NOT NULL
+            AND STR_TO_DATE(
+              CONCAT(SUBSTRING_INDEX(sn.value, '-', -3), ' ', sb.value),
+              '%Y-%m-%d %H:%i'
+            ) > NOW()
+        ) as available_dates_count
+      FROM miomente_pdf_operator AS op
+      INNER JOIN catalog_product_entity_varchar AS cpev_operator
+        ON cpev_operator.value = op.operator_id
+        AND cpev_operator.attribute_id = 700
+        AND cpev_operator.store_id = 0
+      INNER JOIN catalog_product_entity AS cpe
+        ON cpev_operator.entity_id = cpe.entity_id
+        AND cpe.type_id = 'configurable'
+      LEFT JOIN catalog_product_entity_int AS cpei_status
+        ON cpe.entity_id = cpei_status.entity_id
+        AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4)
+        AND cpei_status.store_id = 0
+      WHERE op.customernumber IN (${placeholders})
+      GROUP BY op.customernumber
+    `, customerNumbersArray);
+
+    courseStats.forEach(stat => {
+      courseStatsMap.set(stat.customernumber, {
+        coursesCount: stat.courses_count,
+        activeCoursesCount: stat.active_courses_count,
+        availableDatesCount: stat.available_dates_count,
+      });
+    });
+  }
+
+  // Get pending request counts
+  const pendingCounts = await getPendingRequestCountsByUserId();
+
+  // Build the final result
+  return portalUsers.map(user => {
+    const customerNumbers = customerNumbersMap.get(user.id) || [];
+
+    // Aggregate stats across all customer numbers
+    let totalCourses = 0;
+    let totalActiveCourses = 0;
+    let totalAvailableDates = 0;
+
+    customerNumbers.forEach(cn => {
+      const stats = courseStatsMap.get(cn);
+      if (stats) {
+        totalCourses += stats.coursesCount;
+        totalActiveCourses += stats.activeCoursesCount;
+        totalAvailableDates += stats.availableDatesCount;
+      }
+    });
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      customerNumbers,
+      coursesCount: totalCourses,
+      activeCoursesCount: totalActiveCourses,
+      availableDatesCount: totalAvailableDates,
+      pendingRequestsCount: pendingCounts.get(user.id) || 0,
+    };
+  });
+}
+
+/**
+ * Get pending course request counts by user ID (from PostgreSQL)
+ */
+async function getPendingRequestCountsByUserId(): Promise<Map<string, number>> {
+  // Join requests with customer_numbers to get user_id
+  const counts = await queryAll<{ user_id: string; pending_count: string }>(
+    `SELECT cn.user_id, COUNT(r.id) as pending_count
+     FROM miomente_course_requests r
+     INNER JOIN miomente_partner_customer_numbers cn ON r.customer_number = cn.customer_number
+     WHERE r.status = 'pending'
+     GROUP BY cn.user_id
+     UNION
+     SELECT u.id as user_id, COUNT(r.id) as pending_count
+     FROM miomente_course_requests r
+     INNER JOIN miomente_partner_portal_users u ON r.customer_number = u.customer_number
+     WHERE r.status = 'pending' AND u.customer_number IS NOT NULL
+     GROUP BY u.id`
+  );
+
+  const map = new Map<string, number>();
+  counts.forEach(row => {
+    const existing = map.get(row.user_id) || 0;
+    map.set(row.user_id, existing + parseInt(row.pending_count, 10));
+  });
+
+  return map;
+}
+
+/**
+ * Get a single portal partner by user ID
+ */
+export async function getPortalPartnerById(userId: string): Promise<PortalPartner | null> {
+  const user = await queryOne<{
+    id: string;
+    name: string;
+    email: string;
+    customer_number: string | null;
+  }>(
+    `SELECT id, name, email, customer_number
+     FROM miomente_partner_portal_users
+     WHERE id = $1 AND is_manager = false`,
+    [userId]
+  );
+
+  if (!user) {
+    return null;
+  }
+
+  // Get customer numbers for this user
+  const customerNumberRecords = await queryAll<{ customer_number: string }>(
+    `SELECT customer_number
+     FROM miomente_partner_customer_numbers
+     WHERE user_id = $1
+     ORDER BY is_primary DESC, created_at ASC`,
+    [userId]
+  );
+
+  const customerNumbers = customerNumberRecords.map(cn => cn.customer_number);
+
+  // Include legacy field if not already present
+  if (user.customer_number && !customerNumbers.includes(user.customer_number)) {
+    customerNumbers.push(user.customer_number);
+  }
+
+  if (customerNumbers.length === 0) {
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      customerNumbers: [],
+      coursesCount: 0,
+      activeCoursesCount: 0,
+      availableDatesCount: 0,
+      pendingRequestsCount: 0,
+    };
+  }
+
+  // Get course stats from Magento
+  const placeholders = customerNumbers.map(() => '?').join(', ');
+
+  const courseStats = await query<Array<{
+    courses_count: number;
+    active_courses_count: number;
+    available_dates_count: number;
+  } & RowDataPacket>>(`
+    SELECT
+      COUNT(DISTINCT cpe.entity_id) as courses_count,
+      COUNT(DISTINCT CASE WHEN cpei_status.value = 1 THEN cpe.entity_id END) as active_courses_count,
+      (
+        SELECT COUNT(*)
+        FROM catalog_product_entity AS s
+        INNER JOIN catalog_product_super_link AS sl ON s.entity_id = sl.product_id
+        INNER JOIN catalog_product_entity AS parent ON sl.parent_id = parent.entity_id
+        INNER JOIN catalog_product_entity_varchar AS pop ON parent.entity_id = pop.entity_id
+          AND pop.attribute_id = 700 AND pop.store_id = 0
+        INNER JOIN miomente_pdf_operator AS op2 ON pop.value = op2.operator_id
+        INNER JOIN catalog_product_entity_varchar AS sn ON s.entity_id = sn.entity_id
+          AND sn.attribute_id = 60 AND sn.store_id = 0
+        INNER JOIN catalog_product_entity_varchar AS sb ON s.entity_id = sb.entity_id
+          AND sb.attribute_id = 717 AND sb.store_id = 0
+        WHERE op2.customernumber IN (${placeholders})
+          AND s.type_id = 'simple'
+          AND sb.value IS NOT NULL
+          AND STR_TO_DATE(
+            CONCAT(SUBSTRING_INDEX(sn.value, '-', -3), ' ', sb.value),
+            '%Y-%m-%d %H:%i'
+          ) > NOW()
+      ) as available_dates_count
+    FROM miomente_pdf_operator AS op
+    INNER JOIN catalog_product_entity_varchar AS cpev_operator
+      ON cpev_operator.value = op.operator_id
+      AND cpev_operator.attribute_id = 700
+      AND cpev_operator.store_id = 0
+    INNER JOIN catalog_product_entity AS cpe
+      ON cpev_operator.entity_id = cpe.entity_id
+      AND cpe.type_id = 'configurable'
+    LEFT JOIN catalog_product_entity_int AS cpei_status
+      ON cpe.entity_id = cpei_status.entity_id
+      AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4)
+      AND cpei_status.store_id = 0
+    WHERE op.customernumber IN (${placeholders})
+  `, [...customerNumbers, ...customerNumbers]);
+
+  const stats = courseStats[0] || { courses_count: 0, active_courses_count: 0, available_dates_count: 0 };
+
+  // Get pending request count
+  const pendingCounts = await getPendingRequestCountsByUserId();
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    customerNumbers,
+    coursesCount: stats.courses_count,
+    activeCoursesCount: stats.active_courses_count,
+    availableDatesCount: stats.available_dates_count,
+    pendingRequestsCount: pendingCounts.get(user.id) || 0,
   };
 }

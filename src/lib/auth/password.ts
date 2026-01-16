@@ -1,23 +1,33 @@
 /**
- * Password hashing utilities using bcrypt
+ * Password hashing utilities using SHA256 (n8n compatible)
  */
 
+import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 
-const SALT_ROUNDS = 12;
-
 /**
- * Hash a password using bcrypt
+ * Hash a password using SHA256 (HEX, no salt) - n8n compatible
  */
 export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, SALT_ROUNDS);
+  return crypto.createHash('sha256').update(password).digest('hex');
 }
 
 /**
- * Verify a password against a hash
+ * Verify a password against a SHA256 hash
  * Returns true if the password matches the hash
  */
 export async function verifyPassword(
+  password: string,
+  hash: string
+): Promise<boolean> {
+  const inputHash = crypto.createHash('sha256').update(password).digest('hex');
+  return inputHash === hash;
+}
+
+/**
+ * Verify a password against a bcrypt hash (legacy support)
+ */
+export async function verifyBcryptPassword(
   password: string,
   hash: string
 ): Promise<boolean> {
@@ -48,20 +58,32 @@ export function verifyLegacyPassword(
  * Check if a stored password is a bcrypt hash
  * Bcrypt hashes start with $2a$, $2b$, or $2y$
  */
-export function isHashedPassword(storedPassword: string): boolean {
+export function isBcryptHash(storedPassword: string): boolean {
   return /^\$2[aby]\$\d+\$/.test(storedPassword);
 }
 
 /**
- * Verify password - handles both hashed and legacy plain text passwords
+ * Check if a stored password is a SHA256 hash (64 hex characters)
+ */
+export function isSha256Hash(storedPassword: string): boolean {
+  return /^[a-f0-9]{64}$/i.test(storedPassword);
+}
+
+/**
+ * Verify password - handles SHA256, bcrypt (legacy), and plain text passwords
  */
 export async function verifyPasswordCompat(
   password: string,
   storedPassword: string
 ): Promise<boolean> {
-  if (isHashedPassword(storedPassword)) {
+  // SHA256 hash (current method)
+  if (isSha256Hash(storedPassword)) {
     return verifyPassword(password, storedPassword);
   }
-  // Legacy plain text comparison
+  // Bcrypt hash (legacy)
+  if (isBcryptHash(storedPassword)) {
+    return verifyBcryptPassword(password, storedPassword);
+  }
+  // Plain text comparison (very old legacy)
   return verifyLegacyPassword(password, storedPassword);
 }

@@ -39,11 +39,21 @@ export interface CreateDateInput {
  * - Calculates duration in minutes
  * - Only returns future dates
  * - Verifies ownership via operator_id -> customernumber
+ *
+ * @param courseId - The parent course entity ID
+ * @param customerNumbers - Array of customer numbers to verify ownership against
  */
 export async function getDatesByCourse(
   courseId: number,
-  customerNumber: string
+  customerNumbers: string[]
 ): Promise<DbCourseDate[]> {
+  if (customerNumbers.length === 0) {
+    return [];
+  }
+
+  // Build dynamic placeholders for IN clause
+  const placeholders = customerNumbers.map(() => '?').join(', ');
+
   const dates = await query<DbCourseDate[]>(`
     SELECT
         simple.entity_id AS 'id',
@@ -108,7 +118,7 @@ export async function getDatesByCourse(
         ON simple.entity_id = cpd_simple_price.entity_id
         AND cpd_simple_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)
         AND cpd_simple_price.store_id = 0
-    WHERE op.customernumber = ?
+    WHERE op.customernumber IN (${placeholders})
       AND link.parent_id = ?
       AND simple.type_id = 'simple'
       AND cpev_begin.value IS NOT NULL
@@ -121,18 +131,28 @@ export async function getDatesByCourse(
         CONCAT(SUBSTRING_INDEX(cpev_name.value, '-', -3), ' ', cpev_begin.value),
         '%Y-%m-%d %H:%i'
     ) ASC
-  `, [customerNumber, courseId]);
+  `, [...customerNumbers, courseId]);
 
   return dates;
 }
 
 /**
- * Verify date ownership by customer number
+ * Verify date ownership by customer numbers
+ *
+ * @param dateId - The date entity ID to verify
+ * @param customerNumbers - Array of customer numbers to check ownership against
  */
 export async function verifyDateOwnership(
   dateId: number,
-  customerNumber: string
+  customerNumbers: string[]
 ): Promise<boolean> {
+  if (customerNumbers.length === 0) {
+    return false;
+  }
+
+  // Build dynamic placeholders for IN clause
+  const placeholders = customerNumbers.map(() => '?').join(', ');
+
   const result = await queryOne<{ count: number } & RowDataPacket>(`
     SELECT COUNT(*) as count
     FROM catalog_product_entity AS simple
@@ -147,8 +167,8 @@ export async function verifyDateOwnership(
     INNER JOIN miomente_pdf_operator AS op
         ON cpev_operator.value = op.operator_id
     WHERE simple.entity_id = ?
-      AND op.customernumber = ?
-  `, [dateId, customerNumber]);
+      AND op.customernumber IN (${placeholders})
+  `, [dateId, ...customerNumbers]);
 
   return result !== null && result.count > 0;
 }

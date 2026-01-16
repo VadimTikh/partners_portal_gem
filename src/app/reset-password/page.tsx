@@ -15,7 +15,7 @@ import { useI18n } from '@/lib/i18n';
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const resetPasswordSchema = z.object({
-  newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Passwords don't match",
@@ -217,7 +217,7 @@ export default function ResetPasswordPage() {
               />
               {errors.newPassword && (
                 <p className="text-sm text-destructive">
-                  {errors.newPassword.message === 'Password must be at least 6 characters'
+                  {errors.newPassword.message === 'Password must be at least 8 characters'
                     ? t.resetPassword.passwordMinLength
                     : errors.newPassword.message}
                 </p>

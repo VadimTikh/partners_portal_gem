@@ -107,3 +107,31 @@ export async function getAllPartnerUsers(): Promise<DbUser[]> {
      ORDER BY name`
   );
 }
+
+/**
+ * Create a new user (partner)
+ */
+export async function createUser(input: {
+  email: string;
+  name: string;
+  password: string;
+  isManager?: boolean;
+}): Promise<DbUser | null> {
+  return queryOne<DbUser>(
+    `INSERT INTO miomente_partner_portal_users (email, name, password, is_manager)
+     VALUES ($1, $2, $3, $4)
+     RETURNING id, email, name, password, customer_number, is_manager, created_at, reset_token, reset_token_expires`,
+    [input.email, input.name, input.password, input.isManager || false]
+  );
+}
+
+/**
+ * Check if email already exists
+ */
+export async function emailExists(email: string): Promise<boolean> {
+  const result = await queryOne<{ count: string }>(
+    `SELECT COUNT(*) as count FROM miomente_partner_portal_users WHERE email = $1`,
+    [email]
+  );
+  return parseInt(result?.count || '0', 10) > 0;
+}

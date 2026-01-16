@@ -29,6 +29,7 @@ function getPool(): Pool {
       queueLimit: 0,
       enableKeepAlive: true,
       keepAliveInitialDelay: 0,
+      multipleStatements: true, // Required for SET statements and multi-statement queries
       // SSL for production
       ssl: process.env.NODE_ENV === 'production'
         ? { rejectUnauthorized: true }
@@ -69,23 +70,24 @@ export async function query<T extends RowDataPacket[]>(
 
 /**
  * Execute a query that modifies data (INSERT, UPDATE, DELETE)
+ * Uses query() instead of execute() to support multi-statement queries with SET variables
  */
 export async function execute(
   sql: string,
   params?: unknown[]
-): Promise<ResultSetHeader> {
+): Promise<ResultSetHeader | ResultSetHeader[]> {
   const client = getPool();
   const start = Date.now();
 
   try {
-    const [result] = await client.execute<ResultSetHeader>(sql, params);
+    // Use query() for multi-statement support (execute() doesn't support multi-statements)
+    const [result] = await client.query<ResultSetHeader | ResultSetHeader[]>(sql, params);
     const duration = Date.now() - start;
 
     if (process.env.NODE_ENV === 'development') {
       console.log('[MySQL] Execute completed', {
         duration: `${duration}ms`,
-        affectedRows: result.affectedRows,
-        insertId: result.insertId,
+        affectedRows: Array.isArray(result) ? 'multiple' : result.affectedRows,
       });
     }
 

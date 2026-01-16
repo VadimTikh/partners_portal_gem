@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { queryOne } from '../db/postgres';
+import { getCustomerNumbersByUser } from '../db/queries/customer-numbers';
 
 /**
  * Authenticated user information available in protected routes
@@ -13,7 +14,8 @@ export interface AuthenticatedUser {
   email: string;
   name: string;
   role: 'partner' | 'manager';
-  customerNumber: string | null;
+  customerNumber: string | null;  // Primary/legacy (kept for backwards compatibility)
+  customerNumbers: string[];      // All assigned customer numbers
   isManager: boolean;
   isPartner: boolean;
 }
@@ -110,6 +112,15 @@ export async function withAuth(
       );
     }
 
+    // Fetch all customer numbers for this user
+    const customerNumberRecords = await getCustomerNumbersByUser(dbUser.id);
+    const customerNumbers = customerNumberRecords.map(cn => cn.customer_number);
+
+    // Include legacy customer_number field if not already in the list
+    if (dbUser.customer_number && !customerNumbers.includes(dbUser.customer_number)) {
+      customerNumbers.push(dbUser.customer_number);
+    }
+
     // Build authenticated user object
     const user: AuthenticatedUser = {
       userId: dbUser.id,
@@ -117,6 +128,7 @@ export async function withAuth(
       name: dbUser.name,
       role: dbUser.is_manager ? 'manager' : 'partner',
       customerNumber: dbUser.customer_number,
+      customerNumbers,
       isManager: dbUser.is_manager,
       isPartner: !dbUser.is_manager,
     };
@@ -156,12 +168,22 @@ export async function getAuthUser(
     const dbUser = await verifySession(token);
     if (!dbUser) return null;
 
+    // Fetch all customer numbers for this user
+    const customerNumberRecords = await getCustomerNumbersByUser(dbUser.id);
+    const customerNumbers = customerNumberRecords.map(cn => cn.customer_number);
+
+    // Include legacy customer_number field if not already in the list
+    if (dbUser.customer_number && !customerNumbers.includes(dbUser.customer_number)) {
+      customerNumbers.push(dbUser.customer_number);
+    }
+
     return {
       userId: dbUser.id,
       email: dbUser.email,
       name: dbUser.name,
       role: dbUser.is_manager ? 'manager' : 'partner',
       customerNumber: dbUser.customer_number,
+      customerNumbers,
       isManager: dbUser.is_manager,
       isPartner: !dbUser.is_manager,
     };

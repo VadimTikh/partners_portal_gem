@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Edit } from 'lucide-react';
+import { Search, Edit, Package, AlertCircle, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
@@ -20,11 +20,22 @@ export default function DashboardPage() {
   const [datesFilter, setDatesFilter] = useState<'all' | 'with-dates' | 'without-dates'>('all');
   const { t } = useI18n();
   const hasHydrated = useAuthStore((state) => state._hasHydrated);
-  const { data: courses, isLoading } = useQuery({
+  const { data: courses, isLoading, error } = useQuery({
     queryKey: ['courses'],
     queryFn: api.getCourses,
     enabled: hasHydrated,
+    retry: (failureCount, error) => {
+      // Don't retry if it's a "not configured" error
+      if (error instanceof Error && error.message.includes('not configured')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
+
+  // Check if error is about customer number not configured
+  const isNotConfigured = error instanceof Error &&
+    (error.message.includes('not configured') || error.message.includes('customer number'));
 
   const stripHtml = (html: string) => {
     return html.replace(/<[^>]*>/g, '');
@@ -152,6 +163,35 @@ export default function DashboardPage() {
                 </Card>
             ))}
         </div>
+      ) : isNotConfigured ? (
+        <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50">
+                <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <CardTitle className="text-amber-800 dark:text-amber-200">
+                  {t.dashboard.accountNotConfigured || 'Account Not Configured'}
+                </CardTitle>
+                <CardDescription className="text-amber-700 dark:text-amber-300">
+                  {t.dashboard.accountNotConfiguredDesc || 'Your account has not been linked to any courses yet.'}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="text-amber-700 dark:text-amber-300">
+            <p className="mb-4">
+              {t.dashboard.contactManagerDesc || 'Please contact your manager to get your account set up with the appropriate customer numbers. Once configured, you will be able to view and manage your courses here.'}
+            </p>
+            <Link href="/dashboard/contact">
+              <Button variant="outline" className="border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900/50">
+                <Mail className="mr-2 h-4 w-4" />
+                {t.common.contactSupport}
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       ) : filteredCourses?.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center animate-in fade-in-50">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
@@ -177,12 +217,18 @@ export default function DashboardPage() {
                   isInactive && "opacity-60 grayscale-[0.8] hover:opacity-100 hover:grayscale-0"
                 )}
               >
-                <div className="relative aspect-video w-full overflow-hidden">
-                  <img
-                    src={course.image}
-                    alt={course.title}
-                    className="object-cover w-full h-full transition-transform duration-500 hover:scale-105"
-                  />
+                <div className="relative aspect-video w-full overflow-hidden bg-muted">
+                  {course.image ? (
+                    <img
+                      src={course.image}
+                      alt={course.title}
+                      className="object-cover w-full h-full transition-transform duration-500 hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                      <Package className="h-12 w-12" />
+                    </div>
+                  )}
                   <Badge
                       className={cn(
                         "absolute top-2 right-2 transition-colors",

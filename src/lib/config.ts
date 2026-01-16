@@ -35,9 +35,30 @@ export const config = {
   isProd: process.env.NODE_ENV === 'production',
   appUrl: getEnvVar('APP_URL', false) || 'http://localhost:3000',
 
-  // PostgreSQL (Supabase) - for users, sessions, course requests
+  // PostgreSQL - for users, sessions, course requests
+  // Supports individual params (POSTGRES_*) or connection string (DATABASE_URL)
   database: {
-    url: getEnvVar('DATABASE_URL'),
+    // Build URL from individual params or use DATABASE_URL directly
+    url: (() => {
+      const host = process.env.POSTGRES_HOST;
+      const port = process.env.POSTGRES_PORT || '5432';
+      const user = process.env.POSTGRES_USER;
+      const password = process.env.POSTGRES_PASSWORD;
+      const database = process.env.POSTGRES_DATABASE;
+
+      // If individual params are set, build a connection URL
+      if (host && user && password && database) {
+        return `postgresql://${user}:${encodeURIComponent(password)}@${host}:${port}/${database}`;
+      }
+      // Fall back to DATABASE_URL (not required if individual params are used)
+      return getEnvVar('DATABASE_URL', false);
+    })(),
+    // Individual params for direct pool config
+    host: getEnvVar('POSTGRES_HOST', false),
+    port: getEnvVarInt('POSTGRES_PORT', 5432),
+    user: getEnvVar('POSTGRES_USER', false),
+    password: getEnvVar('POSTGRES_PASSWORD', false),
+    name: getEnvVar('POSTGRES_DATABASE', false),
   },
 
   // MySQL (Magento) - for courses, dates, products

@@ -5,6 +5,7 @@ import {
   createCourseRequest,
   transformCourseRequest,
 } from '@/lib/db/queries/course-requests';
+import { logCourseRequestCreated, getIpFromRequest } from '@/lib/services/activity-logger';
 
 /**
  * GET /api/partner/requests
@@ -14,14 +15,16 @@ import {
 export async function GET(request: NextRequest) {
   return withAuth(request, async (_req, user) => {
     try {
-      if (!user.customerNumber) {
+      if (!user.customerNumbers || user.customerNumbers.length === 0) {
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
         );
       }
 
-      const dbRequests = await getRequestsByPartner(user.customerNumber);
+      // Use the first (primary) customer number for requests
+      const primaryCustomerNumber = user.customerNumbers[0];
+      const dbRequests = await getRequestsByPartner(primaryCustomerNumber);
       const requests = dbRequests.map(transformCourseRequest);
 
       return NextResponse.json({
@@ -46,12 +49,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return withAuth(request, async (req, user) => {
     try {
-      if (!user.customerNumber) {
+      if (!user.customerNumbers || user.customerNumbers.length === 0) {
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
         );
       }
+
+      // Use the first (primary) customer number for requests
+      const primaryCustomerNumber = user.customerNumbers[0];
 
       const body = await req.json();
       const { name, location, basePrice, partnerDescription, requestedDates } = body;
@@ -82,7 +88,7 @@ export async function POST(request: NextRequest) {
 
       // Create the request
       const newRequest = await createCourseRequest({
-        customerNumber: user.customerNumber,
+        customerNumber: primaryCustomerNumber,
         partnerName: user.name,
         partnerEmail: user.email,
         courseName: name.trim(),
@@ -98,6 +104,15 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
+
+      // Log activity
+      await logCourseRequestCreated(
+        { id: user.userId, email: user.email, name: user.name },
+        newRequest.id,
+        name,
+        primaryCustomerNumber,
+        getIpFromRequest(request)
+      );
 
       return NextResponse.json({
         success: true,

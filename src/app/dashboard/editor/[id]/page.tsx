@@ -167,22 +167,6 @@ export default function EditorPage() {
     },
   });
 
-  const updateDateTimeMutation = useMutation({
-    mutationFn: ({ dateId, dateTime }: { dateId: number; dateTime: string }) =>
-      api.updateDateTime(dateId, dateTime),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dates', id] });
-    },
-  });
-
-  const updateDurationMutation = useMutation({
-    mutationFn: ({ dateId, duration }: { dateId: number; duration: number }) =>
-      api.updateDuration(dateId, duration),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dates', id] });
-    },
-  });
-
   const onSubmit = async (data: CourseFormValues) => {
     try {
       if (isNew) {

@@ -10,14 +10,14 @@ import { getCoursesByPartner, transformCourse } from '@/lib/db/queries/courses';
 export async function GET(request: NextRequest) {
   return withAuth(request, async (_req, user) => {
     try {
-      if (!user.customerNumber) {
+      if (user.customerNumbers.length === 0) {
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
         );
       }
 
-      const dbCourses = await getCoursesByPartner(user.customerNumber);
+      const dbCourses = await getCoursesByPartner(user.customerNumbers);
       const courses = dbCourses.map(transformCourse);
 
       return NextResponse.json({

@@ -8,6 +8,8 @@
 export * from './users';
 export * from './sessions';
 export * from './course-requests';
+export * from './activity-logs';
+export * from './customer-numbers';
 
 // MySQL queries (Magento)
 export * from './courses';

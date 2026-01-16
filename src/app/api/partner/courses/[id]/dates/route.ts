@@ -7,6 +7,7 @@ import {
   transformDate,
   isValidFutureDate,
 } from '@/lib/db/queries/dates';
+import { logDateAdded, getIpFromRequest } from '@/lib/services/activity-logger';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      if (!user.customerNumber) {
+      if (user.customerNumbers.length === 0) {
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       }
 
       // Verify course ownership
-      const course = await getCourseById(courseId, user.customerNumber);
+      const course = await getCourseById(courseId, user.customerNumbers);
 
       if (!course) {
         return NextResponse.json(
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      const dbDates = await getDatesByCourse(courseId, user.customerNumber);
+      const dbDates = await getDatesByCourse(courseId, user.customerNumbers);
       const dates = dbDates.map(transformDate);
 
       return NextResponse.json({
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      if (!user.customerNumber) {
+      if (user.customerNumbers.length === 0) {
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
 
       // Verify course ownership
-      const course = await getCourseById(courseId, user.customerNumber);
+      const course = await getCourseById(courseId, user.customerNumbers);
 
       if (!course) {
         return NextResponse.json(
@@ -134,6 +135,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         duration: duration || 180,
         price: price ?? course.basePrice ?? undefined,
       });
+
+      // Log activity (use first customer number for logging)
+      await logDateAdded(
+        { id: user.userId, email: user.email, name: user.name },
+        newDate.id,
+        courseId,
+        dateTime,
+        user.customerNumbers[0] || user.customerNumber || '',
+        getIpFromRequest(request)
+      );
 
       return NextResponse.json({
         success: true,

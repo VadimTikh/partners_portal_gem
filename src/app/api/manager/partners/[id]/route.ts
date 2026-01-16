@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withManager } from '@/lib/auth/middleware';
-import {
-  getPartnerById,
-  getPendingRequestCounts,
-} from '@/lib/db/queries/partners';
+import { getPortalPartnerById } from '@/lib/db/queries/partners';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -12,14 +9,14 @@ interface RouteParams {
 /**
  * GET /api/manager/partners/[id]
  *
- * Get a single partner by operator ID (manager only).
+ * Get a single partner by portal user ID (manager only).
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   return withManager(request, async () => {
     try {
       const { id } = await params;
 
-      const partner = await getPartnerById(id);
+      const partner = await getPortalPartnerById(id);
 
       if (!partner) {
         return NextResponse.json(
@@ -28,19 +25,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      // Get pending request count
-      const pendingMap = await getPendingRequestCounts();
-      const pendingRequestsCount = pendingMap.get(id) || 0;
-
       return NextResponse.json({
         success: true,
         partner: {
           id: partner.id,
           name: partner.name,
           email: partner.email,
-          companyName: partner.companyName,
+          customerNumbers: partner.customerNumbers,
           coursesCount: partner.coursesCount,
-          pendingRequestsCount,
+          activeCoursesCount: partner.activeCoursesCount,
+          availableDatesCount: partner.availableDatesCount,
+          pendingRequestsCount: partner.pendingRequestsCount,
         },
       });
     } catch (error) {

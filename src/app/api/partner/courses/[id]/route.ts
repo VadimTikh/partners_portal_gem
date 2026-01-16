@@ -24,14 +24,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      if (!user.customerNumber) {
+      if (user.customerNumbers.length === 0) {
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
         );
       }
 
-      const dbCourse = await getCourseById(courseId, user.customerNumber);
+      const dbCourse = await getCourseById(courseId, user.customerNumbers);
 
       if (!dbCourse) {
         return NextResponse.json(
@@ -72,7 +72,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      if (!user.customerNumber) {
+      if (user.customerNumbers.length === 0) {
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
@@ -80,7 +80,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
 
       // Verify course ownership
-      const existingCourse = await getCourseById(courseId, user.customerNumber);
+      const existingCourse = await getCourseById(courseId, user.customerNumbers);
 
       if (!existingCourse) {
         return NextResponse.json(
@@ -116,7 +116,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       });
 
       // Fetch and return updated course
-      const updatedCourse = await getCourseById(courseId, user.customerNumber);
+      const updatedCourse = await getCourseById(courseId, user.customerNumbers);
 
       return NextResponse.json({
         success: true,

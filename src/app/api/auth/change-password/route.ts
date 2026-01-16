@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { findUserById, updatePassword } from '@/lib/db/queries/users';
 import { withAuth } from '@/lib/auth/middleware';
 import { hashPassword, verifyPasswordCompat } from '@/lib/auth/password';
+import { logPasswordChanged, getIpFromRequest } from '@/lib/services/activity-logger';
 
 /**
  * POST /api/auth/change-password
@@ -56,6 +57,12 @@ export async function POST(request: NextRequest) {
 
       // Update password
       await updatePassword(user.id, hashedPassword);
+
+      // Log activity
+      await logPasswordChanged(
+        { id: user.id, email: user.email, name: user.name },
+        getIpFromRequest(request)
+      );
 
       return NextResponse.json({
         success: true,

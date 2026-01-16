@@ -13,7 +13,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -31,7 +30,7 @@ const passwordSchema = z
 
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
-export default function SettingsPage() {
+export default function ManagerSettingsPage() {
   const { t } = useI18n();
 
   const {
@@ -49,7 +48,7 @@ export default function SettingsPage() {
         toast.error(t.settings.passwordMismatch);
         return;
       }
-      
+
       await api.changePassword(data.currentPassword, data.newPassword);
       toast.success(t.settings.successMessage);
       reset();
@@ -61,8 +60,8 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight text-primary">{t.settings.title}</h1>
-      
+      <h1 className="text-2xl font-bold">{t.settings.title}</h1>
+
       <Card className="max-w-md">
         <CardHeader>
           <CardTitle>{t.settings.passwordTitle}</CardTitle>

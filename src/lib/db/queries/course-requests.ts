@@ -176,7 +176,7 @@ export function transformCourseRequest(dbRequest: DbCourseRequest): {
   partnerId: string;
   partnerName: string;
   partnerEmail: string;
-  courseName: string;
+  name: string;
   location: string;
   basePrice: number;
   partnerDescription: string;
@@ -194,7 +194,7 @@ export function transformCourseRequest(dbRequest: DbCourseRequest): {
     partnerId: dbRequest.customer_number,
     partnerName: dbRequest.partner_name,
     partnerEmail: dbRequest.partner_email,
-    courseName: dbRequest.course_name,
+    name: dbRequest.course_name,
     location: dbRequest.location,
     basePrice: parseFloat(dbRequest.base_price),
     partnerDescription: dbRequest.partner_description || '',

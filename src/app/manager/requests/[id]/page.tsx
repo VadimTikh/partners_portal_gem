@@ -95,7 +95,7 @@ export default function RequestDetailPage() {
 
   const { data: request, isLoading } = useQuery({
     queryKey: ['course-request', requestId],
-    queryFn: () => api.getCourseRequest(requestId),
+    queryFn: () => api.getManagerCourseRequest(requestId),
     enabled: hasHydrated && !!requestId,
   });
 
@@ -232,7 +232,7 @@ export default function RequestDetailPage() {
           <CardTitle className="text-lg">{t.courseRequest.descriptionLabel}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="whitespace-pre-wrap">{request.partnerDescription || '-'}</p>
+          <p className="whitespace-pre-wrap break-words">{request.partnerDescription || '-'}</p>
         </CardContent>
       </Card>
 
@@ -281,66 +281,125 @@ export default function RequestDetailPage() {
         </Card>
       )}
 
-      {/* Manager Notes */}
-      {request.status !== 'approved' && request.status !== 'rejected' && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-lg">{t.manager.managerNotes}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <textarea
-              className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              placeholder={t.manager.managerNotesPlaceholder}
-              value={managerNotes || request.managerNotes || ''}
-              onChange={(e) => setManagerNotes(e.target.value)}
-            />
-          </CardContent>
-        </Card>
-      )}
-
       {/* Rejection Info (if rejected) */}
       {request.status === 'rejected' && (
-        <Card className="mt-6 border-destructive/50">
+        <Card className="mt-6 border-destructive/50 bg-destructive/5">
           <CardHeader>
-            <CardTitle className="text-lg text-destructive">{t.requests.rejectionReason}</CardTitle>
+            <CardTitle className="text-lg text-destructive flex items-center gap-2">
+              <XCircle className="h-5 w-5" />
+              {t.requests.rejectionReason}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p>{request.rejectionReason}</p>
+            <p className="text-sm">{request.rejectionReason}</p>
             {request.rejectionRecommendations && (
               <>
-                <h4 className="font-medium">{t.requests.recommendations}</h4>
-                <p>{request.rejectionRecommendations}</p>
+                <h4 className="font-medium text-sm">{t.requests.recommendations}</h4>
+                <p className="text-sm text-muted-foreground">{request.rejectionRecommendations}</p>
               </>
             )}
           </CardContent>
         </Card>
       )}
 
-      {/* Actions */}
-      {request.status === 'pending' && (
-        <div className="flex gap-4 mt-6">
-          <Button onClick={handleTakeInModeration} disabled={updateStatusMutation.isPending}>
-            {t.manager.takeInModeration}
-          </Button>
-          <Button variant="destructive" onClick={() => setShowRejectDialog(true)}>
-            {t.manager.rejectRequest}
-          </Button>
-        </div>
+      {/* Approved Info */}
+      {request.status === 'approved' && (
+        <Card className="mt-6 border-green-500/50 bg-green-500/5">
+          <CardHeader>
+            <CardTitle className="text-lg text-green-600 flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5" />
+              {t.requests.statusApproved}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              {t.manager.courseCreatedSuccess}
+            </p>
+          </CardContent>
+        </Card>
       )}
 
+      {/* Pending Actions */}
+      {request.status === 'pending' && (
+        <Card className="mt-6 border-yellow-500/50 bg-yellow-500/5">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Clock className="h-5 w-5 text-yellow-600" />
+              {t.requests.statusPending}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {t.manager.pendingDescription}
+            </p>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{t.manager.managerNotes}</Label>
+                <textarea
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  placeholder={t.manager.managerNotesPlaceholder}
+                  value={managerNotes || request.managerNotes || ''}
+                  onChange={(e) => setManagerNotes(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                onClick={handleTakeInModeration}
+                disabled={updateStatusMutation.isPending}
+                className="bg-yellow-600 hover:bg-yellow-700"
+              >
+                <AlertCircle className="mr-2 h-4 w-4" />
+                {t.manager.takeInModeration}
+              </Button>
+              <Button variant="destructive" onClick={() => setShowRejectDialog(true)}>
+                <XCircle className="mr-2 h-4 w-4" />
+                {t.manager.rejectRequest}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* In Moderation Actions */}
       {request.status === 'in_moderation' && (
-        <div className="flex gap-4 mt-6">
-          <Button
-            onClick={() => setShowApproveDialog(true)}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            <CheckCircle2 className="mr-2 h-4 w-4" />
-            {t.manager.courseCreatedBtn}
-          </Button>
-          <Button variant="destructive" onClick={() => setShowRejectDialog(true)}>
-            {t.manager.rejectRequest}
-          </Button>
-        </div>
+        <Card className="mt-6 border-blue-500/50 bg-blue-500/5">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-blue-600" />
+              {t.requests.statusInModeration}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {t.manager.inModerationDescription}
+            </p>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{t.manager.managerNotes}</Label>
+                <textarea
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  placeholder={t.manager.managerNotesPlaceholder}
+                  value={managerNotes || request.managerNotes || ''}
+                  onChange={(e) => setManagerNotes(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                onClick={() => setShowApproveDialog(true)}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                {t.manager.courseCreatedBtn}
+              </Button>
+              <Button variant="destructive" onClick={() => setShowRejectDialog(true)}>
+                <XCircle className="mr-2 h-4 w-4" />
+                {t.manager.rejectRequest}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Reject Dialog */}

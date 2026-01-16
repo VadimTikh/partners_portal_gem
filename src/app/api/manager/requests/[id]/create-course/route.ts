@@ -71,7 +71,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
 
       // Get operator ID for this customer number
-      const operatorId = await getOperatorIdByCustomerNumber(courseRequest.customer_number);
+      const operatorId = await getOperatorIdByCustomerNumber([courseRequest.customer_number]);
 
       if (!operatorId) {
         return NextResponse.json(

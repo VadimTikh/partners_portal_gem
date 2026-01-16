@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findUserByResetToken, updatePassword } from '@/lib/db/queries/users';
 import { hashPassword } from '@/lib/auth/password';
+import { logPasswordResetCompleted, getIpFromRequest } from '@/lib/services/activity-logger';
 
 /**
  * POST /api/auth/set-new-password
@@ -54,6 +55,12 @@ export async function POST(request: NextRequest) {
 
     // Update password and clear reset token
     await updatePassword(user.id, hashedPassword);
+
+    // Log activity
+    await logPasswordResetCompleted(
+      { id: user.id, email: user.email, name: user.name },
+      getIpFromRequest(request)
+    );
 
     return NextResponse.json({
       success: true,
