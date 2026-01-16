@@ -10,7 +10,6 @@ env:
   IMAGE: ${{ github.ref_name == 'main' && 'hajusag/miomente-portal' || 'hajusag/miomente-portal-dev' }}
   CONTAINER_NAME: ${{ github.ref_name == 'main' && 'miomente-portal' || 'miomente-portal-dev' }}
   PORT: ${{ github.ref_name == 'main' && '5972' || '5973' }}
-  N8N_URL: ${{ github.ref_name == 'main' && 'https://n8n.boni.tools/webhook/partner-portal' || 'https://n8n.boni.tools/webhook/partner-portal-dev' }}
 
 jobs:
   deploy:
@@ -38,9 +37,11 @@ jobs:
             ${{ env.IMAGE }}:${{ steps.version.outputs.TAG }}
             ${{ env.IMAGE }}:latest
           build-args: |
-            NEXT_PUBLIC_N8N_API_URL=${{ env.N8N_URL }}
+            NEXT_PUBLIC_USE_REAL_API=true
 
-      - name: Deploy to server
+      # Deploy MAIN branch (legacy n8n mode)
+      - name: Deploy to server (main)
+        if: github.ref_name == 'main'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -53,7 +54,49 @@ jobs:
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               -p 127.0.0.1:${{ env.PORT }}:8080 \
-              -e NEXT_PUBLIC_N8N_API_URL="${{ env.N8N_URL }}" \
+              -e NEXT_PUBLIC_N8N_API_URL="https://n8n.boni.tools/webhook/partner-portal" \
+              --restart unless-stopped \
+              ${{ env.IMAGE }}:${{ steps.version.outputs.TAG }}
+            docker image prune -f
+
+      # Deploy DEV branch (fullstack mode with all env variables)
+      - name: Deploy to server (dev)
+        if: github.ref_name == 'dev'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker pull ${{ env.IMAGE }}:${{ steps.version.outputs.TAG }}
+            docker stop ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+            docker rm ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+            docker run -d \
+              --name ${{ env.CONTAINER_NAME }} \
+              -p 127.0.0.1:${{ env.PORT }}:8080 \
+              -e NODE_ENV="production" \
+              -e APP_URL="${{ secrets.DEV_APP_URL }}" \
+              -e NEXT_PUBLIC_USE_REAL_API="true" \
+              -e POSTGRES_HOST="${{ secrets.DEV_POSTGRES_HOST }}" \
+              -e POSTGRES_PORT="${{ secrets.DEV_POSTGRES_PORT }}" \
+              -e POSTGRES_USER="${{ secrets.DEV_POSTGRES_USER }}" \
+              -e POSTGRES_PASSWORD="${{ secrets.DEV_POSTGRES_PASSWORD }}" \
+              -e POSTGRES_DATABASE="${{ secrets.DEV_POSTGRES_DATABASE }}" \
+              -e MAGENTO_DB_HOST="${{ secrets.DEV_MAGENTO_DB_HOST }}" \
+              -e MAGENTO_DB_PORT="${{ secrets.DEV_MAGENTO_DB_PORT }}" \
+              -e MAGENTO_DB_USER="${{ secrets.DEV_MAGENTO_DB_USER }}" \
+              -e MAGENTO_DB_PASSWORD="${{ secrets.DEV_MAGENTO_DB_PASSWORD }}" \
+              -e MAGENTO_DB_NAME="${{ secrets.DEV_MAGENTO_DB_NAME }}" \
+              -e JWT_SECRET="${{ secrets.DEV_JWT_SECRET }}" \
+              -e SESSION_EXPIRY_DAYS="${{ secrets.DEV_SESSION_EXPIRY_DAYS }}" \
+              -e SENDGRID_API_KEY="${{ secrets.DEV_SENDGRID_API_KEY }}" \
+              -e EMAIL_FROM="${{ secrets.DEV_EMAIL_FROM }}" \
+              -e EMAIL_FROM_NAME="${{ secrets.DEV_EMAIL_FROM_NAME }}" \
+              -e DEV_EMAIL_OVERRIDE="${{ secrets.DEV_EMAIL_OVERRIDE }}" \
+              -e ODOO_URL="${{ secrets.DEV_ODOO_URL }}" \
+              -e ODOO_DB="${{ secrets.DEV_ODOO_DB }}" \
+              -e ODOO_USER_ID="${{ secrets.DEV_ODOO_USER_ID }}" \
+              -e ODOO_API_KEY="${{ secrets.DEV_ODOO_API_KEY }}" \
               --restart unless-stopped \
               ${{ env.IMAGE }}:${{ steps.version.outputs.TAG }}
             docker image prune -f
