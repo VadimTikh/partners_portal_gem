@@ -11,6 +11,7 @@ import {
   isValidFutureDate,
 } from '@/lib/db/queries/dates';
 import { logDateAdded, getIpFromRequest } from '@/lib/services/activity-logger';
+import { createRequestLogger } from '@/lib/services/app-logger';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -81,11 +82,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
   return withAuth(request, async (req, user) => {
+    const logger = createRequestLogger(request, 'partner.date.create', {
+      userId: user.userId,
+      userEmail: user.email,
+      userRole: user.role,
+    });
+
     try {
       const { id } = await params;
       const courseId = parseInt(id, 10);
 
       if (isNaN(courseId)) {
+        logger.validationError('Invalid course ID', { courseId: id });
         return NextResponse.json(
           { error: 'Invalid course ID' },
           { status: 400 }
@@ -93,6 +101,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
 
       if (user.customerNumbers.length === 0) {
+        logger.validationError('Partner customer number not configured');
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
@@ -103,6 +112,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       const course = await getCourseById(courseId, user.customerNumbers);
 
       if (!course) {
+        logger.error('Course not found', { courseId }, 404, 'COURSE_NOT_FOUND');
         return NextResponse.json(
           { error: 'Course not found' },
           { status: 404 }
@@ -114,6 +124,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
       // Validate required fields
       if (!dateTime || capacity === undefined) {
+        logger.validationError('dateTime and capacity are required', { courseId });
         return NextResponse.json(
           { error: 'dateTime and capacity are required' },
           { status: 400 }
@@ -122,6 +133,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
       // Validate capacity
       if (typeof capacity !== 'number' || capacity < 1) {
+        logger.validationError('Capacity must be a positive number', { courseId, capacity });
         return NextResponse.json(
           { error: 'Capacity must be a positive number' },
           { status: 400 }
@@ -130,6 +142,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
       // Validate date (must be at least 2 days in the future)
       if (!isValidFutureDate(dateTime)) {
+        logger.validationError('Date must be at least 2 days in the future', { courseId, dateTime });
         return NextResponse.json(
           { error: 'Date must be at least 2 days in the future' },
           { status: 400 }
@@ -155,13 +168,18 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         getIpFromRequest(request)
       );
 
-      return NextResponse.json({
+      const responseData = {
         success: true,
         message: 'Date created successfully',
         date: transformDate(newDate),
-      });
+      };
+
+      logger.success(responseData, { courseId, dateTime, capacity });
+
+      return NextResponse.json(responseData);
     } catch (error) {
       console.error('[Create Course Date] Error:', error);
+      logger.error(error instanceof Error ? error : String(error), undefined, 500);
       return NextResponse.json(
         { error: 'Failed to create course date' },
         { status: 500 }
