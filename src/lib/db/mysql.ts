@@ -30,9 +30,9 @@ function getPool(): Pool {
       enableKeepAlive: true,
       keepAliveInitialDelay: 0,
       multipleStatements: true, // Required for SET statements and multi-statement queries
-      // SSL for production
-      ssl: process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: true }
+      // SSL only if explicitly enabled via MAGENTO_DB_SSL=true
+      ssl: process.env.MAGENTO_DB_SSL === 'true'
+        ? { rejectUnauthorized: false }
         : undefined,
     });
   }
