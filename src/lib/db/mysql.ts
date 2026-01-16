@@ -41,6 +41,23 @@ function getPool(): Pool {
 }
 
 /**
+ * Log helper for development
+ */
+function devLog(operation: string, data: Record<string, unknown>) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[MySQL] ${operation}`, JSON.stringify(data, null, 2));
+  }
+}
+
+/**
+ * Truncate SQL for logging (first 200 chars)
+ */
+function truncateSql(sql: string): string {
+  const clean = sql.replace(/\s+/g, ' ').trim();
+  return clean.length > 200 ? clean.substring(0, 200) + '...' : clean;
+}
+
+/**
  * Execute a query on the MySQL database
  */
 export async function query<T extends RowDataPacket[]>(
@@ -50,20 +67,29 @@ export async function query<T extends RowDataPacket[]>(
   const client = getPool();
   const start = Date.now();
 
+  devLog('Query START', {
+    sql: truncateSql(sql),
+    params: params || [],
+  });
+
   try {
     const [rows] = await client.execute<T>(sql, params);
     const duration = Date.now() - start;
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[MySQL] Query executed', {
-        duration: `${duration}ms`,
-        rows: Array.isArray(rows) ? rows.length : 0,
-      });
-    }
+    devLog('Query SUCCESS', {
+      duration: `${duration}ms`,
+      rowCount: Array.isArray(rows) ? rows.length : 0,
+    });
 
     return rows;
   } catch (error) {
-    console.error('[MySQL] Query error:', error);
+    const duration = Date.now() - start;
+    console.error('[MySQL] Query ERROR', {
+      sql: truncateSql(sql),
+      params: params || [],
+      duration: `${duration}ms`,
+      error: error instanceof Error ? error.message : error,
+    });
     throw error;
   }
 }
@@ -79,21 +105,31 @@ export async function execute(
   const client = getPool();
   const start = Date.now();
 
+  devLog('Execute START', {
+    sql: truncateSql(sql),
+    params: params || [],
+  });
+
   try {
     // Use query() for multi-statement support (execute() doesn't support multi-statements)
     const [result] = await client.query<ResultSetHeader | ResultSetHeader[]>(sql, params);
     const duration = Date.now() - start;
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[MySQL] Execute completed', {
-        duration: `${duration}ms`,
-        affectedRows: Array.isArray(result) ? 'multiple' : result.affectedRows,
-      });
-    }
+    devLog('Execute SUCCESS', {
+      duration: `${duration}ms`,
+      affectedRows: Array.isArray(result) ? 'multiple statements' : result.affectedRows,
+      insertId: Array.isArray(result) ? 'multiple' : result.insertId,
+    });
 
     return result;
   } catch (error) {
-    console.error('[MySQL] Execute error:', error);
+    const duration = Date.now() - start;
+    console.error('[MySQL] Execute ERROR', {
+      sql: truncateSql(sql),
+      params: params || [],
+      duration: `${duration}ms`,
+      error: error instanceof Error ? error.message : error,
+    });
     throw error;
   }
 }
@@ -119,19 +155,27 @@ export async function queryRaw<T extends RowDataPacket[]>(
   const client = getPool();
   const start = Date.now();
 
+  devLog('Raw Query START', {
+    sql: truncateSql(sql),
+  });
+
   try {
     const [rows] = await client.query<T>(sql);
     const duration = Date.now() - start;
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[MySQL] Raw query executed', {
-        duration: `${duration}ms`,
-      });
-    }
+    devLog('Raw Query SUCCESS', {
+      duration: `${duration}ms`,
+      rowCount: Array.isArray(rows) ? rows.length : 0,
+    });
 
     return rows;
   } catch (error) {
-    console.error('[MySQL] Raw query error:', error);
+    const duration = Date.now() - start;
+    console.error('[MySQL] Raw Query ERROR', {
+      sql: truncateSql(sql),
+      duration: `${duration}ms`,
+      error: error instanceof Error ? error.message : error,
+    });
     throw error;
   }
 }
@@ -143,14 +187,28 @@ export async function transaction<T>(
   callback: (connection: PoolConnection) => Promise<T>
 ): Promise<T> {
   const connection = await getPool().getConnection();
+  const start = Date.now();
+
+  devLog('Transaction START', {});
 
   try {
     await connection.beginTransaction();
     const result = await callback(connection);
     await connection.commit();
+    const duration = Date.now() - start;
+
+    devLog('Transaction COMMIT', { duration: `${duration}ms` });
+
     return result;
   } catch (error) {
     await connection.rollback();
+    const duration = Date.now() - start;
+
+    console.error('[MySQL] Transaction ROLLBACK', {
+      duration: `${duration}ms`,
+      error: error instanceof Error ? error.message : error,
+    });
+
     throw error;
   } finally {
     connection.release();
