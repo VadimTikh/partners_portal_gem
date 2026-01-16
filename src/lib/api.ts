@@ -18,12 +18,25 @@ const apiClient = axios.create({
   },
 });
 
-// Add auth header to requests
+// Add auth header and cache-busting to requests
 apiClient.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // Add cache-busting timestamp to GET requests
+  if (config.method === 'get') {
+    config.params = {
+      ...config.params,
+      _t: Date.now(),
+    };
+  }
+
+  // Add no-cache headers
+  config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+  config.headers['Pragma'] = 'no-cache';
+
   return config;
 });
 
