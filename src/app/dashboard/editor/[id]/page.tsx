@@ -125,45 +125,45 @@ export default function EditorPage() {
 
   const createDateMutation = useMutation({
     mutationFn: api.createDate,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dates', id] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ['dates', id] });
     },
   });
 
   const deleteDateMutation = useMutation({
     mutationFn: (dateId: number) => api.deleteDate(dateId, Number(id)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dates', id] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ['dates', id] });
     },
   });
 
   const updateDateMutation = useMutation({
     mutationFn: ({ dateId, price }: { dateId: number; price: number }) => api.updateDate(dateId, price, Number(id)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dates', id] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ['dates', id] });
     },
   });
 
   const updateSeatsMutation = useMutation({
     mutationFn: ({ dateId, seats }: { dateId: number; seats: number }) => api.updateSeats(dateId, seats, Number(id)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dates', id] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ['dates', id] });
     },
   });
 
   const updateDateTimeMutation = useMutation({
     mutationFn: ({ dateId, dateTime }: { dateId: number; dateTime: string }) =>
       api.updateDateTime(dateId, dateTime, Number(id)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dates', id] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ['dates', id] });
     },
   });
 
   const updateDurationMutation = useMutation({
     mutationFn: ({ dateId, duration }: { dateId: number; duration: number }) =>
       api.updateDuration(dateId, duration, Number(id)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dates', id] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ['dates', id] });
     },
   });
 
