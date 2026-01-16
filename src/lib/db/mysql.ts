@@ -41,10 +41,11 @@ function getPool(): Pool {
 }
 
 /**
- * Log helper for development
+ * Log helper for development/debugging
+ * Use DEBUG_MYSQL=true to enable (NODE_ENV is baked at build time in Next.js)
  */
 function devLog(operation: string, data: Record<string, unknown>) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.DEBUG_MYSQL === 'true') {
     console.log(`[MySQL] ${operation}`, JSON.stringify(data, null, 2));
   }
 }

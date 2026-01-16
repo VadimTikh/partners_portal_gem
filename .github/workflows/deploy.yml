@@ -78,6 +78,7 @@ jobs:
               --name ${{ env.CONTAINER_NAME }} \
               -p 127.0.0.1:${{ env.PORT }}:8080 \
               -e NODE_ENV="development" \
+              -e DEBUG_MYSQL="true" \
               -e APP_URL="${{ secrets.DEV_APP_URL }}" \
               -e NEXT_PUBLIC_USE_REAL_API="true" \
               -e POSTGRES_HOST="${{ secrets.DEV_POSTGRES_HOST }}" \
