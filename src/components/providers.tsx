@@ -5,7 +5,17 @@ import { useState } from 'react';
 import { I18nProvider } from '@/lib/i18n';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 0,        // Data is immediately stale
+        gcTime: 0,           // No garbage collection caching
+        refetchOnMount: true,
+        refetchOnWindowFocus: true,
+        refetchOnReconnect: true,
+      },
+    },
+  }));
 
   return (
     <QueryClientProvider client={queryClient}>
