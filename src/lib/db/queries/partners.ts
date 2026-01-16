@@ -280,7 +280,7 @@ export async function getAllPortalPartners(): Promise<PortalPartner[]> {
         AND cpe.type_id = 'configurable'
       LEFT JOIN catalog_product_entity_int AS cpei_status
         ON cpe.entity_id = cpei_status.entity_id
-        AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4)
+        AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
         AND cpei_status.store_id = 0
       WHERE op.customernumber IN (${placeholders})
       GROUP BY op.customernumber
@@ -447,7 +447,7 @@ export async function getPortalPartnerById(userId: string): Promise<PortalPartne
       AND cpe.type_id = 'configurable'
     LEFT JOIN catalog_product_entity_int AS cpei_status
       ON cpe.entity_id = cpei_status.entity_id
-      AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4)
+      AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
       AND cpei_status.store_id = 0
     WHERE op.customernumber IN (${placeholders})
   `, [...customerNumbers, ...customerNumbers]);

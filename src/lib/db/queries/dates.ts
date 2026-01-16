@@ -116,7 +116,7 @@ export async function getDatesByCourse(
     -- Price for simple product
     LEFT JOIN catalog_product_entity_decimal AS cpd_simple_price
         ON simple.entity_id = cpd_simple_price.entity_id
-        AND cpd_simple_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)
+        AND cpd_simple_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1)
         AND cpd_simple_price.store_id = 0
     WHERE op.customernumber IN (${placeholders})
       AND link.parent_id = ?
@@ -234,6 +234,7 @@ export async function updateDateSeats(dateId: number, seats: number): Promise<vo
     WHERE entity_id = (
         SELECT parent_id FROM catalog_product_super_link
         WHERE product_id = ?
+        LIMIT 1
     )
       AND attribute_id = 720
       AND store_id = 0
@@ -324,29 +325,29 @@ export async function createDate(input: CreateDateInput): Promise<DbCourseDate> 
     SET @end_time = DATE_FORMAT(DATE_ADD(STR_TO_DATE(@date_time, '%Y-%m-%dT%H:%i:%s'), INTERVAL @duration MINUTE), '%H:%i');
 
     -- Get parent course data
-    SET @attribute_set_id = (SELECT attribute_set_id FROM catalog_product_entity WHERE entity_id = @parent_id);
-    SET @parent_sku = (SELECT sku FROM catalog_product_entity WHERE entity_id = @parent_id);
-    SET @parent_name = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 60 AND store_id = 0);
-    SET @operator_id = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 700 AND store_id = 0);
-    SET @location = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 578 AND store_id = 0);
-    SET @tax_class_id = (SELECT value FROM catalog_product_entity_int WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'tax_class_id' AND entity_type_id = 4) AND store_id = 0);
-    SET @parent_price = (SELECT value FROM catalog_product_entity_decimal WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4) AND store_id = 0);
+    SET @attribute_set_id = (SELECT attribute_set_id FROM catalog_product_entity WHERE entity_id = @parent_id LIMIT 1);
+    SET @parent_sku = (SELECT sku FROM catalog_product_entity WHERE entity_id = @parent_id LIMIT 1);
+    SET @parent_name = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 60 AND store_id = 0 LIMIT 1);
+    SET @operator_id = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 700 AND store_id = 0 LIMIT 1);
+    SET @location = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 578 AND store_id = 0 LIMIT 1);
+    SET @tax_class_id = (SELECT value FROM catalog_product_entity_int WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'tax_class_id' AND entity_type_id = 4 LIMIT 1) AND store_id = 0 LIMIT 1);
+    SET @parent_price = (SELECT value FROM catalog_product_entity_decimal WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1) AND store_id = 0 LIMIT 1);
 
     -- Use input price if provided, otherwise parent price
     SET @price = IFNULL(@input_price, @parent_price);
 
     -- Get additional parent attributes
-    SET @keyword = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 590 AND store_id = 0);
-    SET @subtitle = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 548 AND store_id = 0);
-    SET @orginalname = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 719 AND store_id = 0);
-    SET @participants = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 588 AND store_id = 0);
-    SET @short_description = (SELECT value FROM catalog_product_entity_text WHERE entity_id = @parent_id AND attribute_id = 62 AND store_id = 0);
-    SET @description = (SELECT value FROM catalog_product_entity_text WHERE entity_id = @parent_id AND attribute_id = 61 AND store_id = 0);
-    SET @meta_title = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'meta_title' AND entity_type_id = 4) AND store_id = 0);
-    SET @meta_description = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'meta_description' AND entity_type_id = 4) AND store_id = 0);
-    SET @parent_urlpath = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'url_path' AND entity_type_id = 4) AND store_id = 0);
-    SET @parent_image = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 74 AND store_id = 0);
-    SET @parent_image_label = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'image_label' AND entity_type_id = 4) AND store_id = 0);
+    SET @keyword = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 590 AND store_id = 0 LIMIT 1);
+    SET @subtitle = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 548 AND store_id = 0 LIMIT 1);
+    SET @orginalname = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 719 AND store_id = 0 LIMIT 1);
+    SET @participants = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 588 AND store_id = 0 LIMIT 1);
+    SET @short_description = (SELECT value FROM catalog_product_entity_text WHERE entity_id = @parent_id AND attribute_id = 62 AND store_id = 0 LIMIT 1);
+    SET @description = (SELECT value FROM catalog_product_entity_text WHERE entity_id = @parent_id AND attribute_id = 61 AND store_id = 0 LIMIT 1);
+    SET @meta_title = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'meta_title' AND entity_type_id = 4 LIMIT 1) AND store_id = 0 LIMIT 1);
+    SET @meta_description = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'meta_description' AND entity_type_id = 4 LIMIT 1) AND store_id = 0 LIMIT 1);
+    SET @parent_urlpath = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'url_path' AND entity_type_id = 4 LIMIT 1) AND store_id = 0 LIMIT 1);
+    SET @parent_image = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = 74 AND store_id = 0 LIMIT 1);
+    SET @parent_image_label = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @parent_id AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'image_label' AND entity_type_id = 4 LIMIT 1) AND store_id = 0 LIMIT 1);
 
     -- Get category IDs for parent
     SET @parent_cat_ids = (
@@ -422,13 +423,13 @@ export async function createDate(input: CreateDateInput): Promise<DbCourseDate> 
         (4, 548, 0, @new_id, @subtitle),
         (4, 719, 0, @new_id, @orginalname),
         (4, 588, 0, @new_id, @participants),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'url_key' AND entity_type_id = 4), 0, @new_id, @url_key),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'url_path' AND entity_type_id = 4), 0, @new_id, @url_path),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'meta_title' AND entity_type_id = 4), 0, @new_id, @meta_title),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'meta_description' AND entity_type_id = 4), 0, @new_id, @meta_description),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'msrp_display_actual_price_type' AND entity_type_id = 4), 0, @new_id, '4'),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'msrp_enabled' AND entity_type_id = 4), 0, @new_id, '2'),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'options_container' AND entity_type_id = 4), 0, @new_id, 'container2');
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'url_key' AND entity_type_id = 4 LIMIT 1), 0, @new_id, @url_key),
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'url_path' AND entity_type_id = 4 LIMIT 1), 0, @new_id, @url_path),
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'meta_title' AND entity_type_id = 4 LIMIT 1), 0, @new_id, @meta_title),
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'meta_description' AND entity_type_id = 4 LIMIT 1), 0, @new_id, @meta_description),
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'msrp_display_actual_price_type' AND entity_type_id = 4 LIMIT 1), 0, @new_id, '4'),
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'msrp_enabled' AND entity_type_id = 4 LIMIT 1), 0, @new_id, '2'),
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'options_container' AND entity_type_id = 4 LIMIT 1), 0, @new_id, 'container2');
 
     -- 3. Insert TEXT attributes
     INSERT INTO catalog_product_entity_text (entity_type_id, attribute_id, store_id, entity_id, value)
@@ -440,15 +441,15 @@ export async function createDate(input: CreateDateInput): Promise<DbCourseDate> 
     INSERT INTO catalog_product_entity_int (entity_type_id, attribute_id, store_id, entity_id, value)
     VALUES
         (4, 525, 0, @new_id, @date_option_id),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4), 0, @new_id, 1),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'visibility' AND entity_type_id = 4), 0, @new_id, 1),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'tax_class_id' AND entity_type_id = 4), 0, @new_id, @tax_class_id),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'is_imported' AND entity_type_id = 4), 0, @new_id, 0),
-        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'is_recurring' AND entity_type_id = 4), 0, @new_id, 0);
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1), 0, @new_id, 1),
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'visibility' AND entity_type_id = 4 LIMIT 1), 0, @new_id, 1),
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'tax_class_id' AND entity_type_id = 4 LIMIT 1), 0, @new_id, @tax_class_id),
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'is_imported' AND entity_type_id = 4 LIMIT 1), 0, @new_id, 0),
+        (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'is_recurring' AND entity_type_id = 4 LIMIT 1), 0, @new_id, 0);
 
     -- 5. Insert DECIMAL attributes
     INSERT INTO catalog_product_entity_decimal (entity_type_id, attribute_id, store_id, entity_id, value)
-    VALUES (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4), 0, @new_id, @price);
+    VALUES (4, (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1), 0, @new_id, @price);
 
     -- 6. Link to parent (super_link)
     INSERT INTO catalog_product_super_link (product_id, parent_id)
@@ -607,8 +608,8 @@ export async function updateDateTime(dateId: number, dateTime: string): Promise<
     SET @begin_time = DATE_FORMAT(STR_TO_DATE(@date_time, '%Y-%m-%dT%H:%i:%s'), '%H:%i');
 
     -- Get current end time to calculate duration
-    SET @current_begin = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 717 AND store_id = 0);
-    SET @current_end = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 718 AND store_id = 0);
+    SET @current_begin = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 717 AND store_id = 0 LIMIT 1);
+    SET @current_end = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 718 AND store_id = 0 LIMIT 1);
     SET @duration = TIMESTAMPDIFF(MINUTE, STR_TO_DATE(@current_begin, '%H:%i'), STR_TO_DATE(@current_end, '%H:%i'));
 
     -- Calculate new end time (keep same duration)
@@ -620,6 +621,7 @@ export async function updateDateTime(dateId: number, dateTime: string): Promise<
         FROM catalog_product_super_link sl
         JOIN catalog_product_entity_varchar cpev ON sl.parent_id = cpev.entity_id
         WHERE sl.product_id = @event_id AND cpev.attribute_id = 60 AND cpev.store_id = 0
+        LIMIT 1
     );
     SET @new_name = CONCAT(@parent_name, '-', @event_date);
 
@@ -684,7 +686,7 @@ export async function updateDuration(dateId: number, duration: number): Promise<
     SET @duration = ?;
 
     -- Get current begin time
-    SET @begin_time = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 717 AND store_id = 0);
+    SET @begin_time = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 717 AND store_id = 0 LIMIT 1);
 
     -- Calculate new end time
     SET @end_time = DATE_FORMAT(DATE_ADD(STR_TO_DATE(@begin_time, '%H:%i'), INTERVAL @duration MINUTE), '%H:%i');

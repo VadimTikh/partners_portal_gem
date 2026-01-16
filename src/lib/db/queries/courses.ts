@@ -95,12 +95,12 @@ export async function getCoursesByPartner(customerNumbers: string[]): Promise<Db
     -- Status
     LEFT JOIN catalog_product_entity_int AS cpei_status
       ON cpe.entity_id = cpei_status.entity_id
-      AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4)
+      AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
       AND cpei_status.store_id = 0
     -- Description
     LEFT JOIN catalog_product_entity_text AS cpet_desc
       ON cpe.entity_id = cpet_desc.entity_id
-      AND cpet_desc.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'description' AND entity_type_id = 4)
+      AND cpet_desc.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'description' AND entity_type_id = 4 LIMIT 1)
       AND cpet_desc.store_id = 0
     -- Image
     LEFT JOIN catalog_product_entity_varchar AS img
@@ -110,7 +110,7 @@ export async function getCoursesByPartner(customerNumbers: string[]): Promise<Db
     -- Price
     LEFT JOIN catalog_product_entity_decimal AS cpd_price
       ON cpe.entity_id = cpd_price.entity_id
-      AND cpd_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)
+      AND cpd_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1)
       AND cpd_price.store_id = 0
     -- Location (attribute_id = 578)
     LEFT JOIN catalog_product_entity_varchar AS cpev_location
@@ -178,12 +178,12 @@ export async function getCourseById(
     -- Status
     LEFT JOIN catalog_product_entity_int AS cpei_status
       ON cpe.entity_id = cpei_status.entity_id
-      AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4)
+      AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
       AND cpei_status.store_id = 0
     -- Description
     LEFT JOIN catalog_product_entity_text AS cpet_desc
       ON cpe.entity_id = cpet_desc.entity_id
-      AND cpet_desc.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'description' AND entity_type_id = 4)
+      AND cpet_desc.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'description' AND entity_type_id = 4 LIMIT 1)
       AND cpet_desc.store_id = 0
     -- Location
     LEFT JOIN catalog_product_entity_varchar AS cpev_location
@@ -198,7 +198,7 @@ export async function getCourseById(
     -- Price
     LEFT JOIN catalog_product_entity_decimal AS cpd_price
       ON cpe.entity_id = cpd_price.entity_id
-      AND cpd_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)
+      AND cpd_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1)
       AND cpd_price.store_id = 0
     -- Operator (product -> operator_id)
     INNER JOIN catalog_product_entity_varchar AS cpev_operator
@@ -243,7 +243,7 @@ export async function updateCourse(
       UPDATE catalog_product_entity_decimal
       SET value = ?
       WHERE entity_id = ?
-        AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4)
+        AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1)
         AND store_id = 0
     `, [basePrice, courseId]);
   }
@@ -255,7 +255,7 @@ export async function updateCourse(
       UPDATE catalog_product_entity_int
       SET value = ?
       WHERE entity_id = ?
-        AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4)
+        AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
         AND store_id = 0
     `, [statusValue, courseId]);
   }
