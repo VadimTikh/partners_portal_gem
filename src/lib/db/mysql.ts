@@ -51,11 +51,11 @@ function devLog(operation: string, data: Record<string, unknown>) {
 }
 
 /**
- * Truncate SQL for logging (first 200 chars)
+ * Truncate SQL for logging (first 500 chars)
  */
 function truncateSql(sql: string): string {
   const clean = sql.replace(/\s+/g, ' ').trim();
-  return clean.length > 200 ? clean.substring(0, 200) + '...' : clean;
+  return clean.length > 500 ? clean.substring(0, 500) + '...' : clean;
 }
 
 /**
