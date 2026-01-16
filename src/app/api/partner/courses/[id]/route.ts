@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Disable Next.js caching for this route
+export const dynamic = 'force-dynamic';
 import { withAuth } from '@/lib/auth/middleware';
 import { getCourseById, updateCourse, transformCourse } from '@/lib/db/queries/courses';
 
