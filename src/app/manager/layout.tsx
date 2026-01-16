@@ -90,7 +90,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-full justify-start gap-2">
                   <Languages className="h-4 w-4" />
-                  {locale === 'de' ? 'Deutsch' : 'English'}
+                  {locale === 'de' ? 'Deutsch' : locale === 'uk' ? 'Українська' : 'English'}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -99,6 +99,9 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocale('en')}>
                   English
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLocale('uk')}>
+                  Українська
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
