@@ -8,6 +8,7 @@ import {
   transformCourseRequest,
 } from '@/lib/db/queries/course-requests';
 import { logCourseRequestCreated, getIpFromRequest } from '@/lib/services/activity-logger';
+import { createRequestLogger } from '@/lib/services/app-logger';
 
 /**
  * GET /api/partner/requests
@@ -50,8 +51,15 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   return withAuth(request, async (req, user) => {
+    const logger = createRequestLogger(request, 'partner.request.create', {
+      userId: user.userId,
+      userEmail: user.email,
+      userRole: user.role,
+    });
+
     try {
       if (!user.customerNumbers || user.customerNumbers.length === 0) {
+        logger.validationError('Partner customer number not configured');
         return NextResponse.json(
           { error: 'Partner customer number not configured' },
           { status: 400 }
@@ -66,6 +74,7 @@ export async function POST(request: NextRequest) {
 
       // Validate required fields
       if (!name || !location || basePrice === undefined) {
+        logger.validationError('Name, location, and base price are required', { name, location });
         return NextResponse.json(
           { error: 'Name, location, and base price are required' },
           { status: 400 }
@@ -74,6 +83,7 @@ export async function POST(request: NextRequest) {
 
       // Validate basePrice
       if (typeof basePrice !== 'number' || basePrice < 0) {
+        logger.validationError('Base price must be a non-negative number', { basePrice });
         return NextResponse.json(
           { error: 'Base price must be a non-negative number' },
           { status: 400 }
@@ -82,6 +92,7 @@ export async function POST(request: NextRequest) {
 
       // Validate requestedDates
       if (!Array.isArray(requestedDates) || requestedDates.length === 0) {
+        logger.validationError('At least one requested date is required');
         return NextResponse.json(
           { error: 'At least one requested date is required' },
           { status: 400 }
@@ -101,6 +112,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (!newRequest) {
+        logger.error('Failed to create request', { name, location }, 500, 'CREATE_FAILED');
         return NextResponse.json(
           { error: 'Failed to create request' },
           { status: 500 }
@@ -116,13 +128,18 @@ export async function POST(request: NextRequest) {
         getIpFromRequest(request)
       );
 
-      return NextResponse.json({
+      const responseData = {
         success: true,
         message: 'Course request created successfully',
         request: transformCourseRequest(newRequest),
-      });
+      };
+
+      logger.success(responseData, { name, location, basePrice });
+
+      return NextResponse.json(responseData);
     } catch (error) {
       console.error('[Create Course Request] Error:', error);
+      logger.error(error instanceof Error ? error : String(error), undefined, 500);
       return NextResponse.json(
         { error: 'Failed to create course request' },
         { status: 500 }

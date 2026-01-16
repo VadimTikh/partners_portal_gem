@@ -99,3 +99,26 @@ export interface CreateCourseFromRequest {
   metaDescription?: string;
   image?: string;
 }
+
+// App Log types for tracking API/database operations
+export type AppLogStatus = 'success' | 'error' | 'validation_error';
+
+export interface AppLog {
+  id: number;
+  timestamp: string;
+  endpoint: string;
+  method: string;
+  action: string;
+  status: AppLogStatus;
+  statusCode: number;
+  errorMessage: string | null;
+  errorCode: string | null;
+  errorStack: string | null;
+  userId: string | null;
+  userEmail: string | null;
+  userRole: UserRole | null;
+  requestBody: Record<string, unknown> | null;
+  responseSummary: Record<string, unknown> | null;
+  durationMs: number;
+  ipAddress: string | null;
+}

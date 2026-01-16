@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { Course, CourseDate, User, CourseRequest, Partner, CourseRequestDate, CreateCourseFromRequest } from './types';
+import { Course, CourseDate, User, CourseRequest, Partner, CourseRequestDate, CreateCourseFromRequest, AppLog, AppLogStatus } from './types';
 import { useAuthStore } from './auth';
 import { mockApi } from './mock-data';
 
@@ -370,6 +370,40 @@ export const api = {
     if (params.offset !== undefined) searchParams.set('offset', params.offset.toString());
 
     const response = await apiClient.get(`/manager/activity-logs?${searchParams.toString()}`);
+    return response.data;
+  },
+
+  // ==================== Manager: App Logs ====================
+
+  getAppLogs: async (params: {
+    status?: AppLogStatus | 'all_errors';
+    action?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<{
+    logs: AppLog[];
+    total: number;
+    actions: string[];
+    stats: {
+      totalLogs: number;
+      errorCount: number;
+      validationErrorCount: number;
+      successCount: number;
+      last24hErrors: number;
+    };
+    pagination: { limit: number; offset: number; hasMore: boolean };
+  }> => {
+    const searchParams = new URLSearchParams();
+    if (params.status) searchParams.set('status', params.status);
+    if (params.action) searchParams.set('action', params.action);
+    if (params.startDate) searchParams.set('startDate', params.startDate);
+    if (params.endDate) searchParams.set('endDate', params.endDate);
+    if (params.limit) searchParams.set('limit', params.limit.toString());
+    if (params.offset !== undefined) searchParams.set('offset', params.offset.toString());
+
+    const response = await apiClient.get(`/manager/app-logs?${searchParams.toString()}`);
     return response.data;
   },
 
