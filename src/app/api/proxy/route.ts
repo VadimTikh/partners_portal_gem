@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Disable Next.js caching
+export const dynamic = 'force-dynamic';
 import axios from 'axios';
 
 const N8N_API_URL = process.env.NEXT_PUBLIC_N8N_API_URL;

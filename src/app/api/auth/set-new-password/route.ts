@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Disable Next.js caching
+export const dynamic = 'force-dynamic';
 import { findUserByResetToken, updatePassword } from '@/lib/db/queries/users';
 import { hashPassword } from '@/lib/auth/password';
 import { logPasswordResetCompleted, getIpFromRequest } from '@/lib/services/activity-logger';

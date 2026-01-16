@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Disable Next.js caching
+export const dynamic = 'force-dynamic';
 import { findUserByEmail, updateResetToken } from '@/lib/db/queries/users';
 import { generateResetToken } from '@/lib/auth/jwt';
 import { sendEmail } from '@/lib/email';

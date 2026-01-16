@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+// Disable Next.js caching
+export const dynamic = 'force-dynamic';
 import { findUserByEmail } from '@/lib/db/queries/users';
 import { createSession } from '@/lib/db/queries/sessions';
 import { verifyPasswordCompat } from '@/lib/auth/password';

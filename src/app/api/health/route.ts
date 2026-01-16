@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+// Disable Next.js caching
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/health
