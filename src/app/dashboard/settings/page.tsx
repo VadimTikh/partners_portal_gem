@@ -21,7 +21,7 @@ import {
 const passwordSchema = z
   .object({
     currentPassword: z.string().min(1, 'Required'),
-    newPassword: z.string().min(6, 'Min 6 chars'),
+    newPassword: z.string().min(8, 'Min 8 chars'),
     confirmPassword: z.string().min(1, 'Required'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

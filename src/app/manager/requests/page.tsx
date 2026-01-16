@@ -70,7 +70,7 @@ export default function ManagerRequestsPage() {
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ['all-course-requests'],
-    queryFn: () => api.getCourseRequests(),
+    queryFn: () => api.getAllCourseRequests(),
     enabled: hasHydrated,
   });
 
@@ -157,7 +157,7 @@ export default function ManagerRequestsPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2 break-words overflow-hidden">
                   {request.partnerDescription || '-'}
                 </p>
 

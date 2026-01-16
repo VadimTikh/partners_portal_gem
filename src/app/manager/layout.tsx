@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { FileText, LogOut, Languages, Settings, LayoutDashboard, Users } from 'lucide-react';
+import { FileText, LogOut, Languages, Settings, LayoutDashboard, Users, Activity } from 'lucide-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
@@ -44,6 +44,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
     { name: t.manager.dashboard, href: '/manager', icon: LayoutDashboard },
     { name: t.manager.courseRequests, href: '/manager/requests', icon: FileText },
     { name: t.manager.partners, href: '/manager/partners', icon: Users },
+    { name: t.manager.activityLogs || 'Activity Logs', href: '/manager/activity', icon: Activity },
     { name: t.common.settings, href: '/manager/settings', icon: Settings },
   ];
 
@@ -52,16 +53,16 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
       {/* Sidebar */}
       <aside className="hidden w-64 flex-col border-r bg-muted/20 md:flex">
         <div className="flex h-16 items-center border-b px-6">
-          <Link href="/manager/requests" className="flex items-center gap-2">
+          <Link href="/manager/requests" className="flex flex-col">
             <Image
               src="https://www.miomente.de/skin/frontend/ultimo/default/images/goldenwebage/logo.png"
               alt="Miomente"
               width={140}
               height={40}
-              className="h-10 w-auto"
+              className="h-8 w-auto"
               priority
             />
-            <span className="font-bold text-primary text-xl">Manager</span>
+            <span className="text-xs font-medium text-muted-foreground tracking-wider uppercase">Manager Portal</span>
           </Link>
         </div>
         <div className="flex-1 overflow-y-auto py-4">

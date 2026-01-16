@@ -23,6 +23,7 @@ export interface CourseDate {
 export type UserRole = 'partner' | 'manager';
 
 export interface User {
+  id?: string; // User ID from database
   email: string;
   name: string;
   token?: string;
@@ -33,10 +34,10 @@ export interface User {
 
 // Partner information for manager view
 export interface Partner {
-  id: number;
+  id: string;  // Portal user UUID
   name: string;
   email: string;
-  companyName: string;
+  customerNumbers?: string[];  // All assigned customer numbers
   coursesCount: number;
   activeCoursesCount?: number;
   availableDatesCount?: number;
