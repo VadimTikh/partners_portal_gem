@@ -18,15 +18,17 @@ const nextConfig: NextConfig = {
       static: 0,
     },
   },
-  // Add no-cache headers to API routes
+  // Add no-cache headers to API routes (including nginx-specific headers)
   async headers() {
     return [
       {
         source: '/api/:path*',
         headers: [
-          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+          { key: 'Cache-Control', value: 'private, no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0' },
           { key: 'Pragma', value: 'no-cache' },
           { key: 'Expires', value: '0' },
+          { key: 'X-Accel-Expires', value: '0' },  // Nginx-specific: disable proxy caching
+          { key: 'Surrogate-Control', value: 'no-store' },  // CDN/proxy directive
         ],
       },
     ];
