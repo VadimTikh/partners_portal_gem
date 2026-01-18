@@ -258,6 +258,81 @@ export async function updateCourse(
         AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
         AND store_id = 0
     `, [statusValue, courseId]);
+
+    // When disabling a course, also set visibility to "Not Visible Individually" (1)
+    // and clear any store-specific visibility overrides to ensure it's hidden everywhere
+    if (status === 'inactive') {
+      // Update global visibility to 1 (Not Visible Individually)
+      await query(`
+        UPDATE catalog_product_entity_int
+        SET value = 1
+        WHERE entity_id = ?
+          AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'visibility' AND entity_type_id = 4 LIMIT 1)
+          AND store_id = 0
+      `, [courseId]);
+
+      // Remove store-specific visibility overrides (they would override the global setting)
+      await query(`
+        DELETE FROM catalog_product_entity_int
+        WHERE entity_id = ?
+          AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'visibility' AND entity_type_id = 4 LIMIT 1)
+          AND store_id != 0
+      `, [courseId]);
+
+      // Also disable all child products (dates)
+      await query(`
+        UPDATE catalog_product_entity_int
+        SET value = 2
+        WHERE entity_id IN (
+          SELECT product_id FROM catalog_product_super_link WHERE parent_id = ?
+        )
+          AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
+          AND store_id = 0
+      `, [courseId]);
+
+      // Clean up Magento index tables to immediately remove from catalog/search
+      // Without this, the product would still appear until Magento reindex runs
+
+      // Remove from price index (parent product)
+      await query(`DELETE FROM catalog_product_index_price WHERE entity_id = ?`, [courseId]);
+
+      // Remove child products from price index
+      await query(`
+        DELETE FROM catalog_product_index_price
+        WHERE entity_id IN (SELECT product_id FROM catalog_product_super_link WHERE parent_id = ?)
+      `, [courseId]);
+
+      // Remove from search index
+      await query(`DELETE FROM catalogsearch_fulltext WHERE product_id = ?`, [courseId]);
+
+      // Remove from category index
+      await query(`DELETE FROM catalog_category_product_index WHERE product_id = ?`, [courseId]);
+    }
+
+    // When enabling a course, set visibility to "Catalog, Search" (4)
+    // NOTE: Re-enabling requires Magento reindex to rebuild index entries.
+    // We update the EAV data here, but the product won't appear in catalog
+    // until Magento's indexer runs (either manually or via cron).
+    if (status === 'active') {
+      await query(`
+        UPDATE catalog_product_entity_int
+        SET value = 4
+        WHERE entity_id = ?
+          AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'visibility' AND entity_type_id = 4 LIMIT 1)
+          AND store_id = 0
+      `, [courseId]);
+
+      // Also re-enable all child products (dates)
+      await query(`
+        UPDATE catalog_product_entity_int
+        SET value = 1
+        WHERE entity_id IN (
+          SELECT product_id FROM catalog_product_super_link WHERE parent_id = ?
+        )
+          AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
+          AND store_id = 0
+      `, [courseId]);
+    }
   }
 }
 
