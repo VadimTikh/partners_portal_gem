@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
       static: 0,
     },
   },
-  // Add no-cache headers to API routes (including nginx-specific headers)
+  // Add no-cache headers to prevent stale HTML/chunks issues after deployments
   async headers() {
     return [
       {
@@ -29,6 +29,14 @@ const nextConfig: NextConfig = {
           { key: 'Expires', value: '0' },
           { key: 'X-Accel-Expires', value: '0' },  // Nginx-specific: disable proxy caching
           { key: 'Surrogate-Control', value: 'no-store' },  // CDN/proxy directive
+        ],
+      },
+      {
+        // Disable caching for HTML pages to prevent stale chunk references after deployments
+        source: '/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, must-revalidate' },
+          { key: 'X-Accel-Expires', value: '0' },
         ],
       },
     ];
