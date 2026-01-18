@@ -6,7 +6,7 @@
  * carefully crafted to work correctly.
  */
 
-import { query, queryOne } from '../mysql';
+import { query, queryOne, execute } from '../mysql';
 import { RowDataPacket } from 'mysql2';
 
 export interface DbCourse extends RowDataPacket {
@@ -344,7 +344,7 @@ export async function updateCourse(
 async function rebuildCourseIndexes(courseId: number): Promise<void> {
   // 1. Rebuild price index for parent product
   // Get min price from child products
-  await query(`
+  await execute(`
     INSERT INTO catalog_product_index_price
       (entity_id, customer_group_id, website_id, tax_class_id, price, final_price, min_price, max_price, tier_price, group_price)
     SELECT
@@ -379,7 +379,7 @@ async function rebuildCourseIndexes(courseId: number): Promise<void> {
   `, [courseId, courseId, courseId]);
 
   // 2. Rebuild price index for child products
-  await query(`
+  await execute(`
     INSERT INTO catalog_product_index_price
       (entity_id, customer_group_id, website_id, tax_class_id, price, final_price, min_price, max_price, tier_price, group_price)
     SELECT
@@ -410,7 +410,7 @@ async function rebuildCourseIndexes(courseId: number): Promise<void> {
 
   // 3. Rebuild category index
   // Insert for each category the product belongs to, for each store
-  await query(`
+  await execute(`
     INSERT INTO catalog_category_product_index
       (category_id, product_id, position, is_parent, store_id, visibility)
     SELECT
@@ -429,7 +429,7 @@ async function rebuildCourseIndexes(courseId: number): Promise<void> {
   `, [courseId]);
 
   // Also add root categories (2 and 3) which are typically required
-  await query(`
+  await execute(`
     INSERT INTO catalog_category_product_index
       (category_id, product_id, position, is_parent, store_id, visibility)
     SELECT
@@ -451,7 +451,7 @@ async function rebuildCourseIndexes(courseId: number): Promise<void> {
 
   // 4. Rebuild search index (catalogsearch_fulltext)
   // Build data_index from product name and child names
-  await query(`
+  await execute(`
     INSERT INTO catalogsearch_fulltext (product_id, store_id, data_index)
     SELECT
       ? as product_id,
