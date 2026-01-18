@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
 import { withAuth } from '@/lib/auth/middleware';
-import { verifyDateOwnership, updateDateTime } from '@/lib/db/queries/dates';
+import { verifyDateOwnership, updateDateTime, isValidFutureDate } from '@/lib/db/queries/dates';
 import { logDateEdited, getIpFromRequest } from '@/lib/services/activity-logger';
 
 interface RouteParams {
@@ -61,6 +61,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       if (!dateTimeRegex.test(dateTime)) {
         return NextResponse.json(
           { error: 'dateTime must be in ISO format (YYYY-MM-DDTHH:mm:ss)' },
+          { status: 400 }
+        );
+      }
+
+      // Validate date (must be at least 2 days in the future)
+      if (!isValidFutureDate(dateTime)) {
+        return NextResponse.json(
+          { error: 'Date must be at least 2 days in the future' },
           { status: 400 }
         );
       }

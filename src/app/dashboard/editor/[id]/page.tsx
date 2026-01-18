@@ -286,6 +286,16 @@ export default function EditorPage() {
   };
 
   const handleUpdateDate = async (dateId: number, newDate: Date, currentDateTime: string) => {
+    // Validate minimum date (today + 2 days)
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() + 2);
+    minDate.setHours(0, 0, 0, 0);
+
+    if (newDate < minDate) {
+      toast.error(`Date must be at least 2 days in the future (from ${format(minDate, 'PPP')})`);
+      return;
+    }
+
     try {
       const currentTime = parseAsLocalTime(currentDateTime);
       newDate.setHours(currentTime.getHours(), currentTime.getMinutes(), 0, 0);
@@ -533,6 +543,12 @@ export default function EditorPage() {
                                                                     selected={editedDate}
                                                                     onSelect={(d) => {
                                                                         if (d) setEditedDate(d);
+                                                                    }}
+                                                                    disabled={(date) => {
+                                                                        const min = new Date();
+                                                                        min.setDate(min.getDate() + 2);
+                                                                        min.setHours(0, 0, 0, 0);
+                                                                        return date < min;
                                                                     }}
                                                                     initialFocus
                                                                 />
