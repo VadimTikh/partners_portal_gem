@@ -137,6 +137,31 @@ export async function createHelpdeskTicket(data: {
 }
 
 /**
+ * Post a message to a helpdesk ticket in Odoo
+ */
+export async function postTicketMessage(
+  ticketId: number,
+  message: string
+): Promise<void> {
+  // Pass message as-is, Odoo will handle it
+  const response = await odooRpc('execute_kw', [
+    'helpdesk.ticket',
+    'message_post',
+    [ticketId],
+    {
+      body: message,
+      message_type: 'notification',
+      subtype_xmlid: 'mail.mt_note',
+    },
+  ]);
+
+  if (response.error) {
+    console.error('[Odoo] Error posting message to ticket:', response.error);
+    throw new Error('Failed to post message to ticket in Odoo');
+  }
+}
+
+/**
  * Create a support ticket with contact creation if needed
  *
  * This is the main function used by the contact endpoint.
@@ -161,13 +186,20 @@ export async function createSupportTicket(data: {
     contactId = await createContact(data.userName, data.userEmail);
   }
 
-  // Create ticket
-  const ticketSubject = `New Partner Request - ${data.subject.replace(/"/g, "'")}`;
+  // Create ticket with Partners Portal prefix
+  const ticketSubject = `[Partners Portal] ${data.subject.replace(/"/g, "'")}`;
   const ticketId = await createHelpdeskTicket({
     subject: ticketSubject,
     partnerEmail: data.userEmail,
     partnerId: contactId,
   });
+
+  // Post initial message with partner info and source
+  const headerMessage = data.message
+    ? `MESSAGE: ${data.message}`
+    : '(No message provided)';
+
+  await postTicketMessage(ticketId, headerMessage);
 
   return { ticketId, contactId };
 }
