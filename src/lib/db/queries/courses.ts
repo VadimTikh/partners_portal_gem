@@ -310,9 +310,7 @@ export async function updateCourse(
     }
 
     // When enabling a course, set visibility to "Catalog, Search" (4)
-    // NOTE: Re-enabling requires Magento reindex to rebuild index entries.
-    // We update the EAV data here, but the product won't appear in catalog
-    // until Magento's indexer runs (either manually or via cron).
+    // and rebuild Magento index entries
     if (status === 'active') {
       await query(`
         UPDATE catalog_product_entity_int
@@ -332,8 +330,158 @@ export async function updateCourse(
           AND attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
           AND store_id = 0
       `, [courseId]);
+
+      // Rebuild Magento index tables to make course appear in catalog/search
+      await rebuildCourseIndexes(courseId);
     }
   }
+}
+
+/**
+ * Rebuild Magento index entries for a course
+ * Called when re-enabling a previously disabled course
+ */
+async function rebuildCourseIndexes(courseId: number): Promise<void> {
+  // 1. Rebuild price index for parent product
+  // Get min price from child products
+  await query(`
+    INSERT INTO catalog_product_index_price
+      (entity_id, customer_group_id, website_id, tax_class_id, price, final_price, min_price, max_price, tier_price, group_price)
+    SELECT
+      ? as entity_id,
+      cg.customer_group_id,
+      w.website_id,
+      2 as tax_class_id,
+      parent_price.value as price,
+      COALESCE(MIN(child_price.value), parent_price.value) as final_price,
+      COALESCE(MIN(child_price.value), parent_price.value) as min_price,
+      COALESCE(MAX(child_price.value), parent_price.value) as max_price,
+      NULL as tier_price,
+      NULL as group_price
+    FROM customer_group cg
+    CROSS JOIN core_website w
+    LEFT JOIN catalog_product_entity_decimal parent_price
+      ON parent_price.entity_id = ?
+      AND parent_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1)
+      AND parent_price.store_id = 0
+    LEFT JOIN catalog_product_super_link sl ON sl.parent_id = ?
+    LEFT JOIN catalog_product_entity_decimal child_price
+      ON child_price.entity_id = sl.product_id
+      AND child_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1)
+      AND child_price.store_id = 0
+    WHERE w.website_id > 0
+    GROUP BY cg.customer_group_id, w.website_id, parent_price.value
+    ON DUPLICATE KEY UPDATE
+      price = VALUES(price),
+      final_price = VALUES(final_price),
+      min_price = VALUES(min_price),
+      max_price = VALUES(max_price)
+  `, [courseId, courseId, courseId]);
+
+  // 2. Rebuild price index for child products
+  await query(`
+    INSERT INTO catalog_product_index_price
+      (entity_id, customer_group_id, website_id, tax_class_id, price, final_price, min_price, max_price, tier_price, group_price)
+    SELECT
+      sl.product_id as entity_id,
+      cg.customer_group_id,
+      w.website_id,
+      2 as tax_class_id,
+      cp.value as price,
+      cp.value as final_price,
+      cp.value as min_price,
+      cp.value as max_price,
+      NULL as tier_price,
+      NULL as group_price
+    FROM catalog_product_super_link sl
+    CROSS JOIN customer_group cg
+    CROSS JOIN core_website w
+    LEFT JOIN catalog_product_entity_decimal cp
+      ON cp.entity_id = sl.product_id
+      AND cp.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1)
+      AND cp.store_id = 0
+    WHERE sl.parent_id = ? AND w.website_id > 0
+    ON DUPLICATE KEY UPDATE
+      price = VALUES(price),
+      final_price = VALUES(final_price),
+      min_price = VALUES(min_price),
+      max_price = VALUES(max_price)
+  `, [courseId]);
+
+  // 3. Rebuild category index
+  // Insert for each category the product belongs to, for each store
+  await query(`
+    INSERT INTO catalog_category_product_index
+      (category_id, product_id, position, is_parent, store_id, visibility)
+    SELECT
+      ccp.category_id,
+      ccp.product_id,
+      ccp.position,
+      1 as is_parent,
+      cs.store_id,
+      4 as visibility
+    FROM catalog_category_product ccp
+    CROSS JOIN core_store cs
+    WHERE ccp.product_id = ? AND cs.store_id > 0
+    ON DUPLICATE KEY UPDATE
+      position = VALUES(position),
+      visibility = VALUES(visibility)
+  `, [courseId]);
+
+  // Also add root categories (2 and 3) which are typically required
+  await query(`
+    INSERT INTO catalog_category_product_index
+      (category_id, product_id, position, is_parent, store_id, visibility)
+    SELECT
+      cat.entity_id as category_id,
+      ? as product_id,
+      cpe.entity_id as position,
+      0 as is_parent,
+      cs.store_id,
+      4 as visibility
+    FROM catalog_category_entity cat
+    CROSS JOIN core_store cs
+    CROSS JOIN catalog_product_entity cpe
+    WHERE cat.entity_id IN (2, 3)
+      AND cs.store_id > 0
+      AND cpe.entity_id = ?
+    ON DUPLICATE KEY UPDATE
+      visibility = VALUES(visibility)
+  `, [courseId, courseId]);
+
+  // 4. Rebuild search index (catalogsearch_fulltext)
+  // Build data_index from product name and child names
+  await query(`
+    INSERT INTO catalogsearch_fulltext (product_id, store_id, data_index)
+    SELECT
+      ? as product_id,
+      cs.store_id,
+      CONCAT(
+        COALESCE(pn.value, ''),
+        '|',
+        COALESCE(GROUP_CONCAT(cn.value SEPARATOR '|'), ''),
+        '|',
+        COALESCE(pd.value, '')
+      ) as data_index
+    FROM core_store cs
+    LEFT JOIN catalog_product_entity_varchar pn
+      ON pn.entity_id = ?
+      AND pn.attribute_id = 60
+      AND pn.store_id = 0
+    LEFT JOIN catalog_product_entity_text pd
+      ON pd.entity_id = ?
+      AND pd.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'meta_keyword' AND entity_type_id = 4 LIMIT 1)
+      AND pd.store_id = 0
+    LEFT JOIN catalog_product_super_link sl ON sl.parent_id = ?
+    LEFT JOIN catalog_product_entity_varchar cn
+      ON cn.entity_id = sl.product_id
+      AND cn.attribute_id = 60
+      AND cn.store_id = 0
+    WHERE cs.store_id > 0
+    GROUP BY cs.store_id, pn.value, pd.value
+    ON DUPLICATE KEY UPDATE
+      data_index = VALUES(data_index)
+  `, [courseId, courseId, courseId, courseId]);
 }
 
 export interface CreateCourseInput {
