@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { withAuth } from '@/lib/auth/middleware';
 import { createSupportTicket } from '@/lib/services/odoo';
+import { logTicketCreated, getIpFromRequest } from '@/lib/services/activity-logger';
 
 /**
  * POST /api/partner/contact
@@ -31,6 +32,15 @@ export async function POST(request: NextRequest) {
         subject: subject.trim(),
         message: message?.trim(),
       });
+
+      // Log activity
+      await logTicketCreated(
+        { id: user.userId, email: user.email, name: user.name },
+        ticketId,
+        subject.trim(),
+        user.customerNumber || undefined,
+        getIpFromRequest(req)
+      );
 
       return NextResponse.json({
         success: true,

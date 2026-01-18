@@ -14,7 +14,8 @@ export type ActivityActionType =
   | 'password_changed'
   | 'password_reset_requested'
   | 'password_reset_completed'
-  | 'login';
+  | 'login'
+  | 'ticket_created';
 
 export interface DbActivityLog {
   id: number;
@@ -102,12 +103,14 @@ export async function getActivityLogs(filters: ActivityLogFilters = {}): Promise
 
   if (filters.startDate) {
     conditions.push(`created_at >= $${paramIndex++}`);
-    params.push(filters.startDate);
+    // Include from beginning of day (00:00:00)
+    params.push(`${filters.startDate} 00:00:00`);
   }
 
   if (filters.endDate) {
     conditions.push(`created_at <= $${paramIndex++}`);
-    params.push(filters.endDate);
+    // Include until end of day (23:59:59)
+    params.push(`${filters.endDate} 23:59:59`);
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -149,12 +152,14 @@ export async function getActivityLogCount(filters: ActivityLogFilters = {}): Pro
 
   if (filters.startDate) {
     conditions.push(`created_at >= $${paramIndex++}`);
-    params.push(filters.startDate);
+    // Include from beginning of day (00:00:00)
+    params.push(`${filters.startDate} 00:00:00`);
   }
 
   if (filters.endDate) {
     conditions.push(`created_at <= $${paramIndex++}`);
-    params.push(filters.endDate);
+    // Include until end of day (23:59:59)
+    params.push(`${filters.endDate} 23:59:59`);
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

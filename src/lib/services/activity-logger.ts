@@ -191,3 +191,23 @@ export async function logLogin(
     ipAddress,
   });
 }
+
+export async function logTicketCreated(
+  user: { id: string; email: string; name: string },
+  ticketId: number,
+  subject: string,
+  customerNumber?: string,
+  ipAddress?: string
+): Promise<void> {
+  await logActivity({
+    userId: user.id,
+    partnerEmail: user.email,
+    partnerName: user.name,
+    actionType: 'ticket_created',
+    entityType: 'ticket',
+    entityId: ticketId,
+    details: { subject },
+    customerNumber,
+    ipAddress,
+  });
+}

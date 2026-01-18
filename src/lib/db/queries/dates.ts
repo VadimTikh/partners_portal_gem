@@ -66,11 +66,11 @@ export async function getDatesByCourse(
         ) AS 'dateTime',
         CAST(IFNULL(cpev_seats.value, 0) AS UNSIGNED) AS 'capacity',
         0 AS 'booked',
-        TIMESTAMPDIFF(
-            MINUTE,
-            STR_TO_DATE(cpev_begin.value, '%H:%i'),
-            STR_TO_DATE(cpev_end.value, '%H:%i')
-        ) AS 'duration',
+        CASE
+            WHEN TIMESTAMPDIFF(MINUTE, STR_TO_DATE(cpev_begin.value, '%H:%i'), STR_TO_DATE(cpev_end.value, '%H:%i')) < 0
+            THEN TIMESTAMPDIFF(MINUTE, STR_TO_DATE(cpev_begin.value, '%H:%i'), STR_TO_DATE(cpev_end.value, '%H:%i')) + 1440
+            ELSE TIMESTAMPDIFF(MINUTE, STR_TO_DATE(cpev_begin.value, '%H:%i'), STR_TO_DATE(cpev_end.value, '%H:%i'))
+        END AS 'duration',
         ROUND(cpd_simple_price.value, 2) AS 'price',
         op.customernumber AS 'customer_number',
         (
@@ -611,6 +611,10 @@ export async function updateDateTime(dateId: number, dateTime: string): Promise<
     SET @current_begin = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 717 AND store_id = 0 LIMIT 1);
     SET @current_end = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 718 AND store_id = 0 LIMIT 1);
     SET @duration = TIMESTAMPDIFF(MINUTE, STR_TO_DATE(@current_begin, '%H:%i'), STR_TO_DATE(@current_end, '%H:%i'));
+    -- Handle midnight crossing: add 24 hours if duration is negative
+    IF @duration < 0 THEN
+        SET @duration = @duration + 1440;
+    END IF;
 
     -- Calculate new end time (keep same duration)
     SET @end_time = DATE_FORMAT(DATE_ADD(STR_TO_DATE(@date_time, '%Y-%m-%dT%H:%i:%s'), INTERVAL @duration MINUTE), '%H:%i');
@@ -678,6 +682,7 @@ export async function updateDateTime(dateId: number, dateTime: string): Promise<
  *
  * Updates the end time based on begin time + new duration.
  * This preserves the begin time and just extends/shortens the event.
+ * Handles midnight crossing correctly using modular arithmetic.
  */
 export async function updateDuration(dateId: number, duration: number): Promise<void> {
   await execute(`
@@ -688,8 +693,11 @@ export async function updateDuration(dateId: number, duration: number): Promise<
     -- Get current begin time
     SET @begin_time = (SELECT value FROM catalog_product_entity_varchar WHERE entity_id = @event_id AND attribute_id = 717 AND store_id = 0 LIMIT 1);
 
-    -- Calculate new end time
-    SET @end_time = DATE_FORMAT(DATE_ADD(STR_TO_DATE(@begin_time, '%H:%i'), INTERVAL @duration MINUTE), '%H:%i');
+    -- Calculate new end time using modular arithmetic to handle midnight crossing
+    -- Convert begin time to minutes, add duration, take modulo 1440 (minutes in a day)
+    SET @begin_minutes = HOUR(STR_TO_DATE(@begin_time, '%H:%i')) * 60 + MINUTE(STR_TO_DATE(@begin_time, '%H:%i'));
+    SET @end_minutes = (@begin_minutes + @duration) % 1440;
+    SET @end_time = TIME_FORMAT(SEC_TO_TIME(@end_minutes * 60), '%H:%i');
 
     -- Update end time
     UPDATE catalog_product_entity_varchar

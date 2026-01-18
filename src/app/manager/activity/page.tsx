@@ -16,6 +16,7 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
@@ -64,6 +65,7 @@ const actionTypeConfig: Record<string, { icon: typeof Activity; color: string; l
   password_reset_requested: { icon: KeyRound, color: 'bg-orange-500', label: 'Password Reset Requested' },
   password_reset_completed: { icon: KeyRound, color: 'bg-orange-500', label: 'Password Reset Completed' },
   login: { icon: LogIn, color: 'bg-gray-500', label: 'Login' },
+  ticket_created: { icon: MessageSquare, color: 'bg-teal-500', label: 'Ticket Created' },
 };
 
 export default function ActivityLogsPage() {
@@ -77,7 +79,7 @@ export default function ActivityLogsPage() {
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(0);
-  const pageSize = 25;
+  const pageSize = 50;
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['activity-logs', selectedPartner, selectedActionType, startDate, endDate, currentPage],
@@ -115,6 +117,10 @@ export default function ActivityLogsPage() {
     if (!log.details) return '-';
 
     const parts: string[] = [];
+
+    if (log.details.subject) {
+      parts.push(`Subject: ${log.details.subject}`);
+    }
 
     if (log.details.courseName) {
       parts.push(`Course: ${log.details.courseName}`);

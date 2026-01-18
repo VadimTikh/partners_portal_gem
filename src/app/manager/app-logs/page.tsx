@@ -40,11 +40,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 
 const statusConfig: Record<AppLogStatus, { icon: typeof CheckCircle; color: string; bgColor: string }> = {
   success: { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-100 text-green-800' },
@@ -62,7 +57,7 @@ function LogRow({ log }: { log: AppLog }) {
   const hasDetails = log.errorMessage || log.errorStack || log.requestBody || log.responseSummary;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+    <>
       <TableRow className={log.status !== 'success' ? 'bg-red-50/50' : ''}>
         <TableCell className="whitespace-nowrap">
           {format(new Date(log.timestamp), 'PPp', { locale: dateLocale })}
@@ -96,63 +91,59 @@ function LogRow({ log }: { log: AppLog }) {
         </TableCell>
         <TableCell>
           {hasDetails && (
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm">
-                {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </Button>
-            </CollapsibleTrigger>
+            <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)}>
+              {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
           )}
         </TableCell>
       </TableRow>
-      {hasDetails && (
-        <CollapsibleContent asChild>
-          <TableRow className="bg-muted/30">
-            <TableCell colSpan={7} className="py-4">
-              <div className="space-y-3 text-sm">
-                {log.errorMessage && (
-                  <div>
-                    <span className="font-medium text-red-600">Error: </span>
-                    <span className="text-red-700">{log.errorMessage}</span>
-                    {log.errorCode && (
-                      <code className="ml-2 text-xs bg-red-100 px-1 py-0.5 rounded">{log.errorCode}</code>
-                    )}
-                  </div>
-                )}
-                {log.errorStack && (
-                  <div>
-                    <span className="font-medium">Stack Trace:</span>
-                    <pre className="mt-1 text-xs bg-muted p-2 rounded overflow-x-auto max-h-32">
-                      {log.errorStack}
-                    </pre>
-                  </div>
-                )}
-                {log.requestBody && Object.keys(log.requestBody).length > 0 && (
-                  <div>
-                    <span className="font-medium">Request Body:</span>
-                    <pre className="mt-1 text-xs bg-muted p-2 rounded overflow-x-auto">
-                      {JSON.stringify(log.requestBody, null, 2)}
-                    </pre>
-                  </div>
-                )}
-                {log.responseSummary && Object.keys(log.responseSummary).length > 0 && (
-                  <div>
-                    <span className="font-medium">Response Summary:</span>
-                    <pre className="mt-1 text-xs bg-muted p-2 rounded overflow-x-auto">
-                      {JSON.stringify(log.responseSummary, null, 2)}
-                    </pre>
-                  </div>
-                )}
-                <div className="flex gap-4 text-xs text-muted-foreground">
-                  <span>Status Code: {log.statusCode}</span>
-                  {log.ipAddress && <span>IP: {log.ipAddress}</span>}
-                  {log.userId && <span>User ID: {log.userId}</span>}
+      {hasDetails && isOpen && (
+        <TableRow className="bg-muted/30">
+          <TableCell colSpan={7} className="py-4">
+            <div className="space-y-3 text-sm">
+              {log.errorMessage && (
+                <div>
+                  <span className="font-medium text-red-600">Error: </span>
+                  <span className="text-red-700">{log.errorMessage}</span>
+                  {log.errorCode && (
+                    <code className="ml-2 text-xs bg-red-100 px-1 py-0.5 rounded">{log.errorCode}</code>
+                  )}
                 </div>
+              )}
+              {log.errorStack && (
+                <div>
+                  <span className="font-medium">Stack Trace:</span>
+                  <pre className="mt-1 text-xs bg-muted p-2 rounded overflow-x-auto max-h-32">
+                    {log.errorStack}
+                  </pre>
+                </div>
+              )}
+              {log.requestBody && Object.keys(log.requestBody).length > 0 && (
+                <div>
+                  <span className="font-medium">Request Body:</span>
+                  <pre className="mt-1 text-xs bg-muted p-2 rounded overflow-x-auto">
+                    {JSON.stringify(log.requestBody, null, 2)}
+                  </pre>
+                </div>
+              )}
+              {log.responseSummary && Object.keys(log.responseSummary).length > 0 && (
+                <div>
+                  <span className="font-medium">Response Summary:</span>
+                  <pre className="mt-1 text-xs bg-muted p-2 rounded overflow-x-auto">
+                    {JSON.stringify(log.responseSummary, null, 2)}
+                  </pre>
+                </div>
+              )}
+              <div className="flex gap-4 text-xs text-muted-foreground">
+                <span>Status Code: {log.statusCode}</span>
+                {log.ipAddress && <span>IP: {log.ipAddress}</span>}
+                {log.userId && <span>User ID: {log.userId}</span>}
               </div>
-            </TableCell>
-          </TableRow>
-        </CollapsibleContent>
+            </div>
+          </TableCell>
+        </TableRow>
       )}
-    </Collapsible>
+    </>
   );
 }
 
@@ -343,7 +334,7 @@ export default function AppLogsPage() {
                     <TableHead>{t.manager.endpoint || 'Endpoint'}</TableHead>
                     <TableHead>{t.common.status || 'Status'}</TableHead>
                     <TableHead className="text-right">{t.manager.duration || 'Duration'}</TableHead>
-                    <TableHead>{t.manager.user || 'User'}</TableHead>
+                    <TableHead>Details</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
