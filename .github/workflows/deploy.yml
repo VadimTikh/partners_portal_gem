@@ -42,7 +42,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_USE_REAL_API=true
 
-      # Deploy MAIN branch (legacy n8n mode)
+      # Deploy MAIN branch (fullstack production mode)
       - name: Deploy to server (main)
         if: github.ref_name == 'main'
         uses: appleboy/ssh-action@v1
@@ -57,7 +57,28 @@ jobs:
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               -p 127.0.0.1:${{ env.PORT }}:8080 \
-              -e NEXT_PUBLIC_N8N_API_URL="https://n8n.boni.tools/webhook/partner-portal" \
+              -e NODE_ENV="production" \
+              -e APP_URL="${{ secrets.PROD_APP_URL }}" \
+              -e NEXT_PUBLIC_USE_REAL_API="true" \
+              -e POSTGRES_HOST="${{ secrets.PROD_POSTGRES_HOST }}" \
+              -e POSTGRES_PORT="${{ secrets.PROD_POSTGRES_PORT }}" \
+              -e POSTGRES_USER="${{ secrets.PROD_POSTGRES_USER }}" \
+              -e POSTGRES_PASSWORD="${{ secrets.PROD_POSTGRES_PASSWORD }}" \
+              -e POSTGRES_DATABASE="${{ secrets.PROD_POSTGRES_DATABASE }}" \
+              -e MAGENTO_DB_HOST="${{ secrets.PROD_MAGENTO_DB_HOST }}" \
+              -e MAGENTO_DB_PORT="${{ secrets.PROD_MAGENTO_DB_PORT }}" \
+              -e MAGENTO_DB_USER="${{ secrets.PROD_MAGENTO_DB_USER }}" \
+              -e MAGENTO_DB_PASSWORD="${{ secrets.PROD_MAGENTO_DB_PASSWORD }}" \
+              -e MAGENTO_DB_NAME="${{ secrets.PROD_MAGENTO_DB_NAME }}" \
+              -e JWT_SECRET="${{ secrets.PROD_JWT_SECRET }}" \
+              -e SESSION_EXPIRY_DAYS="${{ secrets.PROD_SESSION_EXPIRY_DAYS }}" \
+              -e SENDGRID_API_KEY="${{ secrets.PROD_SENDGRID_API_KEY }}" \
+              -e EMAIL_FROM="${{ secrets.PROD_EMAIL_FROM }}" \
+              -e EMAIL_FROM_NAME="${{ secrets.PROD_EMAIL_FROM_NAME }}" \
+              -e ODOO_URL="${{ secrets.PROD_ODOO_URL }}" \
+              -e ODOO_DB="${{ secrets.PROD_ODOO_DB }}" \
+              -e ODOO_USER_ID="${{ secrets.PROD_ODOO_USER_ID }}" \
+              -e ODOO_API_KEY="${{ secrets.PROD_ODOO_API_KEY }}" \
               --restart unless-stopped \
               ${{ env.IMAGE }}:${{ steps.version.outputs.TAG }}
             docker image prune -f
