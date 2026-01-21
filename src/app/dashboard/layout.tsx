@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, PlusCircle, LifeBuoy, Settings, LogOut, Languages, ShoppingCart, Receipt, Construction } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, LifeBuoy, Settings, LogOut, Languages, ShoppingCart, Receipt, Construction, CalendarCheck } from 'lucide-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
@@ -42,6 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navigation = [
     { name: t.common.myCourses, href: '/dashboard', icon: LayoutDashboard },
+    { name: t.bookings.title, href: '/dashboard/bookings', icon: CalendarCheck },
     { name: t.common.addNewCourse, href: '/dashboard/requests', icon: PlusCircle },
     { name: t.common.orders, href: '/dashboard/orders', icon: ShoppingCart, inDevelopment: true },
     { name: t.common.accounting, href: '/dashboard/accounting', icon: Receipt, inDevelopment: true },

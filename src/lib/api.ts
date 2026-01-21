@@ -1,5 +1,15 @@
 import axios, { AxiosError } from 'axios';
-import { Course, CourseDate, User, CourseRequest, Partner, CourseRequestDate, CreateCourseFromRequest, AppLog, AppLogStatus } from './types';
+import { Course, CourseDate, User, CourseRequest, Partner, CourseRequestDate, CreateCourseFromRequest, AppLog, AppLogStatus, Booking, BookingStats, DeclineReason, BookingStatus } from './types';
+import {
+  Ticket,
+  TicketMessage,
+  HelpdeskStage,
+  HelpdeskTicketType,
+  HelpdeskAnalytics,
+  TimePeriod,
+  TicketAIAnalysis,
+  TicketAIAnalysisPhase1,
+} from './types/helpdesk';
 import { useAuthStore } from './auth';
 import { mockApi } from './mock-data';
 
@@ -432,5 +442,117 @@ export const api = {
 
   removeCustomerNumber: async (userId: string, cnId: number): Promise<void> => {
     await apiClient.delete(`/manager/partners/${userId}/customer-numbers/${cnId}`);
+  },
+
+  // ==================== Partner: Bookings ====================
+
+  getBookings: async (params: {
+    status?: BookingStatus;
+    future?: boolean;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<{
+    bookings: Booking[];
+    stats: BookingStats;
+    declineReasons: DeclineReason[];
+    pagination: { limit?: number; offset?: number; total: number };
+  }> => {
+    const searchParams = new URLSearchParams();
+    if (params.status) searchParams.set('status', params.status);
+    if (params.future) searchParams.set('future', 'true');
+    if (params.limit) searchParams.set('limit', params.limit.toString());
+    if (params.offset !== undefined) searchParams.set('offset', params.offset.toString());
+
+    const response = await apiClient.get(`/partner/bookings?${searchParams.toString()}`);
+    return response.data;
+  },
+
+  getBooking: async (id: number): Promise<Booking> => {
+    const response = await apiClient.get<{ success: boolean; booking: Booking }>(`/partner/bookings/${id}`);
+    return response.data.booking;
+  },
+
+  confirmBooking: async (id: number): Promise<{
+    id: number;
+    status: BookingStatus;
+    confirmedAt: string;
+    confirmedBy: string;
+  }> => {
+    const response = await apiClient.post(`/partner/bookings/${id}/confirm`);
+    return response.data.booking;
+  },
+
+  declineBooking: async (
+    id: number,
+    reasonCode: string,
+    notes?: string
+  ): Promise<{
+    id: number;
+    status: BookingStatus;
+    declinedAt: string;
+    declinedBy: string;
+    declineReason: string;
+    odooTicketId?: string;
+  }> => {
+    const response = await apiClient.post(`/partner/bookings/${id}/decline`, { reasonCode, notes });
+    return { ...response.data.booking, odooTicketId: response.data.odooTicketId };
+  },
+
+  // ==================== Manager: Helpdesk ====================
+
+  getHelpdeskTickets: async (params: {
+    period?: TimePeriod;
+    customFrom?: string;
+    customTo?: string;
+    stageIds?: number[];
+    typeIds?: number[];
+    search?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<{
+    tickets: Ticket[];
+    stages: HelpdeskStage[];
+    ticketTypes: HelpdeskTicketType[];
+    analytics: HelpdeskAnalytics;
+    pagination: { total: number; limit: number; offset: number; hasMore: boolean };
+  }> => {
+    const searchParams = new URLSearchParams();
+    if (params.period) searchParams.set('period', params.period);
+    if (params.customFrom) searchParams.set('customFrom', params.customFrom);
+    if (params.customTo) searchParams.set('customTo', params.customTo);
+    if (params.stageIds?.length) searchParams.set('stageIds', params.stageIds.join(','));
+    if (params.typeIds?.length) searchParams.set('typeIds', params.typeIds.join(','));
+    if (params.search) searchParams.set('search', params.search);
+    if (params.limit) searchParams.set('limit', params.limit.toString());
+    if (params.offset !== undefined) searchParams.set('offset', params.offset.toString());
+
+    const response = await apiClient.get(`/manager/helpdesk/tickets?${searchParams.toString()}`);
+    return response.data;
+  },
+
+  getHelpdeskTicket: async (id: number): Promise<{
+    ticket: Ticket;
+    messages: TicketMessage[];
+  }> => {
+    const response = await apiClient.get(`/manager/helpdesk/ticket/${id}`);
+    return { ticket: response.data.ticket, messages: response.data.messages };
+  },
+
+  analyzeHelpdeskTicket: async (
+    ticketId: number,
+    mode: 'full' | 'quick' | 'response' = 'full',
+    existingAnalysis?: TicketAIAnalysisPhase1
+  ): Promise<{
+    ticketId: number;
+    analysis?: TicketAIAnalysis | TicketAIAnalysisPhase1;
+    responseSuggestion?: string;
+    mode: string;
+  }> => {
+    const response = await apiClient.post('/manager/helpdesk/ai/analyze', {
+      ticketId,
+      mode,
+      existingAnalysis,
+    });
+    return response.data;
   },
 };

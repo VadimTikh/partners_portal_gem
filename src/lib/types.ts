@@ -100,6 +100,129 @@ export interface CreateCourseFromRequest {
   image?: string;
 }
 
+// ============================================
+// Booking Confirmation Types (Feature 01)
+// ============================================
+
+// Booking status for partner confirmations
+export type BookingStatus = 'pending' | 'confirmed' | 'declined';
+
+// Customer information from Magento order
+export interface BookingCustomer {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+// Course info attached to booking
+export interface BookingCourse {
+  id: number;
+  name: string;
+  sku: string;
+}
+
+// Main booking interface (combines Magento order data with confirmation status)
+export interface Booking {
+  id: number; // PostgreSQL confirmation record ID
+  magentoOrderId: number;
+  magentoOrderItemId: number;
+  orderNumber: string; // Magento increment_id (human-readable)
+  customer: BookingCustomer;
+  course: BookingCourse;
+  eventDate: string; // ISO date
+  eventTime: string; // HH:MM format
+  participants: number;
+  price: number;
+  currency: string;
+  status: BookingStatus;
+  confirmationStatus: {
+    confirmedAt?: string;
+    confirmedBy?: 'email_token' | 'portal';
+    declinedAt?: string;
+    declinedBy?: 'email_token' | 'portal';
+    declineReason?: string;
+    declineNotes?: string;
+  };
+  reminderCount: number;
+  lastReminderAt?: string;
+  escalatedAt?: string;
+  odooTicketId?: string;
+  orderDate: string; // When order was placed
+  paymentStatus: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Database record for booking confirmation (PostgreSQL)
+export interface BookingConfirmation {
+  id: number;
+  magento_order_id: number;
+  magento_order_item_id: number;
+  magento_order_increment_id: string;
+  customer_number: string;
+  status: BookingStatus;
+  confirmation_token: string;
+  token_expires_at: string;
+  confirmed_at: string | null;
+  confirmed_by: 'email_token' | 'portal' | null;
+  declined_at: string | null;
+  declined_by: 'email_token' | 'portal' | null;
+  decline_reason: string | null;
+  decline_notes: string | null;
+  reminder_count: number;
+  last_reminder_at: string | null;
+  escalated_at: string | null;
+  odoo_ticket_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Standardized decline reasons
+export interface DeclineReason {
+  id: number;
+  code: string;
+  labelDe: string;
+  labelEn: string;
+  labelUk: string;
+  requiresNotes: boolean;
+  sortOrder: number;
+  isActive: boolean;
+}
+
+// API request for declining a booking
+export interface DeclineBookingRequest {
+  reasonCode: string;
+  notes?: string;
+}
+
+// API request for confirming a booking
+export interface ConfirmBookingRequest {
+  method: 'portal' | 'email_token';
+}
+
+// Booking list filters
+export interface BookingFilters {
+  status?: BookingStatus;
+  courseId?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  search?: string; // Search by customer name, email, or order number
+}
+
+// Booking statistics for dashboard
+export interface BookingStats {
+  total: number;
+  pending: number;
+  confirmed: number;
+  declined: number;
+  needsAttention: number; // Pending for >24h
+}
+
+// ============================================
+// App Log Types
+// ============================================
+
 // App Log types for tracking API/database operations
 export type AppLogStatus = 'success' | 'error' | 'validation_error';
 

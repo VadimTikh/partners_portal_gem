@@ -468,3 +468,56 @@ export async function getPortalPartnerById(userId: string): Promise<PortalPartne
     pendingRequestsCount: pendingCounts.get(user.id) || 0,
   };
 }
+
+/**
+ * Simple partner info for email sending
+ */
+export interface PartnerEmailInfo {
+  id: string;
+  name: string;
+  email: string;
+}
+
+/**
+ * Get partner by customer number
+ *
+ * Looks up the portal user associated with a customer number.
+ * Checks both the miomente_partner_customer_numbers table and
+ * the legacy customer_number field on users.
+ */
+export async function getPartnerByCustomerNumber(
+  customerNumber: string
+): Promise<PartnerEmailInfo | null> {
+  // First check the customer numbers junction table
+  const fromJunction = await queryOne<{
+    id: string;
+    name: string;
+    email: string;
+  }>(
+    `SELECT u.id, u.name, u.email
+     FROM miomente_partner_portal_users u
+     INNER JOIN miomente_partner_customer_numbers cn ON u.id = cn.user_id
+     WHERE cn.customer_number = $1
+     LIMIT 1`,
+    [customerNumber]
+  );
+
+  if (fromJunction) {
+    return fromJunction;
+  }
+
+  // Fall back to legacy customer_number field on users table
+  const fromLegacy = await queryOne<{
+    id: string;
+    name: string;
+    email: string;
+  }>(
+    `SELECT id, name, email
+     FROM miomente_partner_portal_users
+     WHERE customer_number = $1
+     LIMIT 1`,
+    [customerNumber]
+  );
+
+  return fromLegacy || null;
+}

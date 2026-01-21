@@ -1,0 +1,551 @@
+{
+  "analysis_date": "2026-01-21",
+  "summary": {
+    "total_tickets": 1000,
+    "total_open": 51,
+    "total_closed": 949,
+    "open_by_reason": {
+      "NO_RESPONSE": 32,
+      "RECENT_RESPONSE": 15,
+      "PARTNER_RECENT": 1,
+      "CUSTOMER_FOLLOWUP": 1,
+      "PARTNER_NO_RESPONSE": 2
+    },
+    "closed_by_reason": {
+      "INSOLVENCY_RESPONDED": 247,
+      "SPAM": 211,
+      "ORDER_CONFIRMATION": 95,
+      "UNCLEAR": 358,
+      "RESPONDED_NO_FOLLOWUP": 38
+    }
+  },
+  "open_tickets": {
+    "NO_RESPONSE": [
+      {
+        "ticket_id": 243443,
+        "first_date": "2026-01-19 09:54:39",
+        "last_date": "2026-01-19 14:00:02",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (1 days old) | Name: Kerstin | Email: kerstin.timpe@aol.com",
+        "priority": 1,
+        "first_message_preview": "Name: Kerstin\n    Email: kerstin.timpe@aol.com\n    Telefon: 01728248856\n    Kommentar: Liebes Team, meine Tochter 13 Jahre liebt es zu backen. Ist es möglich, dass sie in ihrem Alter an einem der Kurse teilnimmt? (Ich würde als Begleitperson natürlich dabei sein) \n    \n    Freue mich über eine Rückm"
+      },
+      {
+        "ticket_id": 244726,
+        "first_date": "2026-01-20 10:25:53",
+        "last_date": "2026-01-20 14:30:08",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (0 days old) | Name: Constanze Schindler | Email: constanze1408@web.de",
+        "priority": 1,
+        "first_message_preview": "Name: Constanze Schindler\n    Email: constanze1408@web.de\n    Telefon: 015735174108\n    Stadt: 86399 Bobingen\n    Event: Ich und mein Wok \n    Kommentar: Hallo zusammen, \n    \n    wann wird es für den angefragten Kurs wieder Termine gibt? bzw wann werden diese veröffentlicht?\n    \n    Viele Grüße\n  "
+      },
+      {
+        "ticket_id": 244925,
+        "first_date": "2026-01-20 12:59:16",
+        "last_date": "2026-01-20 17:15:02",
+        "message_count": 4,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (0 days old) | Name: Markus | Email: markusschulzki@gmx.de",
+        "priority": 1,
+        "first_message_preview": "Name: Markus \n    Email: markusschulzki@gmx.de\n    Telefon: 01722606184\n    Stadt: Köln\n    Event: Dim Sum Kochkurs\n    Kommentar: Guten Tag,\n    \n    ich habe bereits eine Anfrage gestellt, jedoch keine Antwort erhalten!\n    \n    Ich besitze bereits 2 Gutscheine und benötige dringend die buchbaren "
+      },
+      {
+        "ticket_id": 245261,
+        "first_date": "2026-01-20 17:04:43",
+        "last_date": "2026-01-21 11:00:03",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (0 days old) | Name: Christina | Email: christina_froehler@web.de",
+        "priority": 1,
+        "first_message_preview": "Name: Christina \n    Email: christina_froehler@web.de\n    Telefon: 01719146325\n    Stadt: Regensburg \n    Event: Gin Tasting\n    Kommentar: Guten Tag\n    \n    Wir würden gerne unseren Gutschein einlösen und ein Gin Tasting in Regensburg buchen.  Leider sind noch keine Termine dafür aufgeschaltet, wa"
+      },
+      {
+        "ticket_id": 245895,
+        "first_date": "2026-01-21 08:25:09",
+        "last_date": "2026-01-21 08:26:03",
+        "message_count": 4,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (-1 days old) | Name: Johanna Kuschicke | Email: kuschicke@gmail.com",
+        "priority": 1,
+        "first_message_preview": "Name: Johanna Kuschicke\n    Email: kuschicke@gmail.com\n    Telefon: 017684438192\n    Kommentar: Hallo, \n    \n    wir haben einen Gutschein für einen Fleischkochkurs in Leipzig, welchen wir gern einlösen würden. Jedoch gibt es seit einem halben Jahr keine Terminangebote in Leipzig. Wann kann man mit "
+      },
+      {
+        "ticket_id": 242386,
+        "first_date": "2026-01-17 17:03:45",
+        "last_date": "2026-01-19 11:00:17",
+        "message_count": 12,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (3 days old) | Name: Virginia Hörsch | Email: virginiahoersch@gmx.de",
+        "priority": 2,
+        "first_message_preview": "Name: Virginia Hörsch\n    Email: virginiahoersch@gmx.de\n    Telefon: 015739636763\n    Kommentar: Guten Tag,\n    \n    ich habe die Geschenkbox bestellt, jedoch hat das Notizbuch gefehlt und daher wollte ich fragen ob dies nach gesendet werden kann. Die Bestellnummer lautet 600061359\n    \n    Mit freu"
+      },
+      {
+        "ticket_id": 231056,
+        "first_date": "2026-01-06 11:33:09",
+        "last_date": "2026-01-06 15:45:04",
+        "message_count": 4,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (14 days old) | Name: Jürgen Seidel | Email: online@juergenseidel.com",
+        "priority": 3,
+        "first_message_preview": "Name: Jürgen Seidel\n    Email: online@juergenseidel.com\n    Telefon: 017663062935\n    Kommentar: Ich habe im November für den Kochkurs http://url4607.miomente.de/ls/click?upn=u001.N03CpLZk56cBHAn1GYvToSKQlz7GMtXilxmIiIFDU-2B-2BH3rUIc-2BjXDV5LNdVAxFb-2BLPxJzpCaNfhhJp4cluWqH0lQ-2BULbakfwwfnudECabNT70C"
+      },
+      {
+        "ticket_id": 231866,
+        "first_date": "2026-01-07 09:07:19",
+        "last_date": "2026-01-08 14:36:58",
+        "message_count": 7,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (13 days old) | Name: Solveig Vieluf | Email: Solveig.vieluf@gmx.de",
+        "priority": 3,
+        "first_message_preview": "Name: Solveig Vieluf\n    Email: Solveig.vieluf@gmx.de\n    Telefon: 015116911129\n    Kommentar: Hallo,\n    Ich habe gestern für Freitag gebucht (Bestellung Nr. 600061351) und vermute, dass die Einkaufslisten und der zoom link für die vegetarische Weltreise bereits versendet wurden können sie diese bi"
+      },
+      {
+        "ticket_id": 233383,
+        "first_date": "2026-01-08 12:01:28",
+        "last_date": "2026-01-08 16:15:02",
+        "message_count": 4,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (12 days old) | Name: Markus Schulzki | Email: markusschulzki@gmx.de",
+        "priority": 3,
+        "first_message_preview": "Name: Markus Schulzki\n    Email: markusschulzki@gmx.de\n    Telefon: 01722606184\n    Stadt: Köln\n    Event: Dim Sum Kochkurs chinesisch\n    Kommentar: Guten Tag,\n    \n    teilen Sie mir bitte mit, wann die Termine freigeschaltet werden, vielen Dank!"
+      },
+      {
+        "ticket_id": 234453,
+        "first_date": "2026-01-09 13:01:33",
+        "last_date": "2026-01-09 17:15:04",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (11 days old) | Name: Viktoria Wagner | Email: victoria2204@outlook.com",
+        "priority": 3,
+        "first_message_preview": "Name: Viktoria Wagner\n    Email: victoria2204@outlook.com\n    Telefon: 015773584316\n    Stadt: Hildesheim\n    Event: \n    Kommentar: Hallo,\n    \n    mein Name ist Viktoria Wagner, ich bin an der OSG Gesamtschule in Hildesheim tätig und leite einen Backkurs.\n    \n    Seit Beginn des Kurses haben wir "
+      },
+      {
+        "ticket_id": 234525,
+        "first_date": "2026-01-09 14:12:21",
+        "last_date": "2026-01-09 18:15:02",
+        "message_count": 4,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (11 days old) | Name: Alessa | Email: al.schneider14@web.de",
+        "priority": 3,
+        "first_message_preview": "Name: Alessa\n    Email: al.schneider14@web.de\n    Telefon: 015785961566\n    Kommentar: Sehr geehrte Damen und Herren, ich habe zwei Gutscheine für den Italienischen Kochkurs @Home gekauft. Ich habe eine Auftragsbestätigung erhalten (S105329) aber kein Gutscheincode oder ähnliches. Wie können die Gut"
+      },
+      {
+        "ticket_id": 234528,
+        "first_date": "2026-01-09 14:13:54",
+        "last_date": "2026-01-09 18:15:02",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (11 days old) | Name: Patrik Schönfeld | Email: patrik.schoenfeld@gmx.net",
+        "priority": 3,
+        "first_message_preview": "Name: Patrik Schönfeld\n    Email: patrik.schoenfeld@gmx.net\n    Telefon: 015257299994\n    Kommentar: Hallo zusammen, würde gerne meinen Gutschein einlösen nur finde ich gar keine Termine in Köln. Wer kann mir helfen? :-)\n    \n    Viele Grüße"
+      },
+      {
+        "ticket_id": 235138,
+        "first_date": "2026-01-10 12:39:03",
+        "last_date": "2026-01-12 11:00:10",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (10 days old) | Name: Ivonne | Email: ivonne.wurm@gmx.de",
+        "priority": 3,
+        "first_message_preview": "Name: Ivonne\n    Email: ivonne.wurm@gmx.de\n    Telefon: 015774616617\n    Kommentar: Sehr geehrte Damen und Herren,\n    \n    Ich werde am Freitag, den 06.03.2026 40 Jahre alt und wollte den Abend mit meinen besten Freunden kulinarisch verbringen.\n    \n    Wir werden voraussichtlich 8 Erwachsene sein "
+      },
+      {
+        "ticket_id": 235677,
+        "first_date": "2026-01-11 15:47:05",
+        "last_date": "2026-01-12 11:00:03",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (9 days old) | Name: Nadine | Email: maeckle.nadine@gmail.com",
+        "priority": 3,
+        "first_message_preview": "Name: Nadine \n    Email: maeckle.nadine@gmail.com\n    Telefon: 01639234457\n    Stadt: Stuttgart und Umgebung\n    Event: D' schwäbisch Kuche – mehr wie Spätzle\n    Kommentar: Sehr geehrte Damen und Herren,\n    \n    wir sind 6 Personen und wollen den oben genannten Kochkurs gerne zusammen machen. Es w"
+      },
+      {
+        "ticket_id": 235803,
+        "first_date": "2026-01-11 21:42:17",
+        "last_date": "2026-01-12 11:00:03",
+        "message_count": 4,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (9 days old) | Name: Kateryna Krytska | Email: krytskateryna@gmail.com",
+        "priority": 3,
+        "first_message_preview": "Name: Kateryna Krytska\n    Email: krytskateryna@gmail.com\n    Telefon: 016095474151\n    Kommentar: Ich habe am 27. Dezember ein Zertifikat bei Ihnen gekauft, es aber noch nicht per Post erhalten (es liegt mir nur in elektronischer Form vor). Bitte senden Sie es mir in den nächsten Tagen erneut zu."
+      },
+      {
+        "ticket_id": 235807,
+        "first_date": "2026-01-11 21:53:28",
+        "last_date": "2026-01-12 11:00:03",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (9 days old) | Name: Julia | Email: harder.julia@gmx.de",
+        "priority": 3,
+        "first_message_preview": "Name: Julia \n    Email: harder.julia@gmx.de\n    Telefon: 01752863797\n    Stadt: Stuttgart und Umgebung\n    Event: Junggesellinnenabschied\n    Kommentar: Hallo Miomente Team! Ich bin die Trauzeugin von Helen und möchte für ihren Junggesellinnenabschied einen vegetarischen Kochkurs am 25.04. machen. W"
+      },
+      {
+        "ticket_id": 236142,
+        "first_date": "2026-01-12 08:46:00",
+        "last_date": "2026-01-12 13:00:02",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (8 days old) | Name: Susanne Becker | Email: becsusanne@aol.com",
+        "priority": 3,
+        "first_message_preview": "Name: Susanne Becker\n    Email: becsusanne@aol.com\n    Telefon: 017632243765\n    Stadt: \n    Event: \n    Kommentar: Liebe Mitarbeiterin, lieber Mitarbeiter,\n    gerne würde ich ein Event aus Ihrem Hause verschenken. Betreffen würde es einen Fischkochkurs in Nürnberg.\n    Leider habe ich auf der Inte"
+      },
+      {
+        "ticket_id": 236175,
+        "first_date": "2026-01-12 09:08:23",
+        "last_date": "2026-01-12 13:15:02",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (8 days old) | Name: Sarah Khoury | Email: sarah.aphram@gmail.com",
+        "priority": 3,
+        "first_message_preview": "Name: Sarah Khoury\n    Email: sarah.aphram@gmail.com\n    Telefon: 1756554345\n    Kommentar: Hallo, ich interessiere mich für den Saucenkochkurs. Hab dazu aber noch eine Frage. Wo genau wird denn dieser Kurs stattfinden? Ist es in Aichtal, in Filderstadt oder in Stuttgart?\n    \n    Danke und viele Gr"
+      },
+      {
+        "ticket_id": 236215,
+        "first_date": "2026-01-12 09:35:11",
+        "last_date": "2026-01-19 04:26:08",
+        "message_count": 6,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (8 days old) | Name: Sumara | Email: sumaracreuzberg@gmail.com",
+        "priority": 3,
+        "first_message_preview": "Name: Sumara\n    Email: sumaracreuzberg@gmail.com\n    Telefon: +491722045785\n    Kommentar: Liebes Miomente - Team, \n    \n    können Sie mir sagen, wieviel km die Bonner Tour beträgt. Ich möchte gerne eine Person mitnehmen, die eingeschränkt gehen kann. \n    Vielen lieben Dank\n    Sumara"
+      },
+      {
+        "ticket_id": 236385,
+        "first_date": "2026-01-12 11:21:19",
+        "last_date": "2026-01-12 15:30:02",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (8 days old) | Name: Milena | Email: stari1@web.de",
+        "priority": 3,
+        "first_message_preview": "Name: Milena \n    Email: stari1@web.de\n    Telefon: 0175 8655372 \n    Kommentar: Hallo zusammen, \n    Ich backe schon eine Weile aber auf Hobby Niveau. Kann ich dann den Fortgeschrittenen Kurs buchen oder eher nicht.\n    Vielen Dank. \n    Viele Grüße \n    Milena"
+      },
+      {
+        "ticket_id": 236705,
+        "first_date": "2026-01-12 15:13:18",
+        "last_date": "2026-01-12 19:15:02",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (8 days old) | Name: Christian | Email: Christian-zw@hmx.net",
+        "priority": 3,
+        "first_message_preview": "Name: Christian\n    Email: Christian-zw@hmx.net\n    Telefon: 0151 42504166\n    Kommentar: Hallo,\n    ich habe das online Event Mexikanisch Kochen am 16.01. gebucht. Wann erhalte ich die Einkaufsliste und den Zoom link zum Event?"
+      },
+      {
+        "ticket_id": 236798,
+        "first_date": "2026-01-12 17:27:46",
+        "last_date": "2026-01-13 11:00:05",
+        "message_count": 6,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (8 days old) | Name: Lothar | Email: le379@gmx.de",
+        "priority": 3,
+        "first_message_preview": "Name: Lothar \n    Email: le379@gmx.de\n    Telefon: 017662190347\n    Kommentar: Hallo, wie sind denn für den Sushi Kochkurs die Themen auf die Termine in 2026 verteilt?"
+      },
+      {
+        "ticket_id": 238593,
+        "first_date": "2026-01-14 08:51:05",
+        "last_date": "2026-01-14 13:00:04",
+        "message_count": 4,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (6 days old) | Name: Christian | Email: christian-zw@gmx.net",
+        "priority": 3,
+        "first_message_preview": "Name: Christian \n    Email: christian-zw@gmx.net\n    Telefon: 015142504166\n    Kommentar: Hallo, ich habe die online Veranstaltung Mexiko@Home am 16.01. gebucht. Bisher habe ich weder eine Einkaufsliste noch den Zoom-Link zur Veranstaltung erhalten.\n    Findet die Veranstaltung statt? Wann erhalte i"
+      },
+      {
+        "ticket_id": 239297,
+        "first_date": "2026-01-14 15:17:50",
+        "last_date": "2026-01-14 19:30:02",
+        "message_count": 4,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (6 days old) | Name: Rasa Dengler | Email: 6rasos@gmail.com",
+        "priority": 3,
+        "first_message_preview": "Name: Rasa Dengler\n    Email: 6rasos@gmail.com\n    Telefon: 01772390866\n    Kommentar: Liebe Damen und Herren, vor zwei Tagen habe ich eine Geschenkbox für  Genießer  bestellt. Heute habe ich den Gutschein  in der Box erhalten, aber das ist was ganz Anderes als meine Bestellung  war : keine farbige "
+      },
+      {
+        "ticket_id": 239631,
+        "first_date": "2026-01-14 22:52:59",
+        "last_date": "2026-01-15 11:00:03",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (6 days old) | Name: Cajsa | Email: cajsa.klass@gmail.com",
+        "priority": 3,
+        "first_message_preview": "Name: Cajsa\n    Email: cajsa.klass@gmail.com\n    Telefon: 0172 6929287\n    Stadt: Köln\n    Event: Barista Kurs Düsseldorf\n    Kommentar: Hallo, wann werden Termine für den folgenden Kurs freigegeben? Ist es möglich, benachrichtigt zu werden? \n    Viele Grüße\n    Cajsa \n    \n    http://url4607.miomen"
+      },
+      {
+        "ticket_id": 240033,
+        "first_date": "2026-01-15 08:47:20",
+        "last_date": "2026-01-15 13:00:03",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (5 days old) | Name: Sarah | Email: Sarah.Schnirring@protonmail.com",
+        "priority": 3,
+        "first_message_preview": "Name: Sarah\n    Email: Sarah.Schnirring@protonmail.com\n    Telefon: 017661266630\n    Stadt: Stuttgart\n    Event: Anfrage für einen asiatisch-chinesischen Kochkurs zum Junggesellinnenabschied\n    Kommentar: Sehr geehrte Damen und Herren,\n    \n    unsere beste Freundin wird im Mai heiraten, und derzei"
+      },
+      {
+        "ticket_id": 240531,
+        "first_date": "2026-01-15 13:14:25",
+        "last_date": "2026-01-15 17:15:02",
+        "message_count": 4,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (5 days old) | Name: Gero | Email: schroedergero1@web.de",
+        "priority": 3,
+        "first_message_preview": "Name: Gero\n    Email: schroedergero1@web.de\n    Telefon: 0176-42557421\n    Kommentar: Ich habe im November einen Gutschein verschenkt, der gezielt zu einem Kochkurs gehören sollte. Der Code ist AXXRB-HZ5Z5.\n    Gibt es diesen Kurs in Hedelfingen nicht mehr? Ich kann ihn schon länger nicht mehr finde"
+      },
+      {
+        "ticket_id": 240807,
+        "first_date": "2026-01-15 18:04:12",
+        "last_date": "2026-01-21 05:20:30",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (5 days old) | Name: Marion Stein | Email: stein.m.1@web.de",
+        "priority": 3,
+        "first_message_preview": "Name: Marion Stein\n    Email: stein.m.1@web.de\n    Telefon: 015734847342\n    Kommentar: Sehr geehrte Damen und Herren, ich habe im Dezember einen Gutschein (Bestell nr. 200039433) bei Ihnen bestellt. Der ist bis heute aber noch nicht bei mir angekommen. Bitte melden sie sich bei mir wann dieser Guts"
+      },
+      {
+        "ticket_id": 241349,
+        "first_date": "2026-01-16 09:33:19",
+        "last_date": "2026-01-16 13:45:03",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (4 days old) | Name: Eckhard Christian | Email: cvm.christian@t-online.de",
+        "priority": 3,
+        "first_message_preview": "Name: Eckhard Christian\n    Email: cvm.christian@t-online.de\n    Telefon: 01749660637\n    Stadt: Stuttgart\n    Event: Anfängerkurs, Männerkochkurs in Stuttgart\n    Kommentar: Wann sind Termine in Stuttgart-Hedelfingen möglich.\n    Wie lange dauert ein Kurs?"
+      },
+      {
+        "ticket_id": 241425,
+        "first_date": "2026-01-16 10:37:40",
+        "last_date": "2026-01-16 14:45:02",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (4 days old) | Name: Steffany Reutlinger | Email: reutlingersteffany@gmail.com",
+        "priority": 3,
+        "first_message_preview": "Name: Steffany Reutlinger\n    Email: reutlingersteffany@gmail.com\n    Telefon: 01638843398\n    Kommentar: Sehr geehrte Damen und Herren, \n    \n    Ich möchte gerne den Pastakurs in Stuttgart buchen für mich und 2 weitere Personen. \n    Da es sich um einen JGA handelt, besteht die Frage, ob der Kurs "
+      },
+      {
+        "ticket_id": 241575,
+        "first_date": "2026-01-16 12:19:14",
+        "last_date": "2026-01-16 16:30:02",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (4 days old) | Name: Melina | Email: memeuschke@gmail.com",
+        "priority": 3,
+        "first_message_preview": "Name: Melina \n    Email: memeuschke@gmail.com\n    Telefon: 017697601004\n    Stadt: -\n    Event zum Umbuchen von: Mexican Tacos-Kochkurs @Home (01.02.26) \n    Event zum Umbuchen zu: Mexican Tacos-Kochkurs @Home (01.03.26) \n    Kommentar: Hallo, wir sind drei Freundinnen, sie sich schon riesig auf eur"
+      },
+      {
+        "ticket_id": 241840,
+        "first_date": "2026-01-16 17:11:40",
+        "last_date": "2026-01-19 11:00:19",
+        "message_count": 5,
+        "reason": "NO_RESPONSE",
+        "details": "Customer inquiry with NO team response (4 days old) | Name: Elena | Email: schule_elena@web.de",
+        "priority": 3,
+        "first_message_preview": "Name: Elena \n    Email: schule_elena@web.de\n    Telefon: +4915781719070\n    Kommentar: Hallo Miomente Team,\n    wir haben letztes Jahr im Oktober einen Eiskurs-Gutschein bei Ihnen gekauft.  Aktuell sind immer noch keine Termin drinnen. Daher möchte ich Sie fragen wann die Termine veröffentlicht werd"
+      }
+    ],
+    "RECENT_RESPONSE": [
+      {
+        "ticket_id": 231422,
+        "first_date": "2026-01-06 18:24:59",
+        "last_date": "2026-01-20 14:10:10",
+        "message_count": 12,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (0 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Alexandra \n    Email: gassei@gmx.de\n    Telefon: 015110422959\n    Kommentar: Hallo, \n    wann kann ich mit den neuen Termin zu dem Whisky, food&beer-Tasting in Köln rechnen. Ich würde gerne mit meinen Mann teilnehmen. \n    Viele Grüße \n    Alexandra"
+      },
+      {
+        "ticket_id": 232569,
+        "first_date": "2026-01-07 17:55:27",
+        "last_date": "2026-01-19 12:15:02",
+        "message_count": 13,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (1 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Sigalit Feig-Kadam\n    Email: sigalit@sigalitfeig.de\n    Telefon: 01723872220\n    Stadt: Berlin\n    Event: Nikodemus Berger\n    Kommentar: Guten Tag, ich möchte einen Gutschein einlösen(GNUVP-J7TUB).\n    Wenn ich den Gutschein eingebe, bekomme ich die Bestätigung er sei Erfolgreich eingelöst.\n"
+      },
+      {
+        "ticket_id": 235752,
+        "first_date": "2026-01-11 19:13:26",
+        "last_date": "2026-01-19 14:21:49",
+        "message_count": 15,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (1 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Silvio\n    Email: silvio.gathmann@web.de\n    Telefon: 01737928874\n    Kommentar: Guten Abend, \n    \n    Ich habe möchte gerne zu  \n    \"Die Torte meiner Träume\" in Frankfurt am Main\n    Leider sind dort seid ca einem halben Jahr keine Termine buchbar. Ist bekannt wann es neue Termine geben wir"
+      },
+      {
+        "ticket_id": 236450,
+        "first_date": "2026-01-12 12:07:59",
+        "last_date": "2026-01-21 11:00:04",
+        "message_count": 14,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (0 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Theresia \n    Email: Nikiel_t@yahoo.de\n    Telefon: 0213391676\n    Kommentar: Hallo zusammen ich möchte gerne einen Telefonischen Kontakt.M.f.Grüßen T.Nikiel"
+      },
+      {
+        "ticket_id": 237831,
+        "first_date": "2026-01-13 14:14:04",
+        "last_date": "2026-01-19 04:15:37",
+        "message_count": 9,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (1 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Petra\n    Email: petra.heinatz@gmx.de\n    Telefon: 017651970142\n    Kommentar: Heute Geschenkebox erhalten, eine weiße Schachtel mit dem Gutschein drin.\n    Ich bin davon ausgegangen, dass in der Lieferung  mehr Infos, Notizbuch, hübsche Box usw sind. So wird es auf der Website dargestellt.\n  "
+      },
+      {
+        "ticket_id": 238121,
+        "first_date": "2026-01-13 19:32:09",
+        "last_date": "2026-01-20 14:55:57",
+        "message_count": 16,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (0 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Simon Gabriel\n    Email: simon.gabriel@posteo.de\n    Telefon: 01736013879\n    Kommentar: Hallo,\n    ich habe die Box für den 200€ Gutschein erhalten, jedoch ist sie komplett weiß, ich hatte eigentlich mit einer schönen Gestaltung, wie auf dem Produktbild gerechnet.\n    Zudem ist nur der Gutsch"
+      },
+      {
+        "ticket_id": 238635,
+        "first_date": "2026-01-14 09:10:43",
+        "last_date": "2026-01-21 04:16:50",
+        "message_count": 14,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (-1 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Firma: SBI-Group AG\n    Ihr Vorname: Elfi\n    Ihr Nachname: Gossler\n    Ihre E-Mail: elfi.gossler@sbi-international-group.com\n    Ihre Telefonnummer: +41617173678\n    Ihr Wunschdatum: 26.03.2026\n    Kategorie wählen: 12\n    Vor-Ort-Event oder Online-Event: offline\n    In welcher Stadt: frankfurt\n   "
+      },
+      {
+        "ticket_id": 238796,
+        "first_date": "2026-01-14 11:04:53",
+        "last_date": "2026-01-20 14:55:27",
+        "message_count": 10,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (0 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Stephan\n    Email: Sbauerdick@hotmail.com\n    Telefon: 01711283081\n    Stadt: Köln \n    Event: Whisky, Food & Beer – Köln\n    Kommentar: Wann werden die Termine für das Event Whisky, Food & Beer – Köln 2026 herausgegeben?"
+      },
+      {
+        "ticket_id": 239629,
+        "first_date": "2026-01-14 22:44:39",
+        "last_date": "2026-01-21 05:07:36",
+        "message_count": 9,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (-1 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Boglarka \n    Email: bogi.mitschele@web.de\n    Telefon: 015156332959\n    Stadt: Karlsruhe\n    Event: Motivtortenkurs\n    Kommentar: Hallo! Ich bin leidenschaftliche Kuchen und Torten Bäckerin und möchte gerne im Vorfeld der Hochzeit meiner Tochter im Juli 26 einen Motivtortenkurs besuchen.\n   "
+      },
+      {
+        "ticket_id": 239941,
+        "first_date": "2026-01-15 08:09:28",
+        "last_date": "2026-01-21 04:39:52",
+        "message_count": 10,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (-1 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Adriana Blank \n    Email: Adriana_blank@posteo.de\n    Telefon: 02749826277\n    Bestelldatum: 29.12.25\n    Kommentar: Hallo, \n    der Gutschein kam per Post noch nicht an und ich wollte gerne nachfragen, wie da der aktuelle Stand ist, da ich ihn bis Ende nächste Woche brauche zum verschenken :)"
+      },
+      {
+        "ticket_id": 240757,
+        "first_date": "2026-01-15 17:03:00",
+        "last_date": "2026-01-21 05:18:02",
+        "message_count": 10,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (-1 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Coco\n    Email: coco.koban@gmail.com\n    Telefon: +436641817533\n    Kommentar: Wäre es möglich einen der folgenden Kurse zwischen 2-6.4.2026 zu organisieren? Leider sind die Kurse nie verfügbar. \n    \n    1. http://url4607.miomente.de/ls/click?upn=u001.N03CpLZk56cBHAn1GYvToYVjuvVZNX4fAuja8JrSp"
+      },
+      {
+        "ticket_id": 241673,
+        "first_date": "2026-01-16 14:03:09",
+        "last_date": "2026-01-21 04:19:36",
+        "message_count": 10,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (-1 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Julia Schindlbauer\n    Email: julia-schindlbauer@hotmail.com\n    Telefon: 015168589184\n    Stadt: Berlin\n    Event: Brot-Backkurs\n    Kommentar: Hallo! Ich wollte fragen wann die nächsten Termine für den Brotbackkurs festgelegt werden? \n    \n    Liebe Grüße\n    Julia"
+      },
+      {
+        "ticket_id": 243001,
+        "first_date": "2026-01-18 21:39:30",
+        "last_date": "2026-01-19 03:33:08",
+        "message_count": 43,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (1 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Julia\n    Email: Julia-schindlbauer@hotmail.com\n    Telefon: 00 49 151 68589184\n    Kommentar: Hallo! \n    \n    Wann gibt es denn die Termine für die Brotback-Saga? \n    \n    Ich möchte gern für 2 Personen buchen."
+      },
+      {
+        "ticket_id": 244038,
+        "first_date": "2026-01-19 18:04:49",
+        "last_date": "2026-01-20 11:00:05",
+        "message_count": 12,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (1 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Marlene\n    Email: marlene.a.goetz@gmail.com\n    Telefon: 015730277071\n    Stadt: Muenchen\n    Event: Gourmet-Genuss Sternekochkurs in Muenchen\n    Kommentar: Liebes Team, als Weihnachtsgeschenk habe ich meinem Freund und mir eine Liebeszauber-Geschenkbox bestellt. Ich habe bis jetzt (fast 1 M"
+      },
+      {
+        "ticket_id": 245397,
+        "first_date": "2026-01-20 19:11:05",
+        "last_date": "2026-01-20 21:51:18",
+        "message_count": 12,
+        "reason": "RECENT_RESPONSE",
+        "details": "Recent response (0 days ago), may need follow-up",
+        "priority": 3,
+        "first_message_preview": "Name: Annika\n    Email: annikagros@icloud.com\n    Telefon: 017664621847\n    Kommentar: Ich habe noch keine Bestellbestätigung erhalten. Den Gutschein habe ich gestern Abend gekauft."
+      }
+    ],
+    "PARTNER_RECENT": [
+      {
+        "ticket_id": 239857,
+        "first_date": "2026-01-15 07:07:26",
+        "last_date": "2026-01-21 07:57:31",
+        "message_count": 12,
+        "reason": "PARTNER_RECENT",
+        "details": "Partner communication",
+        "priority": 2,
+        "first_message_preview": "Hallo,\n\n\n\nich benötige bitte dringend einen Anruf.\n\nVielen Dank.\n\n\n\n01520 1589130.\n\nwww.2cyou.de\n\nMark Podschadly\n\n\n\n\n\n> Miomente Partner-Portal <bestellung@miomente.de> hat am 15.01.2026 08:00 CET\n> geschrieben:\n>\n>  \n>\n>  \n>  \n> ---  \n>  \n> ## Ihre Kursanfrage wurde genehmigt!\n>\n> Hallo 2CYOU GmbH"
+      }
+    ],
+    "CUSTOMER_FOLLOWUP": [
+      {
+        "ticket_id": 240611,
+        "first_date": "2025-12-17 19:00:35",
+        "last_date": "2026-01-19 06:00:33",
+        "message_count": 16,
+        "reason": "CUSTOMER_FOLLOWUP",
+        "details": "Customer followed up after team response | Name:  | Email: ",
+        "priority": 1,
+        "first_message_preview": "Liebes Team,  \n  \nich bin etwas irritiert. Ich habe diese Gutscheine schon im Oktober gekauft\nund per Paypal bezahlt.  \nIst diese Maul nur zur Erinnerung oder ist da was schief gelaufen?  \n  \nMit freundlichen Grüßen  \nMargit Obkircher  \n  \n  \nGesendet mit der Telekom Mail App  \n  \n\n\\-- Original-Nach"
+      }
+    ],
+    "PARTNER_NO_RESPONSE": [
+      {
+        "ticket_id": 241895,
+        "first_date": "2026-01-16 18:12:27",
+        "last_date": "2026-01-21 04:20:23",
+        "message_count": 4,
+        "reason": "PARTNER_NO_RESPONSE",
+        "details": "Partner inquiry with NO response",
+        "priority": 1,
+        "first_message_preview": "Servus, bitte einfach eingeben:<br><br>Baristakurse<br>jeden Samsta 10 Uhr &\n14 Uhr<br>Jeden Sonntag 10 Uhr & 14 Uhr<br>Jeden Montag 17:30\nUhr<br><br>Latteart Kurse<br>Jeden Dienstag um 17:30\nUhr<br><br>Danke!!<br><br>VG<br><br>Humberto"
+      },
+      {
+        "ticket_id": 241908,
+        "first_date": "2026-01-16 18:41:32",
+        "last_date": "2026-01-19 03:22:12",
+        "message_count": 4,
+        "reason": "PARTNER_NO_RESPONSE",
+        "details": "Partner inquiry with NO response",
+        "priority": 1,
+        "first_message_preview": "Helpdesk Ticket created"
+      }
+    ]
+  },
+  "closed_tickets": {
+    "INSOLVENCY_RESPONDED": 247,
+    "SPAM": 211,
+    "ORDER_CONFIRMATION": 95,
+    "UNCLEAR": 358,
+    "RESPONDED_NO_FOLLOWUP": 38
+  }
+}

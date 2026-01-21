@@ -92,6 +92,11 @@ export const config = {
     userId: getEnvVarInt('ODOO_USER_ID', 0),
     apiKey: getEnvVar('ODOO_API_KEY', false),
   },
+
+  // Cron jobs
+  cron: {
+    secret: getEnvVar('CRON_SECRET', false) || '',
+  },
 } as const;
 
 // Validate configuration on module load (server-side only)
