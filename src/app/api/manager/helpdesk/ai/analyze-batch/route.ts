@@ -54,9 +54,9 @@ export async function POST(request: NextRequest) {
       }
 
       // Limit batch size
-      // Reduced from 50 to 5 to avoid 504 Gateway Timeout errors
-      // Each ticket does full analysis (2 Gemini calls), smaller batches complete in ~10-15 seconds
-      const MAX_BATCH_SIZE = 5;
+      // Reduced to 2 to avoid 502/504 Gateway errors
+      // Each ticket does full analysis (2 Gemini calls), 2 tickets = 4 Gemini calls max
+      const MAX_BATCH_SIZE = 2;
       const limitedIds = validTicketIds.slice(0, MAX_BATCH_SIZE);
 
       console.log(`[Batch Analysis] Starting batch of ${limitedIds.length} tickets, forceReanalyze=${forceReanalyze}`);
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       const { results: analysisResults, errors: analysisErrors } = await analyzeTicketsFullBatch(
         ticketsWithMessages,
         language,
-        5 // concurrency
+        2 // concurrency - reduced to avoid gateway timeouts
       );
 
       console.log(`[Batch Analysis] Gemini analyzed ${analysisResults.size} tickets, ${analysisErrors.length} errors`);
