@@ -443,6 +443,8 @@ export const dictionaries = {
       geminiDisconnected: 'Gemini KI nicht verbunden',
       aiAnalysisResult: 'KI-Analyse starten',
       skipAlreadyAnalyzed: 'Nur Tickets ohne bestehende Analyse analysieren',
+      analyzed: 'Analysiert',
+      skipped: 'Übersprungen',
       // AI Filters
       aiFilters: 'KI-Filter',
       clearFilters: 'Filter löschen',
@@ -980,6 +982,8 @@ export const dictionaries = {
       geminiDisconnected: 'Gemini AI disconnected',
       aiAnalysisResult: 'Run AI Analysis',
       skipAlreadyAnalyzed: 'Only analyze tickets without existing analysis',
+      analyzed: 'Analyzed',
+      skipped: 'Skipped',
       // AI Filters
       aiFilters: 'AI Filters',
       clearFilters: 'Clear Filters',
@@ -1511,6 +1515,8 @@ export const dictionaries = {
       geminiDisconnected: 'Gemini ШІ не підключено',
       aiAnalysisResult: 'Запустити ШІ-аналіз',
       skipAlreadyAnalyzed: 'Аналізувати лише тікети без існуючого аналізу',
+      analyzed: 'Проаналізовано',
+      skipped: 'Пропущено',
       // AI Filters
       aiFilters: 'ШІ-фільтри',
       clearFilters: 'Очистити фільтри',

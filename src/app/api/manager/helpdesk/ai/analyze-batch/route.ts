@@ -97,12 +97,13 @@ export async function POST(request: NextRequest) {
         ticketsToAnalyze.push(ticket);
       }
 
-      console.log(`[Batch Analysis] ${freshAnalyses.length} fresh, ${ticketsToAnalyze.length} need analysis`);
+      console.log(`[Batch Analysis] ${freshAnalyses.length} skipped (already analyzed), ${ticketsToAnalyze.length} need analysis`);
 
       const result: BatchAnalysisResult = {
         total: limitedIds.length,
-        succeeded: freshAnalyses.length,
+        succeeded: 0,
         failed: 0,
+        skipped: freshAnalyses.length, // Already analyzed, skipped
         analyses: freshAnalyses.map(f => f.analysis),
         errors: [],
       };

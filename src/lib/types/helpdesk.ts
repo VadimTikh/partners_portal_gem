@@ -486,6 +486,7 @@ export interface BatchAnalysisResult {
   total: number;
   succeeded: number;
   failed: number;
+  skipped?: number; // Already analyzed tickets that were skipped
   analyses: StoredTicketAnalysis[];
   errors?: Array<{ ticketId: number; error: string }>;
 }

@@ -43,6 +43,7 @@ interface ProgressState {
   total: number;
   succeeded: number;
   failed: number;
+  skipped: number; // Already analyzed tickets that were skipped
   currentChunk: number;
   totalChunks: number;
   errors: Array<{ ticketId: number; error: string }>;
@@ -94,6 +95,7 @@ export function AIAnalysisBatchModal({
     total: 0,
     succeeded: 0,
     failed: 0,
+    skipped: 0,
     currentChunk: 0,
     totalChunks: 0,
     errors: [],
@@ -191,6 +193,7 @@ export function AIAnalysisBatchModal({
       total,
       succeeded: 0,
       failed: 0,
+      skipped: 0,
       currentChunk: 0,
       totalChunks: chunks.length,
       errors: [],
@@ -202,6 +205,7 @@ export function AIAnalysisBatchModal({
 
     let succeeded = 0;
     let failed = 0;
+    let skipped = 0;
     const errors: Array<{ ticketId: number; error: string }> = [];
     const chunkTimes: number[] = [];
 
@@ -231,6 +235,7 @@ export function AIAnalysisBatchModal({
         const result = response.result;
         succeeded += result.succeeded;
         failed += result.failed;
+        skipped += result.skipped || 0;
 
         if (result.errors && result.errors.length > 0) {
           errors.push(...result.errors);
@@ -256,6 +261,7 @@ export function AIAnalysisBatchModal({
         current: Math.min(processedSoFar, total),
         succeeded,
         failed,
+        skipped,
         errors,
         currentChunk: chunkIndex + 1,
         chunkTimes: [...prev.chunkTimes, chunkTime],
@@ -305,6 +311,7 @@ export function AIAnalysisBatchModal({
         total: 0,
         succeeded: 0,
         failed: 0,
+        skipped: 0,
         currentChunk: 0,
         totalChunks: 0,
         errors: [],
@@ -548,6 +555,11 @@ export function AIAnalysisBatchModal({
                     <XCircle className="h-4 w-4 inline mr-1" />
                     {progress.failed}
                   </span>
+                  {progress.skipped > 0 && (
+                    <span className="text-gray-500">
+                      ⏭️ {progress.skipped} {(helpdesk?.skipped as string) || 'skipped'}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -564,14 +576,23 @@ export function AIAnalysisBatchModal({
                 </div>
 
                 {/* Results summary */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className={`grid gap-4 ${progress.skipped > 0 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                   <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
                     <CheckCircle className="h-6 w-6 text-green-500 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-green-600">{progress.succeeded}</div>
                     <div className="text-sm text-muted-foreground">
-                      {(helpdesk?.succeeded as string) || 'Succeeded'}
+                      {(helpdesk?.analyzed as string) || 'Analyzed'}
                     </div>
                   </div>
+                  {progress.skipped > 0 && (
+                    <div className="bg-gray-50 dark:bg-gray-900/20 rounded-lg p-4 text-center">
+                      <span className="text-2xl block mb-2">⏭️</span>
+                      <div className="text-2xl font-bold text-gray-600">{progress.skipped}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {(helpdesk?.skipped as string) || 'Skipped'}
+                      </div>
+                    </div>
+                  )}
                   <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center">
                     <XCircle className="h-6 w-6 text-red-500 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-red-600">{progress.failed}</div>
