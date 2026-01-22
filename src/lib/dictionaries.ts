@@ -361,6 +361,8 @@ export const dictionaries = {
       // AI Analysis
       aiAnalysis: 'KI-Analyse',
       analyzeWithAI: 'Mit KI analysieren',
+      quickAnalysisTooltip: 'Schnelle Analyse: nur Dringlichkeit, Kategorie und extrahierte Daten',
+      fullAnalysisTooltip: 'Vollständige Analyse: inkl. Zusammenfassung, Stimmung, erforderliche Aktion und mehr',
       analyzing: 'Analysiere...',
       analysisComplete: 'Analyse abgeschlossen',
       analysisError: 'Analyse fehlgeschlagen',
@@ -933,6 +935,8 @@ export const dictionaries = {
       // AI Analysis
       aiAnalysis: 'AI Analysis',
       analyzeWithAI: 'Analyze with AI',
+      quickAnalysisTooltip: 'Fast analysis: urgency, category, and extracted data only',
+      fullAnalysisTooltip: 'Full analysis: includes summary, sentiment, action required, and more',
       analyzing: 'Analyzing...',
       analysisComplete: 'Analysis complete',
       analysisError: 'Analysis failed',
@@ -1499,6 +1503,8 @@ export const dictionaries = {
       // AI Analysis
       aiAnalysis: 'ШІ-аналіз',
       analyzeWithAI: 'Аналізувати з ШІ',
+      quickAnalysisTooltip: 'Швидкий аналіз: лише терміновість, категорія та витягнуті дані',
+      fullAnalysisTooltip: 'Повний аналіз: включає резюме, настрій, потрібну дію та більше',
       analyzing: 'Аналізуємо...',
       analysisComplete: 'Аналіз завершено',
       analysisError: 'Аналіз не вдався',

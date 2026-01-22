@@ -33,6 +33,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 function getPriorityColor(priority: number): string {
   switch (priority) {
@@ -157,32 +158,46 @@ function AIAnalysisPanel({ ticketId, analysis, isLoading, onAnalyze, helpdesk }:
           <div className="flex items-center gap-2">
             {!analysis && (
               <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onAnalyze('quick')}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Brain className="h-4 w-4 mr-2" />
-                  )}
-                  Quick
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => onAnalyze('full')}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
-                  )}
-                  {(helpdesk?.analyzeWithAI as string) || 'Analyze'}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onAnalyze('quick')}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Brain className="h-4 w-4 mr-2" />
+                      )}
+                      Quick
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    {(helpdesk?.quickAnalysisTooltip as string) || 'Fast analysis: urgency, category, and extracted data only'}
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => onAnalyze('full')}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4 mr-2" />
+                      )}
+                      {(helpdesk?.analyzeWithAI as string) || 'Analyze'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    {(helpdesk?.fullAnalysisTooltip as string) || 'Full analysis: includes summary, sentiment, action required, and more'}
+                  </TooltipContent>
+                </Tooltip>
               </>
             )}
             {analysis && (
