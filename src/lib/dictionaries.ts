@@ -40,6 +40,7 @@ export const dictionaries = {
       refresh: 'Aktualisieren',
       previous: 'Zurück',
       next: 'Weiter',
+      apply: 'Anwenden',
     },
     login: {
       title: 'Partner Login',
@@ -438,6 +439,7 @@ export const dictionaries = {
       odooDisconnected: 'Odoo nicht verbunden',
       geminiConnected: 'Gemini KI verbunden',
       geminiDisconnected: 'Gemini KI nicht verbunden',
+      aiAnalysisResult: 'KI-Analyse starten',
     },
     // Bookings / Booking Confirmations
     bookings: {
@@ -555,6 +557,7 @@ export const dictionaries = {
       refresh: 'Refresh',
       previous: 'Previous',
       next: 'Next',
+      apply: 'Apply',
     },
     login: {
       title: 'Partner Login',
@@ -953,6 +956,7 @@ export const dictionaries = {
       odooDisconnected: 'Odoo disconnected',
       geminiConnected: 'Gemini AI connected',
       geminiDisconnected: 'Gemini AI disconnected',
+      aiAnalysisResult: 'Run AI Analysis',
     },
     // Bookings / Booking Confirmations
     bookings: {
@@ -1070,6 +1074,7 @@ export const dictionaries = {
       refresh: 'Оновити',
       previous: 'Попередня',
       next: 'Наступна',
+      apply: 'Застосувати',
     },
     login: {
       title: 'Вхід для партнерів',
@@ -1462,6 +1467,7 @@ export const dictionaries = {
       odooDisconnected: 'Odoo не підключено',
       geminiConnected: 'Gemini ШІ підключено',
       geminiDisconnected: 'Gemini ШІ не підключено',
+      aiAnalysisResult: 'Запустити ШІ-аналіз',
     },
     // Bookings / Booking Confirmations
     bookings: {

@@ -41,6 +41,7 @@ export interface OdooTicket {
   partner_email: string | false;
   user_id: [number, string] | false;      // [id, name] - Assigned user
   create_date: string;                    // ISO datetime
+  write_date: string;                     // ISO datetime - last modified
   close_date: string | false;
   priority: string;                       // '0', '1', '2', '3'
   ticket_type_id?: [number, string] | false;  // [id, name] - Optional, may not exist
@@ -97,6 +98,7 @@ export interface Ticket {
   user_id: number | null;
   user_name: string;
   create_date: string;
+  write_date: string;  // Last modified date from Odoo
   close_date: string | null;
   priority: number;  // 0-3 from Odoo
   ticket_type_id: number | null;
@@ -107,6 +109,8 @@ export interface Ticket {
   age_bucket: AgeBucket;
   // AI Analysis (populated separately)
   aiAnalysis?: TicketAIAnalysis;
+  // Stored AI analysis from database (populated separately)
+  storedAnalysis?: StoredTicketAnalysis;
 }
 
 export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
@@ -347,4 +351,140 @@ export interface TicketListResponse {
  */
 export interface StageStatusMapping {
   [stageName: string]: TicketLogicalStatus;
+}
+
+// ============================================
+// Extended AI Analysis Types (Phase 2 Refactor)
+// ============================================
+
+/**
+ * Type of author for the last message in a ticket
+ */
+export type MessageAuthorType = 'support_team' | 'customer' | 'partner';
+
+/**
+ * Satisfaction level (1-5 scale)
+ */
+export type SatisfactionLevel = 1 | 2 | 3 | 4 | 5;
+
+/**
+ * Extended AI analysis with new fields
+ */
+export interface ExtendedAIAnalysis extends TicketAIAnalysisPhase2 {
+  satisfactionLevel?: SatisfactionLevel;
+  aiIsResolved?: boolean;
+  lastMessageAuthorType?: MessageAuthorType;
+}
+
+/**
+ * Stored AI analysis from PostgreSQL database
+ */
+export interface StoredTicketAnalysis {
+  id: number;
+  ticketId: number;
+  analyzedAt: string;  // ISO timestamp
+  ticketWriteDate: string | null;  // Odoo write_date at analysis time
+
+  // Phase 1 fields
+  urgency: AIUrgency;
+  urgencyReason: string | null;
+  category: AICategory;
+  categoryConfidence: number | null;
+  extractedData: AIExtractedData | null;
+  language: 'de' | 'en' | 'other' | null;
+
+  // Phase 2 fields
+  summary: string | null;
+  customerIntent: AICustomerIntent | null;
+  actionRequired: string | null;
+  sentiment: AISentiment | null;
+
+  // Extended fields
+  satisfactionLevel: SatisfactionLevel | null;
+  aiIsResolved: boolean | null;
+  lastMessageAuthorType: MessageAuthorType | null;
+
+  // Computed field (not in DB)
+  isStale?: boolean;  // ticket.write_date > analyzed_at
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Filter preferences stored in database
+ */
+export interface FilterPreferences {
+  period?: TimePeriod;
+  customFrom?: string;
+  customTo?: string;
+  selectedStageIds?: number[];  // Multi-select stages
+  searchQuery?: string;
+  // AI filters
+  aiUrgency?: AIUrgency[];
+  aiCategory?: AICategory[];
+  aiSentiment?: AISentiment[];
+  aiSatisfaction?: SatisfactionLevel[];
+  aiIsResolved?: boolean;
+  awaitingAnswer?: boolean;
+}
+
+/**
+ * User helpdesk settings stored in PostgreSQL
+ */
+export interface HelpdeskUserSettings {
+  id: number;
+  userId: string;
+  inProgressStageIds: number[];  // Keep for backward compat
+  filterPreferences: FilterPreferences;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Extended AI ticket filters (for the refactored filtering)
+ */
+export interface AITicketFilters extends TicketFilters {
+  // AI-based filters
+  aiUrgency?: AIUrgency[];
+  aiCategory?: AICategory[];
+  aiSentiment?: AISentiment[];
+  aiSatisfaction?: SatisfactionLevel[];
+  aiIsResolved?: boolean;
+  lastMessageAuthorType?: MessageAuthorType[];
+  awaitingAnswer?: boolean;  // Where last author != support_team
+  staleOnly?: boolean;  // Only tickets with outdated analysis
+  hasAnalysis?: boolean;  // Only tickets with AI analysis
+}
+
+/**
+ * Batch analysis request
+ */
+export interface BatchAnalysisRequest {
+  ticketIds: number[];
+  forceReanalyze?: boolean;  // Re-analyze even if not stale
+}
+
+/**
+ * Batch analysis progress
+ */
+export interface BatchAnalysisProgress {
+  total: number;
+  processed: number;
+  succeeded: number;
+  failed: number;
+  currentTicketId: number | null;
+  status: 'pending' | 'running' | 'completed' | 'cancelled';
+  errors?: Array<{ ticketId: number; error: string }>;
+}
+
+/**
+ * Batch analysis result
+ */
+export interface BatchAnalysisResult {
+  total: number;
+  succeeded: number;
+  failed: number;
+  analyses: StoredTicketAnalysis[];
+  errors?: Array<{ ticketId: number; error: string }>;
 }

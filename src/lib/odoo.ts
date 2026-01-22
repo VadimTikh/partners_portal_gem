@@ -221,6 +221,7 @@ function normalizeTicket(raw: OdooTicket, stages: HelpdeskStage[]): Ticket {
     user_id: raw.user_id ? raw.user_id[0] : null,
     user_name: raw.user_id ? raw.user_id[1] : '',
     create_date: raw.create_date,
+    write_date: raw.write_date,  // Last modified date
     close_date: raw.close_date || null,
     priority: parseInt(raw.priority, 10) || 0,
     ticket_type_id: raw.ticket_type_id ? raw.ticket_type_id[0] : null,
@@ -298,8 +299,20 @@ export async function getHelpdeskStages(): Promise<HelpdeskStage[]> {
 /**
  * Fetch all ticket types (categories)
  * Returns empty array if the model doesn't exist in Odoo
+ *
+ * Note: The helpdesk.ticket.type model is part of Odoo Helpdesk Enterprise
+ * and may not be available in all installations. We skip the API call
+ * and return an empty array to avoid noisy error logging.
  */
 export async function getTicketTypes(): Promise<HelpdeskTicketType[]> {
+  // The helpdesk.ticket.type model doesn't exist in our Odoo instance.
+  // Skip the API call to avoid errors. Enable this if your Odoo has ticket types.
+  const TICKET_TYPES_AVAILABLE = false;
+
+  if (!TICKET_TYPES_AVAILABLE) {
+    return [];
+  }
+
   try {
     const types = await odooCall<Array<{
       id: number;
@@ -314,7 +327,7 @@ export async function getTicketTypes(): Promise<HelpdeskTicketType[]> {
     return types;
   } catch (error) {
     // Model might not exist in this Odoo installation
-    console.warn('[Odoo] helpdesk.ticket.type model not available:', error);
+    console.warn('[Odoo] helpdesk.ticket.type model not available');
     return [];
   }
 }
@@ -323,6 +336,7 @@ export async function getTicketTypes(): Promise<HelpdeskTicketType[]> {
  * Fetch tickets with filters
  */
 export async function getTickets(params: {
+  ids?: number[];
   stageIds?: number[];
   typeIds?: number[];
   dateFrom?: string;
@@ -339,6 +353,11 @@ export async function getTickets(params: {
   const domain: any[] = [
     ['team_id', '=', MIOMENTE_TEAM_ID],
   ];
+
+  // Filter by specific IDs (used for AI filters)
+  if (params.ids && params.ids.length > 0) {
+    domain.push(['id', 'in', params.ids]);
+  }
 
   if (params.stageIds && params.stageIds.length > 0) {
     domain.push(['stage_id', 'in', params.stageIds]);
@@ -386,7 +405,7 @@ export async function getTickets(params: {
     {
       fields: [
         'id', 'name', 'description', 'stage_id', 'partner_id',
-        'partner_email', 'user_id', 'create_date', 'close_date',
+        'partner_email', 'user_id', 'create_date', 'write_date', 'close_date',
         'priority', 'tag_ids',
       ],
       order: params.order || 'create_date desc',
@@ -413,7 +432,7 @@ export async function getTicket(id: number): Promise<Ticket | null> {
     {
       fields: [
         'id', 'name', 'description', 'stage_id', 'partner_id',
-        'partner_email', 'user_id', 'create_date', 'close_date',
+        'partner_email', 'user_id', 'create_date', 'write_date', 'close_date',
         'priority', 'tag_ids',
       ],
     }
@@ -428,6 +447,7 @@ export async function getTicket(id: number): Promise<Ticket | null> {
 
 /**
  * Fetch messages for a ticket
+ * Includes notification type messages but only shows the first one (if it's the first message)
  */
 export async function getTicketMessages(ticketId: number): Promise<TicketMessage[]> {
   const rawMessages = await odooCall<OdooMessage[]>(
@@ -436,7 +456,7 @@ export async function getTicketMessages(ticketId: number): Promise<TicketMessage
     [[
       ['model', '=', 'helpdesk.ticket'],
       ['res_id', '=', ticketId],
-      ['message_type', 'in', ['email', 'comment']],
+      ['message_type', 'in', ['email', 'comment', 'notification']],
     ]],
     {
       fields: ['res_id', 'date', 'author_id', 'email_from', 'body', 'message_type'],
@@ -444,11 +464,17 @@ export async function getTicketMessages(ticketId: number): Promise<TicketMessage
     }
   );
 
-  return rawMessages.map(normalizeMessage);
+  const messages = rawMessages.map(normalizeMessage);
+
+  // Keep first message (even if notification), filter out other notifications
+  return messages.filter((msg, index) =>
+    index === 0 || msg.message_type !== 'notification'
+  );
 }
 
 /**
  * Fetch messages for multiple tickets (batch)
+ * Includes notification type messages but only shows the first one per ticket (if it's the first message)
  */
 export async function getTicketMessagesBatch(ticketIds: number[]): Promise<Map<number, TicketMessage[]>> {
   if (ticketIds.length === 0) {
@@ -461,7 +487,7 @@ export async function getTicketMessagesBatch(ticketIds: number[]): Promise<Map<n
     [[
       ['model', '=', 'helpdesk.ticket'],
       ['res_id', 'in', ticketIds],
-      ['message_type', 'in', ['email', 'comment']],
+      ['message_type', 'in', ['email', 'comment', 'notification']],
     ]],
     {
       fields: ['res_id', 'date', 'author_id', 'email_from', 'body', 'message_type'],
@@ -476,6 +502,14 @@ export async function getTicketMessagesBatch(ticketIds: number[]): Promise<Map<n
     const existing = messagesByTicket.get(message.ticket_id) || [];
     existing.push(message);
     messagesByTicket.set(message.ticket_id, existing);
+  }
+
+  // For each ticket, filter out notifications except the first message
+  for (const [ticketId, messages] of messagesByTicket) {
+    const filtered = messages.filter((msg, index) =>
+      index === 0 || msg.message_type !== 'notification'
+    );
+    messagesByTicket.set(ticketId, filtered);
   }
 
   return messagesByTicket;

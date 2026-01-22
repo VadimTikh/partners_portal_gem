@@ -17,12 +17,13 @@ import { analyzeTicket, analyzeTicketPhase1, generateResponseSuggestion } from '
  *   - full: Complete Phase 1 + Phase 2 analysis
  *   - quick: Phase 1 only (faster)
  *   - response: Generate response suggestion (requires previous analysis)
+ * - language: 'de' | 'en' | 'uk' (default: 'en') - output language for urgencyReason, summary, actionRequired
  */
 export async function POST(request: NextRequest) {
   return withManager(request, async () => {
     try {
       const body = await request.json();
-      const { ticketId, mode = 'full', existingAnalysis } = body;
+      const { ticketId, mode = 'full', existingAnalysis, language = 'en' } = body;
 
       if (!ticketId || typeof ticketId !== 'number') {
         return NextResponse.json(
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
       switch (mode) {
         case 'quick': {
           // Phase 1 only - faster
-          const analysis = await analyzeTicketPhase1(ticket, messages);
+          const analysis = await analyzeTicketPhase1(ticket, messages, language);
           return NextResponse.json({
             success: true,
             ticketId,
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
         case 'full':
         default: {
           // Full Phase 1 + Phase 2 analysis
-          const analysis = await analyzeTicket(ticket, messages);
+          const analysis = await analyzeTicket(ticket, messages, language);
           return NextResponse.json({
             success: true,
             ticketId,

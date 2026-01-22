@@ -16,6 +16,9 @@ import {
   AIExtractedData,
   Ticket,
   TicketMessage,
+  ExtendedAIAnalysis,
+  MessageAuthorType,
+  SatisfactionLevel,
 } from './types/helpdesk';
 
 // ============================================
@@ -145,13 +148,27 @@ Your task is to analyze support tickets and provide structured insights to help 
 Always respond with valid JSON only, no additional text or markdown formatting.`;
 
 // ============================================
+// Language Mapping
+// ============================================
+
+const languageNames: Record<string, string> = {
+  'de': 'German',
+  'en': 'English',
+  'uk': 'Ukrainian',
+};
+
+function getLanguageName(locale: string): string {
+  return languageNames[locale] || 'English';
+}
+
+// ============================================
 // Prompt Templates
 // ============================================
 
 /**
  * Phase 1: Basic analysis (urgency, category, extraction, language)
  */
-function buildPhase1Prompt(ticket: Ticket, messages: TicketMessage[]): string {
+function buildPhase1Prompt(ticket: Ticket, messages: TicketMessage[], outputLanguage?: string): string {
   const conversationHistory = messages
     .map(m => `[${m.date}] ${m.author_name || m.email_from}: ${stripHtml(m.body)}`)
     .join('\n\n');
@@ -203,13 +220,15 @@ Category guidelines:
 - partner_issue: Problems related to partners/venues
 - payment_issue: Payment problems
 - technical_issue: Website/technical problems
-- other: Doesn't fit other categories`;
+- other: Doesn't fit other categories${outputLanguage ? `
+
+IMPORTANT: Write the "urgencyReason" field in ${getLanguageName(outputLanguage)}.` : ''}`;
 }
 
 /**
- * Phase 2: Extended analysis (summary, intent, action, sentiment)
+ * Phase 2: Extended analysis (summary, intent, action, sentiment, + new fields)
  */
-function buildPhase2Prompt(ticket: Ticket, messages: TicketMessage[], phase1: TicketAIAnalysisPhase1): string {
+function buildPhase2Prompt(ticket: Ticket, messages: TicketMessage[], phase1: TicketAIAnalysisPhase1, outputLanguage?: string): string {
   const conversationHistory = messages
     .map(m => `[${m.date}] ${m.author_name || m.email_from}: ${stripHtml(m.body)}`)
     .join('\n\n');
@@ -233,10 +252,13 @@ INITIAL ANALYSIS:
 
 Return a JSON object with EXACTLY this structure:
 {
-  "summary": "1-2 sentence summary in English of what the customer wants",
+  "summary": "1-2 sentence summary in ${outputLanguage ? getLanguageName(outputLanguage) : 'English'} of what the customer wants",
   "customerIntent": "wants_refund" | "wants_dates" | "wants_rebooking" | "wants_info" | "wants_complaint_resolved" | "wants_voucher" | "other",
-  "actionRequired": "brief description of what support agent should do to resolve this",
-  "sentiment": "angry" | "frustrated" | "neutral" | "positive"
+  "actionRequired": "brief description in ${outputLanguage ? getLanguageName(outputLanguage) : 'English'} of what support agent should do to resolve this",
+  "sentiment": "angry" | "frustrated" | "neutral" | "positive",
+  "satisfactionLevel": 1-5,
+  "aiIsResolved": true | false,
+  "lastMessageAuthorType": "support_team" | "customer" | "partner"
 }
 
 Intent guidelines:
@@ -252,7 +274,23 @@ Sentiment guidelines:
 - angry: Explicit anger, threats, ALL CAPS, aggressive language
 - frustrated: Disappointment, multiple follow-ups, exasperation
 - neutral: Matter-of-fact tone, simple request
-- positive: Thankful, understanding, complimentary`;
+- positive: Thankful, understanding, complimentary
+
+Satisfaction level (1-5):
+- 1 = Very unsatisfied (anger, threats, escalation demands)
+- 2 = Unsatisfied (complaints, frustration, disappointment)
+- 3 = Neutral (factual, no clear sentiment)
+- 4 = Satisfied (polite, understanding, positive)
+- 5 = Very satisfied (explicit thanks, praise)
+
+Resolution status (aiIsResolved):
+- true = Customer acknowledged resolution, said thanks, or solution was provided and accepted
+- false = Unanswered questions, issue persists, waiting for action
+
+Last message author type (lastMessageAuthorType):
+- "support_team" = Last message was from Miomente staff (internal notes, responses)
+- "customer" = Last message was from the end customer (voucher buyer, person making inquiry)
+- "partner" = Last message was from a partner (chef, venue operator)`;
 }
 
 // ============================================
@@ -327,9 +365,9 @@ function validatePhase1Response(raw: unknown): TicketAIAnalysisPhase1 {
 }
 
 /**
- * Validate and merge Phase 2 response
+ * Validate and merge Phase 2 response (returns ExtendedAIAnalysis with new fields)
  */
-function validatePhase2Response(raw: unknown, phase1: TicketAIAnalysisPhase1): TicketAIAnalysis {
+function validatePhase2Response(raw: unknown, phase1: TicketAIAnalysisPhase1): ExtendedAIAnalysis {
   const data = raw as Record<string, unknown>;
 
   // Validate intent
@@ -347,12 +385,30 @@ function validatePhase2Response(raw: unknown, phase1: TicketAIAnalysisPhase1): T
     ? (data.sentiment as AISentiment)
     : 'neutral';
 
+  // Validate satisfaction level (1-5)
+  let satisfactionLevel: SatisfactionLevel | undefined;
+  if (typeof data.satisfactionLevel === 'number' && data.satisfactionLevel >= 1 && data.satisfactionLevel <= 5) {
+    satisfactionLevel = data.satisfactionLevel as SatisfactionLevel;
+  }
+
+  // Validate aiIsResolved
+  const aiIsResolved = typeof data.aiIsResolved === 'boolean' ? data.aiIsResolved : undefined;
+
+  // Validate lastMessageAuthorType
+  const validAuthorTypes: MessageAuthorType[] = ['support_team', 'customer', 'partner'];
+  const lastMessageAuthorType = validAuthorTypes.includes(data.lastMessageAuthorType as MessageAuthorType)
+    ? (data.lastMessageAuthorType as MessageAuthorType)
+    : undefined;
+
   return {
     ...phase1,
     summary: String(data.summary || 'Unable to generate summary'),
     customerIntent,
     actionRequired: String(data.actionRequired || 'Review ticket and respond to customer'),
     sentiment,
+    satisfactionLevel,
+    aiIsResolved,
+    lastMessageAuthorType,
   };
 }
 
@@ -363,19 +419,24 @@ function validatePhase2Response(raw: unknown, phase1: TicketAIAnalysisPhase1): T
 /**
  * Analyze a ticket using Gemini AI
  * Performs Phase 1 and Phase 2 analysis in sequence
+ * @param ticket - The ticket to analyze
+ * @param messages - The ticket messages
+ * @param outputLanguage - Optional language code (de, en, uk) for output fields
+ * @returns ExtendedAIAnalysis with all fields including satisfaction, resolution status, and author type
  */
 export async function analyzeTicket(
   ticket: Ticket,
-  messages: TicketMessage[]
-): Promise<TicketAIAnalysis> {
+  messages: TicketMessage[],
+  outputLanguage?: string
+): Promise<ExtendedAIAnalysis> {
   // Phase 1: Basic analysis
-  const phase1Prompt = buildPhase1Prompt(ticket, messages);
+  const phase1Prompt = buildPhase1Prompt(ticket, messages, outputLanguage);
   const phase1Response = await callGemini(phase1Prompt, SYSTEM_INSTRUCTION);
   const phase1Raw = parseGeminiJSON(phase1Response);
   const phase1 = validatePhase1Response(phase1Raw);
 
-  // Phase 2: Extended analysis
-  const phase2Prompt = buildPhase2Prompt(ticket, messages, phase1);
+  // Phase 2: Extended analysis (includes new fields)
+  const phase2Prompt = buildPhase2Prompt(ticket, messages, phase1, outputLanguage);
   const phase2Response = await callGemini(phase2Prompt, SYSTEM_INSTRUCTION);
   const phase2Raw = parseGeminiJSON(phase2Response);
   const analysis = validatePhase2Response(phase2Raw, phase1);
@@ -385,12 +446,16 @@ export async function analyzeTicket(
 
 /**
  * Analyze a ticket - Phase 1 only (faster, less detailed)
+ * @param ticket - The ticket to analyze
+ * @param messages - The ticket messages
+ * @param outputLanguage - Optional language code (de, en, uk) for output fields
  */
 export async function analyzeTicketPhase1(
   ticket: Ticket,
-  messages: TicketMessage[]
+  messages: TicketMessage[],
+  outputLanguage?: string
 ): Promise<TicketAIAnalysisPhase1> {
-  const prompt = buildPhase1Prompt(ticket, messages);
+  const prompt = buildPhase1Prompt(ticket, messages, outputLanguage);
   const response = await callGemini(prompt, SYSTEM_INSTRUCTION);
   const raw = parseGeminiJSON(response);
   return validatePhase1Response(raw);
@@ -431,12 +496,62 @@ export async function analyzeTicketsBatch(
 }
 
 /**
+ * Batch analyze multiple tickets with full analysis (Phase 1 + Phase 2)
+ * Uses parallel processing with concurrency limit for 5x+ speed improvement
+ *
+ * @param tickets - Array of tickets with their messages
+ * @param outputLanguage - Optional language code for output fields
+ * @param concurrency - Number of parallel requests (default: 5)
+ * @returns Map of ticket ID to full analysis, plus array of errors
+ */
+export async function analyzeTicketsFullBatch(
+  tickets: Array<{ ticket: Ticket; messages: TicketMessage[] }>,
+  outputLanguage?: string,
+  concurrency: number = 5
+): Promise<{
+  results: Map<number, ExtendedAIAnalysis>;
+  errors: Array<{ ticketId: number; error: string }>;
+}> {
+  const results = new Map<number, ExtendedAIAnalysis>();
+  const errors: Array<{ ticketId: number; error: string }> = [];
+
+  // Process in parallel with concurrency limit
+  for (let i = 0; i < tickets.length; i += concurrency) {
+    const batch = tickets.slice(i, i + concurrency);
+    const promises = batch.map(async ({ ticket, messages }) => {
+      try {
+        const analysis = await analyzeTicket(ticket, messages, outputLanguage);
+        return { ticketId: ticket.id, analysis, error: null };
+      } catch (error) {
+        console.error(`[Batch] Failed to analyze ticket ${ticket.id}:`, error);
+        return {
+          ticketId: ticket.id,
+          analysis: null,
+          error: error instanceof Error ? error.message : 'Analysis failed',
+        };
+      }
+    });
+
+    const batchResults = await Promise.all(promises);
+    for (const { ticketId, analysis, error } of batchResults) {
+      if (analysis) {
+        results.set(ticketId, analysis);
+      } else if (error) {
+        errors.push({ ticketId, error });
+      }
+    }
+  }
+
+  return { results, errors };
+}
+
+/**
  * Generate a response suggestion for a ticket (Phase 3 feature)
  */
 export async function generateResponseSuggestion(
   ticket: Ticket,
   messages: TicketMessage[],
-  analysis: TicketAIAnalysis
+  analysis: ExtendedAIAnalysis | TicketAIAnalysis
 ): Promise<string> {
   const conversationHistory = messages
     .map(m => `[${m.date}] ${m.author_name || m.email_from}: ${stripHtml(m.body)}`)

@@ -12,6 +12,7 @@ export * from './activity-logs';
 export * from './app-logs';
 export * from './customer-numbers';
 export * from './bookings';
+export * from './helpdesk';
 
 // MySQL queries (Magento)
 export * from './courses';

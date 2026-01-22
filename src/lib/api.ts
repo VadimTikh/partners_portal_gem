@@ -9,6 +9,15 @@ import {
   TimePeriod,
   TicketAIAnalysis,
   TicketAIAnalysisPhase1,
+  HelpdeskUserSettings,
+  StoredTicketAnalysis,
+  BatchAnalysisResult,
+  AIUrgency,
+  AICategory,
+  AISentiment,
+  SatisfactionLevel,
+  MessageAuthorType,
+  FilterPreferences,
 } from './types/helpdesk';
 import { useAuthStore } from './auth';
 import { mockApi } from './mock-data';
@@ -509,12 +518,23 @@ export const api = {
     search?: string;
     limit?: number;
     offset?: number;
+    // AI filters
+    aiUrgency?: AIUrgency[];
+    aiCategory?: AICategory[];
+    aiSentiment?: AISentiment[];
+    aiSatisfaction?: SatisfactionLevel[];
+    aiIsResolved?: boolean;
+    aiAwaitingAnswer?: boolean;
+    includeAnalysis?: boolean;
   } = {}): Promise<{
     tickets: Ticket[];
     stages: HelpdeskStage[];
     ticketTypes: HelpdeskTicketType[];
     analytics: HelpdeskAnalytics;
     pagination: { total: number; limit: number; offset: number; hasMore: boolean };
+    analysisMap?: Record<number, StoredTicketAnalysis>;
+    aiFiltersApplied?: boolean;
+    totalAnalyzedCount?: number;
   }> => {
     const searchParams = new URLSearchParams();
     if (params.period) searchParams.set('period', params.period);
@@ -525,6 +545,14 @@ export const api = {
     if (params.search) searchParams.set('search', params.search);
     if (params.limit) searchParams.set('limit', params.limit.toString());
     if (params.offset !== undefined) searchParams.set('offset', params.offset.toString());
+    // AI filters
+    if (params.aiUrgency?.length) searchParams.set('aiUrgency', params.aiUrgency.join(','));
+    if (params.aiCategory?.length) searchParams.set('aiCategory', params.aiCategory.join(','));
+    if (params.aiSentiment?.length) searchParams.set('aiSentiment', params.aiSentiment.join(','));
+    if (params.aiSatisfaction?.length) searchParams.set('aiSatisfaction', params.aiSatisfaction.join(','));
+    if (params.aiIsResolved !== undefined) searchParams.set('aiIsResolved', params.aiIsResolved.toString());
+    if (params.aiAwaitingAnswer) searchParams.set('aiAwaitingAnswer', 'true');
+    if (params.includeAnalysis) searchParams.set('includeAnalysis', 'true');
 
     const response = await apiClient.get(`/manager/helpdesk/tickets?${searchParams.toString()}`);
     return response.data;
@@ -541,7 +569,8 @@ export const api = {
   analyzeHelpdeskTicket: async (
     ticketId: number,
     mode: 'full' | 'quick' | 'response' = 'full',
-    existingAnalysis?: TicketAIAnalysisPhase1
+    existingAnalysis?: TicketAIAnalysisPhase1,
+    language?: string
   ): Promise<{
     ticketId: number;
     analysis?: TicketAIAnalysis | TicketAIAnalysisPhase1;
@@ -552,7 +581,152 @@ export const api = {
       ticketId,
       mode,
       existingAnalysis,
+      language,
     });
+    return response.data;
+  },
+
+  // ==================== Manager: Helpdesk Settings ====================
+
+  getHelpdeskSettings: async (): Promise<{
+    success: boolean;
+    settings: HelpdeskUserSettings | null;
+  }> => {
+    const response = await apiClient.get('/manager/helpdesk/settings');
+    return response.data;
+  },
+
+  updateHelpdeskSettings: async (data: {
+    inProgressStageIds?: number[];
+    filterPreferences?: FilterPreferences;
+  }): Promise<{
+    success: boolean;
+    settings: HelpdeskUserSettings;
+  }> => {
+    const response = await apiClient.put('/manager/helpdesk/settings', data);
+    return response.data;
+  },
+
+  // ==================== Manager: Helpdesk AI Analysis ====================
+
+  getStoredAnalyses: async (ticketIds: number[]): Promise<{
+    success: boolean;
+    analyses: StoredTicketAnalysis[];
+  }> => {
+    const response = await apiClient.get(`/manager/helpdesk/ai/analysis?ticketIds=${ticketIds.join(',')}`);
+    return response.data;
+  },
+
+  analyzeBatchTickets: async (params: {
+    ticketIds: number[];
+    forceReanalyze?: boolean;
+    language?: string;
+  }): Promise<{
+    success: boolean;
+    result: BatchAnalysisResult;
+  }> => {
+    const response = await apiClient.post('/manager/helpdesk/ai/analyze-batch', {
+      ticketIds: params.ticketIds,
+      forceReanalyze: params.forceReanalyze,
+      language: params.language,
+    });
+    return response.data;
+  },
+
+  /**
+   * Get ALL ticket IDs matching the given filters (no pagination).
+   * Used for "Analyze All Filtered" feature.
+   */
+  getFilteredTicketIds: async (params: {
+    period?: TimePeriod;
+    customFrom?: string;
+    customTo?: string;
+    stageIds?: number[];
+    typeIds?: number[];
+    search?: string;
+    // AI filters
+    aiUrgency?: AIUrgency[];
+    aiCategory?: AICategory[];
+    aiSentiment?: AISentiment[];
+    aiSatisfaction?: SatisfactionLevel[];
+    aiIsResolved?: boolean;
+    aiAwaitingAnswer?: boolean;
+    lastMessageAuthorType?: MessageAuthorType[];
+  } = {}): Promise<{
+    success: boolean;
+    ticketIds: number[];
+    total: number;
+    truncated?: boolean;
+  }> => {
+    const searchParams = new URLSearchParams();
+    if (params.period) searchParams.set('period', params.period);
+    if (params.customFrom) searchParams.set('customFrom', params.customFrom);
+    if (params.customTo) searchParams.set('customTo', params.customTo);
+    if (params.stageIds?.length) searchParams.set('stageIds', params.stageIds.join(','));
+    if (params.typeIds?.length) searchParams.set('typeIds', params.typeIds.join(','));
+    if (params.search) searchParams.set('search', params.search);
+    // AI filters
+    if (params.aiUrgency?.length) searchParams.set('aiUrgency', params.aiUrgency.join(','));
+    if (params.aiCategory?.length) searchParams.set('aiCategory', params.aiCategory.join(','));
+    if (params.aiSentiment?.length) searchParams.set('aiSentiment', params.aiSentiment.join(','));
+    if (params.aiSatisfaction?.length) searchParams.set('aiSatisfaction', params.aiSatisfaction.join(','));
+    if (params.aiIsResolved !== undefined) searchParams.set('aiIsResolved', params.aiIsResolved.toString());
+    if (params.aiAwaitingAnswer) searchParams.set('aiAwaitingAnswer', 'true');
+    if (params.lastMessageAuthorType?.length) searchParams.set('aiAuthorType', params.lastMessageAuthorType.join(','));
+
+    const response = await apiClient.get(`/manager/helpdesk/tickets/ids?${searchParams.toString()}`);
+    return response.data;
+  },
+
+  // ==================== Manager: Helpdesk Tickets with AI Filters ====================
+
+  getHelpdeskTicketsWithAI: async (params: {
+    period?: TimePeriod;
+    customFrom?: string;
+    customTo?: string;
+    stageIds?: number[];
+    typeIds?: number[];
+    search?: string;
+    limit?: number;
+    offset?: number;
+    // AI filters
+    aiUrgency?: AIUrgency[];
+    aiCategory?: AICategory[];
+    aiSentiment?: AISentiment[];
+    aiSatisfaction?: SatisfactionLevel[];
+    aiIsResolved?: boolean;
+    lastMessageAuthorType?: MessageAuthorType[];
+    awaitingAnswer?: boolean;
+    staleOnly?: boolean;
+    hasAnalysis?: boolean;
+  } = {}): Promise<{
+    tickets: Ticket[];
+    stages: HelpdeskStage[];
+    ticketTypes: HelpdeskTicketType[];
+    analytics: HelpdeskAnalytics;
+    pagination: { total: number; limit: number; offset: number; hasMore: boolean };
+  }> => {
+    const searchParams = new URLSearchParams();
+    if (params.period) searchParams.set('period', params.period);
+    if (params.customFrom) searchParams.set('customFrom', params.customFrom);
+    if (params.customTo) searchParams.set('customTo', params.customTo);
+    if (params.stageIds?.length) searchParams.set('stageIds', params.stageIds.join(','));
+    if (params.typeIds?.length) searchParams.set('typeIds', params.typeIds.join(','));
+    if (params.search) searchParams.set('search', params.search);
+    if (params.limit) searchParams.set('limit', params.limit.toString());
+    if (params.offset !== undefined) searchParams.set('offset', params.offset.toString());
+    // AI filters
+    if (params.aiUrgency?.length) searchParams.set('aiUrgency', params.aiUrgency.join(','));
+    if (params.aiCategory?.length) searchParams.set('aiCategory', params.aiCategory.join(','));
+    if (params.aiSentiment?.length) searchParams.set('aiSentiment', params.aiSentiment.join(','));
+    if (params.aiSatisfaction?.length) searchParams.set('aiSatisfaction', params.aiSatisfaction.join(','));
+    if (params.aiIsResolved !== undefined) searchParams.set('aiIsResolved', params.aiIsResolved.toString());
+    if (params.lastMessageAuthorType?.length) searchParams.set('lastMessageAuthorType', params.lastMessageAuthorType.join(','));
+    if (params.awaitingAnswer !== undefined) searchParams.set('awaitingAnswer', params.awaitingAnswer.toString());
+    if (params.staleOnly !== undefined) searchParams.set('staleOnly', params.staleOnly.toString());
+    if (params.hasAnalysis !== undefined) searchParams.set('hasAnalysis', params.hasAnalysis.toString());
+
+    const response = await apiClient.get(`/manager/helpdesk/tickets?${searchParams.toString()}`);
     return response.data;
   },
 };

@@ -74,12 +74,63 @@ function getSentimentColor(sentiment: string): string {
 
 function getSentimentEmoji(sentiment: string): string {
   switch (sentiment) {
-    case 'frustrated': return '😤';
-    case 'concerned': return '😟';
+    case 'angry': return '😤';
+    case 'frustrated': return '😟';
     case 'neutral': return '😐';
-    case 'satisfied': return '😊';
+    case 'positive': return '😊';
     default: return '😐';
   }
+}
+
+// Helper functions to translate AI enum values
+function translateUrgency(urgency: string, helpdesk: Record<string, unknown> | undefined): string {
+  const translations: Record<string, string> = {
+    'critical': (helpdesk?.urgencyCritical as string) || 'Critical',
+    'high': (helpdesk?.urgencyHigh as string) || 'High',
+    'medium': (helpdesk?.urgencyMedium as string) || 'Medium',
+    'low': (helpdesk?.urgencyLow as string) || 'Low',
+  };
+  return translations[urgency] || urgency;
+}
+
+function translateCategory(category: string, helpdesk: Record<string, unknown> | undefined): string {
+  const translations: Record<string, string> = {
+    'missing_dates': (helpdesk?.categoryMissingDates as string) || 'Missing Dates',
+    'refund_request': (helpdesk?.categoryRefundRequest as string) || 'Refund Request',
+    'voucher_not_received': (helpdesk?.categoryVoucherNotReceived as string) || 'Voucher Not Received',
+    'voucher_expired': (helpdesk?.categoryVoucherExpired as string) || 'Voucher Expired',
+    'booking_change': (helpdesk?.categoryBookingChange as string) || 'Booking Change',
+    'complaint': (helpdesk?.categoryComplaint as string) || 'Complaint',
+    'general_inquiry': (helpdesk?.categoryGeneralInquiry as string) || 'General Inquiry',
+    'partner_issue': (helpdesk?.categoryPartnerIssue as string) || 'Partner Issue',
+    'payment_issue': (helpdesk?.categoryPaymentIssue as string) || 'Payment Issue',
+    'technical_issue': (helpdesk?.categoryTechnicalIssue as string) || 'Technical Issue',
+    'other': (helpdesk?.categoryOther as string) || 'Other',
+  };
+  return translations[category] || category;
+}
+
+function translateIntent(intent: string, helpdesk: Record<string, unknown> | undefined): string {
+  const translations: Record<string, string> = {
+    'wants_refund': (helpdesk?.intentWantsRefund as string) || 'Wants Refund',
+    'wants_dates': (helpdesk?.intentWantsDates as string) || 'Wants Dates',
+    'wants_rebooking': (helpdesk?.intentWantsRebooking as string) || 'Wants Rebooking',
+    'wants_info': (helpdesk?.intentWantsInfo as string) || 'Wants Information',
+    'wants_complaint_resolved': (helpdesk?.intentWantsComplaintResolved as string) || 'Wants Complaint Resolved',
+    'wants_voucher': (helpdesk?.intentWantsVoucher as string) || 'Wants Voucher',
+    'other': (helpdesk?.intentOther as string) || 'Other',
+  };
+  return translations[intent] || intent;
+}
+
+function translateSentiment(sentiment: string, helpdesk: Record<string, unknown> | undefined): string {
+  const translations: Record<string, string> = {
+    'angry': (helpdesk?.sentimentAngry as string) || 'Angry',
+    'frustrated': (helpdesk?.sentimentFrustrated as string) || 'Frustrated',
+    'neutral': (helpdesk?.sentimentNeutral as string) || 'Neutral',
+    'positive': (helpdesk?.sentimentPositive as string) || 'Positive',
+  };
+  return translations[sentiment] || sentiment;
 }
 
 interface AIAnalysisPanelProps {
@@ -163,7 +214,7 @@ function AIAnalysisPanel({ ticketId, analysis, isLoading, onAnalyze, helpdesk }:
                 <span className="text-sm font-medium">{(helpdesk?.urgency as string) || 'Urgency'}</span>
               </div>
               <Badge className={getUrgencyColor(analysis.urgency)}>
-                {analysis.urgency.toUpperCase()}
+                {translateUrgency(analysis.urgency, helpdesk)}
               </Badge>
               {analysis.urgencyReason && (
                 <p className="text-xs text-muted-foreground mt-2">{analysis.urgencyReason}</p>
@@ -176,7 +227,7 @@ function AIAnalysisPanel({ ticketId, analysis, isLoading, onAnalyze, helpdesk }:
                 <Tag className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">{(helpdesk?.category as string) || 'Category'}</span>
               </div>
-              <Badge variant="outline" className="capitalize">{analysis.category.replace('_', ' ')}</Badge>
+              <Badge variant="outline">{translateCategory(analysis.category, helpdesk)}</Badge>
             </div>
 
             {/* Language */}
@@ -231,8 +282,8 @@ function AIAnalysisPanel({ ticketId, analysis, isLoading, onAnalyze, helpdesk }:
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">{(helpdesk?.customerIntent as string) || 'Customer Intent'}</span>
                   </div>
-                  <Badge variant="outline" className="capitalize">
-                    {(analysis as TicketAIAnalysis).customerIntent.replace('_', ' ')}
+                  <Badge variant="outline">
+                    {translateIntent((analysis as TicketAIAnalysis).customerIntent, helpdesk)}
                   </Badge>
                 </div>
 
@@ -242,8 +293,8 @@ function AIAnalysisPanel({ ticketId, analysis, isLoading, onAnalyze, helpdesk }:
                     <Heart className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">{(helpdesk?.sentiment as string) || 'Sentiment'}</span>
                   </div>
-                  <p className={`text-lg font-medium capitalize ${getSentimentColor((analysis as TicketAIAnalysis).sentiment)}`}>
-                    {getSentimentEmoji((analysis as TicketAIAnalysis).sentiment)} {(analysis as TicketAIAnalysis).sentiment}
+                  <p className={`text-lg font-medium ${getSentimentColor((analysis as TicketAIAnalysis).sentiment)}`}>
+                    {getSentimentEmoji((analysis as TicketAIAnalysis).sentiment)} {translateSentiment((analysis as TicketAIAnalysis).sentiment, helpdesk)}
                   </p>
                 </div>
 
@@ -309,7 +360,12 @@ export default function TicketDetailPage({
 
   const analyzeMutation = useMutation({
     mutationFn: ({ mode }: { mode: 'full' | 'quick' }) =>
-      api.analyzeHelpdeskTicket(ticketId, mode, mode === 'full' && aiAnalysis ? aiAnalysis as TicketAIAnalysisPhase1 : undefined),
+      api.analyzeHelpdeskTicket(
+        ticketId,
+        mode,
+        mode === 'full' && aiAnalysis ? aiAnalysis as TicketAIAnalysisPhase1 : undefined,
+        locale
+      ),
     onSuccess: (result) => {
       if (result.analysis) {
         setAiAnalysis(result.analysis);
