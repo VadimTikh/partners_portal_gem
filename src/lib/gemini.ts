@@ -19,6 +19,8 @@ import {
   ExtendedAIAnalysis,
   MessageAuthorType,
   SatisfactionLevel,
+  UltraAnalysisAggregatedData,
+  UltraAnalysisReport,
 } from './types/helpdesk';
 
 // ============================================
@@ -51,8 +53,11 @@ interface GeminiResponse {
 
 /**
  * Call Gemini API with a prompt
+ * @param prompt - The prompt to send
+ * @param systemInstruction - Optional system instruction
+ * @param maxOutputTokens - Optional max output tokens (default: 2048, use higher for large responses)
  */
-async function callGemini(prompt: string, systemInstruction?: string): Promise<string> {
+async function callGemini(prompt: string, systemInstruction?: string, maxOutputTokens: number = 2048): Promise<string> {
   if (!GEMINI_API_KEY) {
     throw new Error('GEMINI_API_KEY environment variable is not set');
   }
@@ -69,7 +74,7 @@ async function callGemini(prompt: string, systemInstruction?: string): Promise<s
       temperature: 0.1,  // Low temperature for consistent analysis
       topP: 0.8,
       topK: 40,
-      maxOutputTokens: 2048,
+      maxOutputTokens,
     },
   };
 
@@ -126,8 +131,19 @@ function parseGeminiJSON<T>(response: string): T {
   try {
     return JSON.parse(cleaned);
   } catch (error) {
-    console.error('Failed to parse Gemini response as JSON:', cleaned);
-    throw new Error('Failed to parse AI response');
+    // Log truncated response for debugging (first 500 and last 200 chars)
+    const preview = cleaned.length > 700
+      ? `${cleaned.slice(0, 500)}...[truncated ${cleaned.length - 700} chars]...${cleaned.slice(-200)}`
+      : cleaned;
+    console.error('Failed to parse Gemini response as JSON. Length:', cleaned.length);
+    console.error('Response preview:', preview);
+
+    // Check if response appears truncated (doesn't end with valid JSON closing)
+    if (!cleaned.endsWith('}') && !cleaned.endsWith(']')) {
+      throw new Error('Failed to parse AI response: Response appears truncated. Try increasing maxOutputTokens.');
+    }
+
+    throw new Error('Failed to parse AI response: Invalid JSON format');
   }
 }
 
@@ -595,4 +611,206 @@ export async function checkGeminiConnection(): Promise<{ ok: boolean; error?: st
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
+}
+
+// ============================================
+// Ultra Analysis
+// ============================================
+
+const ULTRA_SYSTEM_INSTRUCTION = `You are an AI business analyst specializing in customer support optimization for Miomente, a German company that sells culinary experience vouchers and cooking courses.
+
+Context about Miomente:
+- Sells vouchers for cooking courses, wine tastings, and culinary experiences
+- Operates mainly in Germany (German-speaking customers)
+- Partners are the chefs/venues who run the courses
+- Common issues: missing course dates, voucher problems, refund requests, booking changes
+
+Your task is to analyze aggregated support ticket data and provide strategic insights and actionable recommendations to improve customer and partner loyalty.
+
+Always respond with valid JSON only, no additional text or markdown formatting.`;
+
+/**
+ * Build prompt for ultra analysis report
+ */
+function buildUltraAnalysisPrompt(data: UltraAnalysisAggregatedData, language: string): string {
+  const langName = getLanguageName(language);
+
+  return `Analyze this aggregated support ticket data and generate a comprehensive report.
+
+AGGREGATED DATA:
+- Total Tickets: ${data.totalTickets}
+- Period: ${data.period.from} to ${data.period.to}
+
+CATEGORY DISTRIBUTION:
+${data.categoryDistribution.map(c => `- ${c.category}: ${c.count} tickets`).join('\n')}
+
+URGENCY DISTRIBUTION:
+${data.urgencyDistribution.map(u => `- ${u.urgency}: ${u.count} tickets`).join('\n')}
+
+SENTIMENT DISTRIBUTION:
+${data.sentimentDistribution.map(s => `- ${s.sentiment}: ${s.count} tickets`).join('\n')}
+
+CUSTOMER INTENT DISTRIBUTION:
+${data.intentDistribution.map(i => `- ${i.intent}: ${i.count} tickets`).join('\n')}
+
+REPRESENTATIVE TICKET SUMMARIES (sample of tickets by category):
+${data.topSummaries.map(s => `[Ticket #${s.ticketId}] Category: ${s.category}, Urgency: ${s.urgency}, Sentiment: ${s.sentiment || 'unknown'}
+Summary: ${s.summary}`).join('\n\n')}
+
+---
+
+Generate a comprehensive analysis report in ${langName}. Return a JSON object with EXACTLY this structure:
+{
+  "executiveSummary": "2-3 paragraph executive summary highlighting key findings and most critical issues in ${langName}",
+
+  "topProblems": [
+    {
+      "rank": 1,
+      "title": "Problem title in ${langName}",
+      "description": "Detailed description of the problem and its impact in ${langName}",
+      "frequency": 25.5,
+      "severity": "critical" | "high" | "medium" | "low",
+      "affectedSegment": "customers" | "partners" | "both",
+      "exampleTicketIds": [123, 456],
+      "recommendedActions": ["Action 1 in ${langName}", "Action 2 in ${langName}"]
+    }
+  ],
+
+  "categoryInsights": [
+    {
+      "category": "missing_dates",
+      "count": 50,
+      "percentage": 25.0,
+      "commonPatterns": ["Pattern 1 in ${langName}", "Pattern 2 in ${langName}"],
+      "suggestedImprovements": ["Improvement 1 in ${langName}"]
+    }
+  ],
+
+  "sentimentAnalysis": {
+    "distribution": {
+      "angry": 10.5,
+      "frustrated": 25.0,
+      "neutral": 50.0,
+      "positive": 14.5
+    },
+    "trend": "Description of sentiment trends and what they indicate in ${langName}"
+  },
+
+  "actionPlan": {
+    "immediate": ["Action for this week in ${langName}"],
+    "shortTerm": ["Action for this month in ${langName}"],
+    "longTerm": ["Action for next quarter in ${langName}"]
+  }
+}
+
+Guidelines:
+- Identify 5-10 top problems ranked by business impact (frequency + severity)
+- Focus on actionable insights that can improve customer/partner loyalty
+- The "frequency" in topProblems should be a percentage (0-100)
+- Only include categories that have tickets in categoryInsights
+- Use exampleTicketIds from the provided summaries when referencing specific issues
+- Make recommendations specific and actionable
+- Consider both customer experience and operational efficiency
+- ALL text fields must be in ${langName}`;
+}
+
+/**
+ * Validate and sanitize ultra analysis response
+ */
+function validateUltraAnalysisResponse(raw: unknown, data: UltraAnalysisAggregatedData): UltraAnalysisReport {
+  const response = raw as Record<string, unknown>;
+
+  // Validate top problems
+  const topProblems = Array.isArray(response.topProblems)
+    ? response.topProblems.map((p: Record<string, unknown>, index: number) => ({
+        rank: typeof p.rank === 'number' ? p.rank : index + 1,
+        title: String(p.title || 'Unknown Problem'),
+        description: String(p.description || ''),
+        frequency: typeof p.frequency === 'number' ? p.frequency : 0,
+        severity: ['critical', 'high', 'medium', 'low'].includes(p.severity as string)
+          ? (p.severity as 'critical' | 'high' | 'medium' | 'low')
+          : 'medium',
+        affectedSegment: ['customers', 'partners', 'both'].includes(p.affectedSegment as string)
+          ? (p.affectedSegment as 'customers' | 'partners' | 'both')
+          : 'both',
+        exampleTicketIds: Array.isArray(p.exampleTicketIds)
+          ? p.exampleTicketIds.filter((id): id is number => typeof id === 'number')
+          : [],
+        recommendedActions: Array.isArray(p.recommendedActions)
+          ? p.recommendedActions.map(String)
+          : [],
+      }))
+    : [];
+
+  // Validate category insights
+  const categoryInsights = Array.isArray(response.categoryInsights)
+    ? response.categoryInsights.map((c: Record<string, unknown>) => ({
+        category: c.category as AICategory,
+        count: typeof c.count === 'number' ? c.count : 0,
+        percentage: typeof c.percentage === 'number' ? c.percentage : 0,
+        commonPatterns: Array.isArray(c.commonPatterns)
+          ? c.commonPatterns.map(String)
+          : [],
+        suggestedImprovements: Array.isArray(c.suggestedImprovements)
+          ? c.suggestedImprovements.map(String)
+          : [],
+      }))
+    : [];
+
+  // Validate sentiment analysis
+  const sentimentData = response.sentimentAnalysis as Record<string, unknown> | undefined;
+  const distribution = sentimentData?.distribution as Record<string, number> | undefined;
+  const sentimentAnalysis = {
+    distribution: {
+      angry: typeof distribution?.angry === 'number' ? distribution.angry : 0,
+      frustrated: typeof distribution?.frustrated === 'number' ? distribution.frustrated : 0,
+      neutral: typeof distribution?.neutral === 'number' ? distribution.neutral : 0,
+      positive: typeof distribution?.positive === 'number' ? distribution.positive : 0,
+    },
+    trend: String(sentimentData?.trend || ''),
+  };
+
+  // Validate action plan
+  const actionPlanData = response.actionPlan as Record<string, unknown> | undefined;
+  const actionPlan = {
+    immediate: Array.isArray(actionPlanData?.immediate)
+      ? actionPlanData.immediate.map(String)
+      : [],
+    shortTerm: Array.isArray(actionPlanData?.shortTerm)
+      ? actionPlanData.shortTerm.map(String)
+      : [],
+    longTerm: Array.isArray(actionPlanData?.longTerm)
+      ? actionPlanData.longTerm.map(String)
+      : [],
+  };
+
+  return {
+    generatedAt: new Date().toISOString(),
+    ticketCount: data.totalTickets,
+    period: data.period,
+    executiveSummary: String(response.executiveSummary || 'Unable to generate executive summary'),
+    topProblems,
+    categoryInsights,
+    sentimentAnalysis,
+    actionPlan,
+  };
+}
+
+/**
+ * Generate ultra analysis report from aggregated ticket data
+ * @param aggregatedData - Pre-aggregated statistics and representative summaries
+ * @param language - Output language (de, en, uk)
+ * @returns Comprehensive analysis report
+ */
+export async function generateUltraReport(
+  aggregatedData: UltraAnalysisAggregatedData,
+  language: string = 'en'
+): Promise<UltraAnalysisReport> {
+  const prompt = buildUltraAnalysisPrompt(aggregatedData, language);
+
+  // Use higher token limit for comprehensive report (8192 vs default 2048)
+  const response = await callGemini(prompt, ULTRA_SYSTEM_INSTRUCTION, 8192);
+  const raw = parseGeminiJSON(response);
+
+  return validateUltraAnalysisResponse(raw, aggregatedData);
 }

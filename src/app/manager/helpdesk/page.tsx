@@ -20,6 +20,7 @@ import { api } from '@/lib/api';
 import { Ticket, TimePeriod, AITicketFilters, StoredTicketAnalysis, FilterPreferences, AICategory } from '@/lib/types/helpdesk';
 import { Button } from '@/components/ui/button';
 import { AIAnalysisBatchModal } from './components/AIAnalysisBatchModal';
+import { UltraAnalysisModal } from './components/UltraAnalysisModal';
 import { AIFilterDropdowns } from './components/AIFilterDropdowns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -551,19 +552,33 @@ export default function HelpdeskPage() {
                   disabledReason={aiFiltersDisabledReason}
                 />
               </div>
-              <AIAnalysisBatchModal
-                tickets={data?.tickets || []}
-                filterParams={{
-                  period,
-                  customFrom: period === 'custom' ? customFrom : undefined,
-                  customTo: period === 'custom' ? customTo : undefined,
-                  stageIds: selectedStageIds.length > 0 ? selectedStageIds : undefined,
-                  search: searchQuery || undefined,
-                  aiFilters,
-                }}
-                totalFilteredCount={data?.pagination.total}
-                onComplete={() => refetch()}
-              />
+              <div className="flex items-center gap-2">
+                <AIAnalysisBatchModal
+                  tickets={data?.tickets || []}
+                  filterParams={{
+                    period,
+                    customFrom: period === 'custom' ? customFrom : undefined,
+                    customTo: period === 'custom' ? customTo : undefined,
+                    stageIds: selectedStageIds.length > 0 ? selectedStageIds : undefined,
+                    search: searchQuery || undefined,
+                    aiFilters,
+                  }}
+                  totalFilteredCount={data?.pagination.total}
+                  onComplete={() => refetch()}
+                />
+                <UltraAnalysisModal
+                  filterParams={{
+                    period,
+                    customFrom: period === 'custom' ? customFrom : undefined,
+                    customTo: period === 'custom' ? customTo : undefined,
+                    stageIds: selectedStageIds.length > 0 ? selectedStageIds : undefined,
+                    search: searchQuery || undefined,
+                    aiFilters,
+                  }}
+                  totalFilteredCount={data?.pagination.total}
+                  onComplete={() => refetch()}
+                />
+              </div>
             </div>
           </div>
         </CardContent>

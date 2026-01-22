@@ -490,3 +490,92 @@ export interface BatchAnalysisResult {
   analyses: StoredTicketAnalysis[];
   errors?: Array<{ ticketId: number; error: string }>;
 }
+
+// ============================================
+// Ultra Analysis Types
+// ============================================
+
+/**
+ * Top problem identified in the ultra analysis
+ */
+export interface UltraTopProblem {
+  rank: number;
+  title: string;
+  description: string;
+  frequency: number; // percentage
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  affectedSegment: 'customers' | 'partners' | 'both';
+  exampleTicketIds: number[];
+  recommendedActions: string[];
+}
+
+/**
+ * Category insight from the ultra analysis
+ */
+export interface UltraCategoryInsight {
+  category: AICategory;
+  count: number;
+  percentage: number;
+  commonPatterns: string[];
+  suggestedImprovements: string[];
+}
+
+/**
+ * Sentiment analysis from the ultra analysis
+ */
+export interface UltraSentimentAnalysis {
+  distribution: {
+    angry: number;
+    frustrated: number;
+    neutral: number;
+    positive: number;
+  };
+  trend: string;
+}
+
+/**
+ * Action plan from the ultra analysis
+ */
+export interface UltraActionPlan {
+  immediate: string[];  // This week
+  shortTerm: string[];  // This month
+  longTerm: string[];   // Next quarter
+}
+
+/**
+ * Complete ultra analysis report
+ */
+export interface UltraAnalysisReport {
+  generatedAt: string;
+  ticketCount: number;
+  period: { from: string; to: string };
+
+  executiveSummary: string;
+
+  topProblems: UltraTopProblem[];
+
+  categoryInsights: UltraCategoryInsight[];
+
+  sentimentAnalysis: UltraSentimentAnalysis;
+
+  actionPlan: UltraActionPlan;
+}
+
+/**
+ * Aggregated data sent to Gemini for ultra analysis
+ */
+export interface UltraAnalysisAggregatedData {
+  totalTickets: number;
+  period: { from: string; to: string };
+  categoryDistribution: Array<{ category: AICategory; count: number }>;
+  urgencyDistribution: Array<{ urgency: AIUrgency; count: number }>;
+  sentimentDistribution: Array<{ sentiment: AISentiment; count: number }>;
+  intentDistribution: Array<{ intent: AICustomerIntent; count: number }>;
+  topSummaries: Array<{
+    ticketId: number;
+    category: AICategory;
+    summary: string;
+    urgency: AIUrgency;
+    sentiment?: AISentiment;
+  }>;
+}

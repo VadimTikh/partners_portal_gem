@@ -18,6 +18,7 @@ import {
   SatisfactionLevel,
   MessageAuthorType,
   FilterPreferences,
+  UltraAnalysisReport,
 } from './types/helpdesk';
 import { useAuthStore } from './auth';
 import { mockApi } from './mock-data';
@@ -675,6 +676,26 @@ export const api = {
     if (params.lastMessageAuthorType?.length) searchParams.set('aiAuthorType', params.lastMessageAuthorType.join(','));
 
     const response = await apiClient.get(`/manager/helpdesk/tickets/ids?${searchParams.toString()}`);
+    return response.data;
+  },
+
+  /**
+   * Generate Ultra Analysis Report from ticket analyses.
+   * Aggregates data from stored analyses and generates a comprehensive report using Gemini.
+   */
+  generateUltraReport: async (params: {
+    ticketIds: number[];
+    language?: string;
+    period?: { from: string; to: string };
+  }): Promise<{
+    success: boolean;
+    report: UltraAnalysisReport;
+  }> => {
+    const response = await apiClient.post('/manager/helpdesk/ai/ultra-report', {
+      ticketIds: params.ticketIds,
+      language: params.language || 'en',
+      period: params.period,
+    });
     return response.data;
   },
 
