@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, startTransition } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { format, formatDistanceToNow } from 'date-fns';
 import { de, enUS, uk } from 'date-fns/locale';
 import Link from 'next/link';
@@ -201,13 +201,13 @@ function TicketRow({
 
 export default function HelpdeskPage() {
   const { t, locale } = useI18n();
-  const queryClient = useQueryClient();
   const hasHydrated = useAuthStore((state) => state._hasHydrated);
   const helpdesk = t.helpdesk as Record<string, unknown> | undefined;
 
   // Refs for initialization and debouncing
   const filtersInitializedRef = useRef(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveFiltersMutateRef = useRef<((filterPreferences: FilterPreferences) => void) | null>(null);
 
   // Filter state - initialize with defaults, will be restored from settings on load
   const [period, setPeriod] = useState<TimePeriod>('30d');
@@ -258,13 +258,15 @@ export default function HelpdeskPage() {
   const saveFiltersMutation = useMutation({
     mutationFn: (filterPreferences: FilterPreferences) =>
       api.updateHelpdeskSettings({ filterPreferences }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['helpdesk-settings'] });
-    },
   });
 
-  // Debounced save of filter preferences
-  const saveFilters = useCallback(() => {
+  // Keep mutate function in ref to avoid dependency issues
+  saveFiltersMutateRef.current = saveFiltersMutation.mutate;
+
+  // Save filters when they change (after initial load) - debounced
+  useEffect(() => {
+    if (!filtersInitializedRef.current) return;
+
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
@@ -282,16 +284,15 @@ export default function HelpdeskPage() {
         aiIsResolved: aiFilters.aiIsResolved,
         awaitingAnswer: aiFilters.awaitingAnswer,
       };
-      saveFiltersMutation.mutate(filterPreferences);
-    }, 500);
-  }, [period, customFrom, customTo, searchQuery, selectedStageIds, aiFilters, saveFiltersMutation]);
+      saveFiltersMutateRef.current?.(filterPreferences);
+    }, 1000);
 
-  // Save filters when they change (after initial load)
-  useEffect(() => {
-    if (filtersInitializedRef.current) {
-      saveFilters();
-    }
-  }, [period, customFrom, customTo, searchQuery, selectedStageIds, aiFilters, saveFilters]);
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [period, customFrom, customTo, searchQuery, selectedStageIds, aiFilters]);
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['helpdesk-tickets', period, customFrom, customTo, searchQuery, currentPage, selectedStageIds, aiFilters],

@@ -88,7 +88,7 @@ export function AIAnalysisBatchModal({
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<AnalysisState>('idle');
   const [mode, setMode] = useState<AnalysisMode>('all_filtered');
-  const [forceReanalyze, setForceReanalyze] = useState(false);
+  const [skipAnalyzed, setSkipAnalyzed] = useState(true); // Default: only analyze unanalyzed tickets
   const [progress, setProgress] = useState<ProgressState>({
     current: 0,
     total: 0,
@@ -224,7 +224,7 @@ export function AIAnalysisBatchModal({
         // Call batch API for this chunk
         const response = await api.analyzeBatchTickets({
           ticketIds: chunk,
-          forceReanalyze,
+          forceReanalyze: !skipAnalyzed, // If skipAnalyzed=true, don't force reanalyze
           language: locale || 'en',
         });
 
@@ -281,7 +281,7 @@ export function AIAnalysisBatchModal({
     }
 
     isAnalyzingRef.current = false;
-  }, [mode, filterParams, tickets, forceReanalyze, locale, queryClient, onComplete]);
+  }, [mode, filterParams, tickets, skipAnalyzed, locale, queryClient, onComplete]);
 
   const handleStartAnalysis = useCallback(() => {
     processTickets();
@@ -311,7 +311,7 @@ export function AIAnalysisBatchModal({
         startTime: 0,
         chunkTimes: [],
       });
-      setForceReanalyze(false);
+      setSkipAnalyzed(true);
     }, 300);
   }, [state]);
 
@@ -452,12 +452,12 @@ export function AIAnalysisBatchModal({
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={forceReanalyze}
-                    onChange={(e) => setForceReanalyze(e.target.checked)}
+                    checked={skipAnalyzed}
+                    onChange={(e) => setSkipAnalyzed(e.target.checked)}
                     className="rounded border-gray-300"
                   />
                   <span className="text-sm">
-                    {(helpdesk?.forceReanalyze as string) || 'Re-analyze tickets that already have analysis'}
+                    {(helpdesk?.skipAlreadyAnalyzed as string) || 'Only analyze tickets without existing analysis'}
                   </span>
                 </label>
 
