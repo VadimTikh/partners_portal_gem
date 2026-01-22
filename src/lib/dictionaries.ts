@@ -325,6 +325,7 @@ export const dictionaries = {
       allStages: 'Alle Status',
       allTypes: 'Alle Typen',
       // Metrics
+      newTickets: 'Neu',
       unanswered: 'Unbeantwortet',
       inProgress: 'In Bearbeitung',
       waitingForCustomer: 'Wartet auf Kunde',
@@ -842,6 +843,7 @@ export const dictionaries = {
       allStages: 'All stages',
       allTypes: 'All types',
       // Metrics
+      newTickets: 'New',
       unanswered: 'Unanswered',
       inProgress: 'In Progress',
       waitingForCustomer: 'Waiting for Customer',
@@ -1353,6 +1355,7 @@ export const dictionaries = {
       allStages: 'Всі статуси',
       allTypes: 'Всі типи',
       // Metrics
+      newTickets: 'Нові',
       unanswered: 'Без відповіді',
       inProgress: 'В роботі',
       waitingForCustomer: 'Очікування клієнта',

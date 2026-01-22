@@ -383,9 +383,10 @@ export default function HelpdeskPage() {
   // Calculate if all filtered tickets (across ALL pages) have AI analysis
   const totalFilteredTickets = data?.pagination.total || 0;
   const totalAnalyzedCount = data?.totalAnalyzedCount ?? 0;
-  const allFilteredTicketsAnalyzed = totalFilteredTickets > 0 && totalAnalyzedCount >= totalFilteredTickets;
+  // AI filters are available when: all tickets are analyzed OR there are no tickets (0 results)
+  const allFilteredTicketsAnalyzed = totalFilteredTickets === 0 || totalAnalyzedCount >= totalFilteredTickets;
 
-  // AI filters are only available when ALL filtered tickets are analyzed
+  // AI filters are only available when ALL filtered tickets are analyzed (or no tickets)
   const aiFiltersDisabled = isLoading || !allFilteredTicketsAnalyzed;
   const aiFiltersDisabledReason = isLoading
     ? undefined
@@ -418,7 +419,7 @@ export default function HelpdeskPage() {
             <CardContent className="pt-4">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-red-500" />
-                <span className="text-sm text-muted-foreground">{(helpdesk?.unanswered as string) || 'Unanswered'}</span>
+                <span className="text-sm text-muted-foreground">{(helpdesk?.newTickets as string) || 'New'}</span>
               </div>
               <p className="text-2xl font-bold mt-1 text-red-600">{analytics.unansweredCount}</p>
             </CardContent>
