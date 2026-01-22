@@ -447,13 +447,13 @@ export async function analyzeTicket(
 ): Promise<ExtendedAIAnalysis> {
   // Phase 1: Basic analysis
   const phase1Prompt = buildPhase1Prompt(ticket, messages, outputLanguage);
-  const phase1Response = await callGemini(phase1Prompt, SYSTEM_INSTRUCTION);
+  const phase1Response = await callGemini(phase1Prompt, SYSTEM_INSTRUCTION, 4096);
   const phase1Raw = parseGeminiJSON(phase1Response);
   const phase1 = validatePhase1Response(phase1Raw);
 
   // Phase 2: Extended analysis (includes new fields)
   const phase2Prompt = buildPhase2Prompt(ticket, messages, phase1, outputLanguage);
-  const phase2Response = await callGemini(phase2Prompt, SYSTEM_INSTRUCTION);
+  const phase2Response = await callGemini(phase2Prompt, SYSTEM_INSTRUCTION, 4096);
   const phase2Raw = parseGeminiJSON(phase2Response);
   const analysis = validatePhase2Response(phase2Raw, phase1);
 
@@ -472,7 +472,7 @@ export async function analyzeTicketPhase1(
   outputLanguage?: string
 ): Promise<TicketAIAnalysisPhase1> {
   const prompt = buildPhase1Prompt(ticket, messages, outputLanguage);
-  const response = await callGemini(prompt, SYSTEM_INSTRUCTION);
+  const response = await callGemini(prompt, SYSTEM_INSTRUCTION, 4096);
   const raw = parseGeminiJSON(response);
   return validatePhase1Response(raw);
 }
@@ -492,7 +492,7 @@ export async function analyzeTicketPhase2(
   outputLanguage?: string
 ): Promise<ExtendedAIAnalysis> {
   const prompt = buildPhase2Prompt(ticket, messages, phase1, outputLanguage);
-  const response = await callGemini(prompt, SYSTEM_INSTRUCTION);
+  const response = await callGemini(prompt, SYSTEM_INSTRUCTION, 4096);
   const raw = parseGeminiJSON(response);
   return validatePhase2Response(raw, phase1);
 }
