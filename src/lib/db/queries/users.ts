@@ -23,8 +23,8 @@ export async function findUserByEmail(email: string): Promise<DbUser | null> {
   return queryOne<DbUser>(
     `SELECT id, email, name, password, customer_number, is_manager, created_at, reset_token, reset_token_expires
      FROM miomente_partner_portal_users
-     WHERE email = $1`,
-    [email]
+     WHERE LOWER(email) = $1`,
+    [email.toLowerCase()]
   );
 }
 
@@ -130,8 +130,8 @@ export async function createUser(input: {
  */
 export async function emailExists(email: string): Promise<boolean> {
   const result = await queryOne<{ count: string }>(
-    `SELECT COUNT(*) as count FROM miomente_partner_portal_users WHERE email = $1`,
-    [email]
+    `SELECT COUNT(*) as count FROM miomente_partner_portal_users WHERE LOWER(email) = $1`,
+    [email.toLowerCase()]
   );
   return parseInt(result?.count || '0', 10) > 0;
 }
