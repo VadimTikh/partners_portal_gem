@@ -478,6 +478,26 @@ export async function analyzeTicketPhase1(
 }
 
 /**
+ * Analyze a ticket - Phase 2 only (requires Phase 1 results)
+ * Used for splitting full analysis into two shorter requests to avoid timeouts.
+ * @param ticket - The ticket to analyze
+ * @param messages - The ticket messages
+ * @param phase1 - Phase 1 analysis results
+ * @param outputLanguage - Optional language code (de, en, uk) for output fields
+ */
+export async function analyzeTicketPhase2(
+  ticket: Ticket,
+  messages: TicketMessage[],
+  phase1: TicketAIAnalysisPhase1,
+  outputLanguage?: string
+): Promise<ExtendedAIAnalysis> {
+  const prompt = buildPhase2Prompt(ticket, messages, phase1, outputLanguage);
+  const response = await callGemini(prompt, SYSTEM_INSTRUCTION);
+  const raw = parseGeminiJSON(response);
+  return validatePhase2Response(raw, phase1);
+}
+
+/**
  * Batch analyze multiple tickets (Phase 1 only for efficiency)
  */
 export async function analyzeTicketsBatch(

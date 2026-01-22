@@ -81,7 +81,9 @@ interface ProgressState {
 }
 
 // Max tickets per API batch call
-const CHUNK_SIZE = 50;
+// Reduced from 50 to 5 to avoid 504 Gateway Timeout errors
+// Each ticket does full analysis (2 Gemini calls), smaller chunks complete in ~10-15 seconds
+const CHUNK_SIZE = 5;
 
 function formatTimeRemaining(seconds: number): string {
   if (seconds < 60) {

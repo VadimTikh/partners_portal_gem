@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, use } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { de, enUS, uk } from 'date-fns/locale';
 import Link from 'next/link';
@@ -360,7 +360,6 @@ export default function TicketDetailPage({
 
   const { t, locale } = useI18n();
   const hasHydrated = useAuthStore((state) => state._hasHydrated);
-  const queryClient = useQueryClient();
   const helpdesk = t.helpdesk as Record<string, unknown> | undefined;
 
   const dateLocale = locale === 'de' ? de : locale === 'uk' ? uk : enUS;
@@ -373,23 +372,46 @@ export default function TicketDetailPage({
     enabled: hasHydrated && !isNaN(ticketId),
   });
 
-  const analyzeMutation = useMutation({
-    mutationFn: ({ mode }: { mode: 'full' | 'quick' }) =>
-      api.analyzeHelpdeskTicket(
-        ticketId,
-        mode,
-        mode === 'full' && aiAnalysis ? aiAnalysis as TicketAIAnalysisPhase1 : undefined,
-        locale
-      ),
-    onSuccess: (result) => {
-      if (result.analysis) {
-        setAiAnalysis(result.analysis);
-      }
-    },
-  });
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const handleAnalyze = (mode: 'full' | 'quick') => {
-    analyzeMutation.mutate({ mode });
+  // Handle analysis with sequential Phase 1 → Phase 2 for full mode
+  // This prevents 504 timeouts by splitting into two shorter requests
+  const handleAnalyze = async (mode: 'full' | 'quick') => {
+    setIsAnalyzing(true);
+    try {
+      if (mode === 'quick') {
+        // Quick mode: Phase 1 only (single request)
+        const result = await api.analyzeHelpdeskTicket(ticketId, 'quick', undefined, locale);
+        if (result.analysis) {
+          setAiAnalysis(result.analysis);
+        }
+      } else {
+        // Full mode: Sequential Phase 1 → Phase 2 (two shorter requests)
+        // Step 1: Run Phase 1
+        const phase1Result = await api.analyzeHelpdeskTicket(ticketId, 'quick', undefined, locale);
+        if (phase1Result.analysis) {
+          // Update UI with Phase 1 results immediately
+          setAiAnalysis(phase1Result.analysis);
+
+          // Step 2: Run Phase 2 with Phase 1 results
+          const phase2Result = await api.analyzeHelpdeskTicket(
+            ticketId,
+            'phase2',
+            undefined,
+            locale,
+            phase1Result.analysis as TicketAIAnalysisPhase1
+          );
+          if (phase2Result.analysis) {
+            // Update UI with complete results
+            setAiAnalysis(phase2Result.analysis);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[AI Analyze] Error:', error);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   if (!hasHydrated || isLoading) {
@@ -457,7 +479,7 @@ export default function TicketDetailPage({
       <AIAnalysisPanel
         ticketId={ticketId}
         analysis={aiAnalysis}
-        isLoading={analyzeMutation.isPending}
+        isLoading={isAnalyzing}
         onAnalyze={handleAnalyze}
         helpdesk={helpdesk}
       />

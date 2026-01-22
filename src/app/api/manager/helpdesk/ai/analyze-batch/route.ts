@@ -54,7 +54,9 @@ export async function POST(request: NextRequest) {
       }
 
       // Limit batch size
-      const MAX_BATCH_SIZE = 50;
+      // Reduced from 50 to 5 to avoid 504 Gateway Timeout errors
+      // Each ticket does full analysis (2 Gemini calls), smaller batches complete in ~10-15 seconds
+      const MAX_BATCH_SIZE = 5;
       const limitedIds = validTicketIds.slice(0, MAX_BATCH_SIZE);
 
       console.log(`[Batch Analysis] Starting batch of ${limitedIds.length} tickets, forceReanalyze=${forceReanalyze}`);

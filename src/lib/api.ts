@@ -569,9 +569,10 @@ export const api = {
 
   analyzeHelpdeskTicket: async (
     ticketId: number,
-    mode: 'full' | 'quick' | 'response' = 'full',
+    mode: 'full' | 'quick' | 'phase2' | 'response' = 'full',
     existingAnalysis?: TicketAIAnalysisPhase1,
-    language?: string
+    language?: string,
+    phase1Analysis?: TicketAIAnalysisPhase1
   ): Promise<{
     ticketId: number;
     analysis?: TicketAIAnalysis | TicketAIAnalysisPhase1;
@@ -582,6 +583,7 @@ export const api = {
       ticketId,
       mode,
       existingAnalysis,
+      phase1Analysis,
       language,
     });
     return response.data;
