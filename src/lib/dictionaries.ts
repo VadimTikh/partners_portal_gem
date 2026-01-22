@@ -464,7 +464,7 @@ export const dictionaries = {
       satisfaction5: '5 - Sehr zufrieden',
       // Ultra Analysis
       ultraAnalysis: 'Ultra-Analyse',
-      ultraAnalysisTitle: 'Ultra Instinct Analyse',
+      ultraAnalysisTitle: 'Ultra Report Analyse',
       ultraAnalysisDescription: 'Analysieren Sie alle gefilterten Tickets, um wiederkehrende Probleme zu identifizieren und umsetzbare Erkenntnisse zu generieren.',
       ticketsToAnalyze: 'Zu analysierende Tickets:',
       basedOnFilters: 'Basierend auf aktuellen Filtern',
@@ -1036,7 +1036,7 @@ export const dictionaries = {
       satisfaction5: '5 - Very Satisfied',
       // Ultra Analysis
       ultraAnalysis: 'Ultra Analysis',
-      ultraAnalysisTitle: 'Ultra Instinct Analysis',
+      ultraAnalysisTitle: 'Ultra Report Analysis',
       ultraAnalysisDescription: 'Analyze all filtered tickets to identify recurring problems and generate actionable insights.',
       ticketsToAnalyze: 'Tickets to analyze:',
       basedOnFilters: 'Based on current filters',
@@ -1602,7 +1602,7 @@ export const dictionaries = {
       satisfaction5: '5 - Дуже задоволений',
       // Ultra Analysis
       ultraAnalysis: 'Ультра-аналіз',
-      ultraAnalysisTitle: 'Ultra Instinct Аналіз',
+      ultraAnalysisTitle: 'Ultra Report Аналіз',
       ultraAnalysisDescription: 'Проаналізуйте всі відфільтровані тікети, щоб виявити повторювані проблеми та згенерувати практичні рекомендації.',
       ticketsToAnalyze: 'Тікетів для аналізу:',
       basedOnFilters: 'На основі поточних фільтрів',

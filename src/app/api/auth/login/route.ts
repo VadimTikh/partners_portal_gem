@@ -6,6 +6,7 @@ import { createSession } from '@/lib/db/queries/sessions';
 import { verifyPasswordCompat } from '@/lib/auth/password';
 import { generateSessionToken } from '@/lib/auth/jwt';
 import { createRequestLogger } from '@/lib/services/app-logger';
+import { logLogin, getIpFromRequest } from '@/lib/services/activity-logger';
 
 /**
  * POST /api/auth/login
@@ -56,6 +57,13 @@ export async function POST(request: NextRequest) {
 
     // Create session in database
     await createSession(user.id, token);
+
+    // Log the login activity
+    const ipAddress = getIpFromRequest(request);
+    await logLogin(
+      { id: user.id, email: user.email, name: user.name },
+      ipAddress
+    );
 
     const responseData = {
       success: true,
