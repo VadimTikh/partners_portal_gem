@@ -27,40 +27,40 @@ interface AIFilterDropdownsProps {
   disabledReason?: string;
 }
 
-const URGENCY_OPTIONS: { value: AIUrgency; label: string; color: string }[] = [
-  { value: 'critical', label: 'Critical', color: 'bg-red-500' },
-  { value: 'high', label: 'High', color: 'bg-orange-500' },
-  { value: 'medium', label: 'Medium', color: 'bg-yellow-500' },
-  { value: 'low', label: 'Low', color: 'bg-green-500' },
+const URGENCY_OPTIONS: { value: AIUrgency; labelKey: string; color: string }[] = [
+  { value: 'critical', labelKey: 'urgencyCritical', color: 'bg-red-500' },
+  { value: 'high', labelKey: 'urgencyHigh', color: 'bg-orange-500' },
+  { value: 'medium', labelKey: 'urgencyMedium', color: 'bg-yellow-500' },
+  { value: 'low', labelKey: 'urgencyLow', color: 'bg-green-500' },
 ];
 
-const CATEGORY_OPTIONS: { value: AICategory; label: string }[] = [
-  { value: 'missing_dates', label: 'Missing Dates' },
-  { value: 'refund_request', label: 'Refund Request' },
-  { value: 'voucher_not_received', label: 'Voucher Not Received' },
-  { value: 'voucher_expired', label: 'Voucher Expired' },
-  { value: 'booking_change', label: 'Booking Change' },
-  { value: 'complaint', label: 'Complaint' },
-  { value: 'general_inquiry', label: 'General Inquiry' },
-  { value: 'partner_issue', label: 'Partner Issue' },
-  { value: 'payment_issue', label: 'Payment Issue' },
-  { value: 'technical_issue', label: 'Technical Issue' },
-  { value: 'other', label: 'Other' },
+const CATEGORY_OPTIONS: { value: AICategory; labelKey: string }[] = [
+  { value: 'missing_dates', labelKey: 'categoryMissingDates' },
+  { value: 'refund_request', labelKey: 'categoryRefundRequest' },
+  { value: 'voucher_not_received', labelKey: 'categoryVoucherNotReceived' },
+  { value: 'voucher_expired', labelKey: 'categoryVoucherExpired' },
+  { value: 'booking_change', labelKey: 'categoryBookingChange' },
+  { value: 'complaint', labelKey: 'categoryComplaint' },
+  { value: 'general_inquiry', labelKey: 'categoryGeneralInquiry' },
+  { value: 'partner_issue', labelKey: 'categoryPartnerIssue' },
+  { value: 'payment_issue', labelKey: 'categoryPaymentIssue' },
+  { value: 'technical_issue', labelKey: 'categoryTechnicalIssue' },
+  { value: 'other', labelKey: 'categoryOther' },
 ];
 
-const SENTIMENT_OPTIONS: { value: AISentiment; label: string; color: string }[] = [
-  { value: 'angry', label: 'Angry', color: 'bg-red-500' },
-  { value: 'frustrated', label: 'Frustrated', color: 'bg-orange-500' },
-  { value: 'neutral', label: 'Neutral', color: 'bg-gray-500' },
-  { value: 'positive', label: 'Positive', color: 'bg-green-500' },
+const SENTIMENT_OPTIONS: { value: AISentiment; labelKey: string; color: string }[] = [
+  { value: 'angry', labelKey: 'sentimentAngry', color: 'bg-red-500' },
+  { value: 'frustrated', labelKey: 'sentimentFrustrated', color: 'bg-orange-500' },
+  { value: 'neutral', labelKey: 'sentimentNeutral', color: 'bg-gray-500' },
+  { value: 'positive', labelKey: 'sentimentPositive', color: 'bg-green-500' },
 ];
 
-const SATISFACTION_OPTIONS: { value: SatisfactionLevel; label: string }[] = [
-  { value: 1, label: '1 - Very Unsatisfied' },
-  { value: 2, label: '2 - Unsatisfied' },
-  { value: 3, label: '3 - Neutral' },
-  { value: 4, label: '4 - Satisfied' },
-  { value: 5, label: '5 - Very Satisfied' },
+const SATISFACTION_OPTIONS: { value: SatisfactionLevel; labelKey: string }[] = [
+  { value: 1, labelKey: 'satisfaction1' },
+  { value: 2, labelKey: 'satisfaction2' },
+  { value: 3, labelKey: 'satisfaction3' },
+  { value: 4, labelKey: 'satisfaction4' },
+  { value: 5, labelKey: 'satisfaction5' },
 ];
 
 export function AIFilterDropdowns({
@@ -176,7 +176,7 @@ export function AIFilterDropdowns({
                   <span
                     className={`h-2 w-2 rounded-full ${option.color}`}
                   />
-                  {option.label}
+                  {(helpdesk?.[option.labelKey] as string) || option.value}
                 </span>
               </label>
             ))}
@@ -200,7 +200,7 @@ export function AIFilterDropdowns({
                     handleToggleArrayFilter('aiCategory', option.value)
                   }
                 />
-                <span className="text-sm">{option.label}</span>
+                <span className="text-sm">{(helpdesk?.[option.labelKey] as string) || option.value}</span>
               </label>
             ))}
           </div>
@@ -227,7 +227,7 @@ export function AIFilterDropdowns({
                   <span
                     className={`h-2 w-2 rounded-full ${option.color}`}
                   />
-                  {option.label}
+                  {(helpdesk?.[option.labelKey] as string) || option.value}
                 </span>
               </label>
             ))}
@@ -251,7 +251,7 @@ export function AIFilterDropdowns({
                     handleToggleArrayFilter('aiSatisfaction', option.value)
                   }
                 />
-                <span className="text-sm">{option.label}</span>
+                <span className="text-sm">{(helpdesk?.[option.labelKey] as string) || option.value}</span>
               </label>
             ))}
           </div>

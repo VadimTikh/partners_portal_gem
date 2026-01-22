@@ -11,6 +11,7 @@ export interface HelpdeskStage {
   sequence: number;
   fold: boolean;       // Collapsed in kanban view
   is_close: boolean;   // Marks ticket as resolved/closed
+  ticketCount?: number; // Number of tickets in this stage
 }
 
 /**
@@ -312,7 +313,7 @@ export interface HelpdeskAnalytics {
 // Filter & Query Types
 // ============================================
 
-export type TimePeriod = 'today' | '7d' | '30d' | 'custom';
+export type TimePeriod = 'today' | '7d' | '30d' | 'all' | 'custom';
 
 export interface TicketFilters {
   period: TimePeriod;

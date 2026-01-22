@@ -6,16 +6,11 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { de, enUS, uk } from 'date-fns/locale';
 import Link from 'next/link';
 import {
-  MessageSquare,
   Filter,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
   Search,
-  BarChart3,
   ExternalLink,
   RefreshCw,
 } from 'lucide-react';
@@ -51,25 +46,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-
-function getPriorityColor(priority: number): string {
-  switch (priority) {
-    case 3: return 'bg-red-100 text-red-800';
-    case 2: return 'bg-orange-100 text-orange-800';
-    case 1: return 'bg-yellow-100 text-yellow-800';
-    default: return 'bg-gray-100 text-gray-800';
-  }
-}
-
-function getPriorityLabel(priority: number, t: Record<string, unknown>): string {
-  const helpdesk = t.helpdesk as Record<string, unknown> | undefined;
-  switch (priority) {
-    case 3: return (helpdesk?.urgent as string) || 'Urgent';
-    case 2: return (helpdesk?.high as string) || 'High';
-    case 1: return (helpdesk?.normal as string) || 'Normal';
-    default: return (helpdesk?.low as string) || 'Low';
-  }
-}
 
 function getUrgencyBadgeColor(urgency: string): string {
   switch (urgency) {
@@ -157,16 +133,6 @@ function TicketRow({
           {ticket.stage_name}
         </Badge>
       </TableCell>
-      <TableCell>
-        {ticket.ticket_type_name && (
-          <span className="text-sm text-muted-foreground">{ticket.ticket_type_name}</span>
-        )}
-      </TableCell>
-      <TableCell>
-        <Badge className={getPriorityColor(ticket.priority)}>
-          {getPriorityLabel(ticket.priority, t)}
-        </Badge>
-      </TableCell>
       {/* AI Analysis Column */}
       <TableCell>
         {analysis ? (
@@ -211,6 +177,16 @@ function TicketRow({
         <div title={format(new Date(ticket.create_date), 'PPp', { locale: dateLocale })}>
           {formatDistanceToNow(new Date(ticket.create_date), { addSuffix: true, locale: dateLocale })}
         </div>
+      </TableCell>
+      <TableCell>
+        <a
+          href={`https://odoo.boni.tools/odoo/action-1463/${ticket.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:underline text-sm"
+        >
+          <ExternalLink className="h-4 w-4" />
+        </a>
       </TableCell>
       <TableCell>
         <Link href={`/manager/helpdesk/${ticket.id}`}>
@@ -412,91 +388,28 @@ export default function HelpdeskPage() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      {analytics && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-500" />
-                <span className="text-sm text-muted-foreground">{(helpdesk?.newTickets as string) || 'New'}</span>
-              </div>
-              <p className="text-2xl font-bold mt-1 text-red-600">{analytics.unansweredCount}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-blue-500" />
-                <span className="text-sm text-muted-foreground">{(helpdesk?.avgResponseTime as string) || 'Avg Response Time'}</span>
-              </div>
-              <p className="text-2xl font-bold mt-1">
-                {analytics.avgFirstResponseTimeHours !== null
-                  ? `${analytics.avgFirstResponseTimeHours.toFixed(1)}h`
-                  : '-'
-                }
-              </p>
-              {analytics.avgFirstResponseTimeHours !== null && (
-                <p className={`text-xs mt-1 ${analytics.avgFirstResponseTimeHours <= 24 ? 'text-green-600' : 'text-red-600'}`}>
-                  {analytics.avgFirstResponseTimeHours <= 24
-                    ? `✓ ${(helpdesk?.withinTarget as string) || 'Within 24h target'}`
-                    : `⚠ ${(helpdesk?.aboveTarget as string) || 'Above 24h target'}`
-                  }
-                </p>
-              )}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-yellow-500" />
-                <span className="text-sm text-muted-foreground">{(helpdesk?.openTickets as string) || 'Open Tickets'}</span>
-              </div>
-              <p className="text-2xl font-bold mt-1">{analytics.totalOpen}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-muted-foreground">{(helpdesk?.resolved as string) || 'Resolved'}</span>
-              </div>
-              <p className="text-2xl font-bold mt-1 text-green-600">{analytics.totalResolved}</p>
-            </CardContent>
-          </Card>
+      {/* Stage Counts */}
+      {data?.stages && data.stages.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {data.stages
+            .sort((a, b) => a.sequence - b.sequence)
+            .map((stage) => (
+              <Badge
+                key={stage.id}
+                variant="outline"
+                className={`text-sm px-3 py-1.5 ${
+                  stage.is_close
+                    ? 'border-green-500 text-green-700 bg-green-50'
+                    : 'border-blue-500 text-blue-700 bg-blue-50'
+                }`}
+              >
+                {stage.name}
+                {stage.ticketCount !== undefined && (
+                  <span className="ml-2 font-bold">{stage.ticketCount}</span>
+                )}
+              </Badge>
+            ))}
         </div>
-      )}
-
-      {/* Age Buckets */}
-      {analytics && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              {(helpdesk?.ticketsByAge as string) || 'Open Tickets by Age'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
-                <span className="text-sm font-medium text-green-700">&lt; 24h</span>
-                <span className="text-xl font-bold text-green-700">{analytics.openByAgeBucket['<24h']}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-200">
-                <span className="text-sm font-medium text-yellow-700">1-3 {(helpdesk?.days as string) || 'days'}</span>
-                <span className="text-xl font-bold text-yellow-700">{analytics.openByAgeBucket['1-3d']}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-orange-50 border border-orange-200">
-                <span className="text-sm font-medium text-orange-700">3-7 {(helpdesk?.days as string) || 'days'}</span>
-                <span className="text-xl font-bold text-orange-700">{analytics.openByAgeBucket['3-7d']}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-200">
-                <span className="text-sm font-medium text-red-700">&gt; 7 {(helpdesk?.days as string) || 'days'}</span>
-                <span className="text-xl font-bold text-red-700">{analytics.openByAgeBucket['>7d']}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       )}
 
       {/* Filters */}
@@ -519,6 +432,7 @@ export default function HelpdeskPage() {
                   <SelectItem value="today">{(helpdesk?.today as string) || 'Today'}</SelectItem>
                   <SelectItem value="7d">{(helpdesk?.last7Days as string) || 'Last 7 Days'}</SelectItem>
                   <SelectItem value="30d">{(helpdesk?.last30Days as string) || 'Last 30 Days'}</SelectItem>
+                  <SelectItem value="all">{(helpdesk?.allTime as string) || 'All Time'}</SelectItem>
                   <SelectItem value="custom">{(helpdesk?.customRange as string) || 'Custom Range'}</SelectItem>
                 </SelectContent>
               </Select>
@@ -680,10 +594,9 @@ export default function HelpdeskPage() {
                     <TableHead className="w-[80px]">ID</TableHead>
                     <TableHead>{(helpdesk?.subject as string) || 'Subject'}</TableHead>
                     <TableHead>{(helpdesk?.stage as string) || 'Stage'}</TableHead>
-                    <TableHead>{(helpdesk?.ticketType as string) || 'Type'}</TableHead>
-                    <TableHead>{(helpdesk?.priority as string) || 'Priority'}</TableHead>
                     <TableHead>{(helpdesk?.aiAnalysis as string) || 'AI'}</TableHead>
                     <TableHead>{(helpdesk?.created as string) || 'Created'}</TableHead>
+                    <TableHead className="w-[60px]">Odoo</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>

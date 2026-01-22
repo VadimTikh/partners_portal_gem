@@ -22,7 +22,12 @@ function getDateRange(period: TimePeriod, customFrom?: string, customTo?: string
   const to = now.toISOString();
 
   if (period === 'custom' && customFrom && customTo) {
-    return { from: customFrom, to: customTo };
+    // Ensure custom dates include full day by adjusting times
+    const fromDate = new Date(customFrom);
+    fromDate.setHours(0, 0, 0, 0);
+    const toDate = new Date(customTo);
+    toDate.setHours(23, 59, 59, 999);
+    return { from: fromDate.toISOString(), to: toDate.toISOString() };
   }
 
   let from: Date;
@@ -32,6 +37,10 @@ function getDateRange(period: TimePeriod, customFrom?: string, customTo?: string
       break;
     case '7d':
       from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case 'all':
+      // Use a date far in the past (2000-01-01) for "all time"
+      from = new Date(2000, 0, 1);
       break;
     case '30d':
     default:

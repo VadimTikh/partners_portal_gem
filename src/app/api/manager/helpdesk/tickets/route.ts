@@ -35,7 +35,12 @@ function getDateRange(period: TimePeriod, customFrom?: string, customTo?: string
   const to = now.toISOString();
 
   if (period === 'custom' && customFrom && customTo) {
-    return { from: customFrom, to: customTo };
+    // Ensure custom dates include full day by adjusting times
+    const fromDate = new Date(customFrom);
+    fromDate.setHours(0, 0, 0, 0);
+    const toDate = new Date(customTo);
+    toDate.setHours(23, 59, 59, 999);
+    return { from: fromDate.toISOString(), to: toDate.toISOString() };
   }
 
   let from: Date;
@@ -45,6 +50,10 @@ function getDateRange(period: TimePeriod, customFrom?: string, customTo?: string
       break;
     case '7d':
       from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case 'all':
+      // Use a date far in the past (2000-01-01) for "all time"
+      from = new Date(2000, 0, 1);
       break;
     case '30d':
     default:
@@ -158,11 +167,12 @@ export async function GET(request: NextRequest) {
 
         // If AI filters are active but no tickets match, return empty result
         if (aiFilteredIds.length === 0) {
+          const emptyStages = (await getHelpdeskStages()).map(s => ({ ...s, ticketCount: 0 }));
           return NextResponse.json({
             success: true,
             tickets: [],
             total: 0,
-            stages: await getHelpdeskStages(),
+            stages: emptyStages,
             ticketTypes: await getTicketTypes(),
             analytics: {
               period: { from: '', to: '', label: period },
@@ -349,11 +359,17 @@ export async function GET(request: NextRequest) {
         totalAnalyzedCount = await countAnalyzedTickets(allTicketIds);
       }
 
+      // Enrich stages with ticket counts
+      const stagesWithCounts = stages.map(stage => ({
+        ...stage,
+        ticketCount: analyticsData.ticketsByStage.get(stage.id) || 0,
+      }));
+
       return NextResponse.json({
         success: true,
         tickets,
         total,
-        stages,
+        stages: stagesWithCounts,
         ticketTypes: types,  // Match the API client expected field name
         analytics,
         pagination: {
