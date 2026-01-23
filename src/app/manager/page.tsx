@@ -32,7 +32,7 @@ export default function ManagerDashboardPage() {
   // Partner statistics
   const totalPartners = partners?.length || 0;
   const partnersWithCourses = partners?.filter((p) => p.coursesCount > 0).length || 0;
-  const partnersWithDates = partners?.filter((p) => p.availableDatesCount > 0).length || 0;
+  const partnersWithDates = partners?.filter((p) => (p.availableDatesCount ?? 0) > 0).length || 0;
 
   return (
     <div>
