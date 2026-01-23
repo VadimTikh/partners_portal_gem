@@ -121,11 +121,15 @@ export async function getOrdersByPartner(
     -- Operator table to get customer_number
     INNER JOIN miomente_pdf_operator AS op
       ON cpev_operator.value = op.operator_id
-    -- Get begin_time for event time
-    LEFT JOIN catalog_product_entity_varchar AS begin_time
+    -- Get begin_time for event time (use subquery to ensure single row)
+    LEFT JOIN (
+      SELECT entity_id, MIN(value) AS value
+      FROM catalog_product_entity_varchar
+      WHERE attribute_id = ${MAGENTO_ATTRIBUTES.BEGIN_TIME}
+        AND store_id = 0
+      GROUP BY entity_id
+    ) AS begin_time
       ON soi.product_id = begin_time.entity_id
-      AND begin_time.attribute_id = ${MAGENTO_ATTRIBUTES.BEGIN_TIME}
-      AND begin_time.store_id = 0
     WHERE op.customernumber IN (${placeholders})
       AND so.status NOT IN ('canceled', 'closed', 'holded')
       AND CAST(so.base_total_due AS DECIMAL(12,4)) = 0  -- Only fully paid orders
@@ -231,10 +235,14 @@ export async function getOrderItem(
       AND cpev_operator.store_id = 0
     INNER JOIN miomente_pdf_operator AS op
       ON cpev_operator.value = op.operator_id
-    LEFT JOIN catalog_product_entity_varchar AS begin_time
+    LEFT JOIN (
+      SELECT entity_id, MIN(value) AS value
+      FROM catalog_product_entity_varchar
+      WHERE attribute_id = ${MAGENTO_ATTRIBUTES.BEGIN_TIME}
+        AND store_id = 0
+      GROUP BY entity_id
+    ) AS begin_time
       ON soi.product_id = begin_time.entity_id
-      AND begin_time.attribute_id = ${MAGENTO_ATTRIBUTES.BEGIN_TIME}
-      AND begin_time.store_id = 0
     WHERE so.entity_id = ?
       AND soi.item_id = ?
       AND op.customernumber IN (${placeholders})
@@ -292,10 +300,14 @@ export async function getOrderItemsByOrderId(orderId: number): Promise<DbOrder[]
       AND cpev_operator.store_id = 0
     INNER JOIN miomente_pdf_operator AS op
       ON cpev_operator.value = op.operator_id
-    LEFT JOIN catalog_product_entity_varchar AS begin_time
+    LEFT JOIN (
+      SELECT entity_id, MIN(value) AS value
+      FROM catalog_product_entity_varchar
+      WHERE attribute_id = ${MAGENTO_ATTRIBUTES.BEGIN_TIME}
+        AND store_id = 0
+      GROUP BY entity_id
+    ) AS begin_time
       ON soi.product_id = begin_time.entity_id
-      AND begin_time.attribute_id = ${MAGENTO_ATTRIBUTES.BEGIN_TIME}
-      AND begin_time.store_id = 0
     WHERE so.entity_id = ?
     ORDER BY soi.item_id
   `;
@@ -366,10 +378,14 @@ export async function getOrdersNeedingConfirmations(
       AND cpev_operator.store_id = 0
     INNER JOIN miomente_pdf_operator AS op
       ON cpev_operator.value = op.operator_id
-    LEFT JOIN catalog_product_entity_varchar AS begin_time
+    LEFT JOIN (
+      SELECT entity_id, MIN(value) AS value
+      FROM catalog_product_entity_varchar
+      WHERE attribute_id = ${MAGENTO_ATTRIBUTES.BEGIN_TIME}
+        AND store_id = 0
+      GROUP BY entity_id
+    ) AS begin_time
       ON soi.product_id = begin_time.entity_id
-      AND begin_time.attribute_id = ${MAGENTO_ATTRIBUTES.BEGIN_TIME}
-      AND begin_time.store_id = 0
     WHERE op.customernumber IN (${placeholders})
       AND so.status NOT IN ('canceled', 'closed', 'holded')
       AND CAST(so.base_total_due AS DECIMAL(12,4)) = 0  -- Only fully paid orders
@@ -453,10 +469,14 @@ export async function getFutureOrdersForPartner(
       AND cpev_operator.store_id = 0
     INNER JOIN miomente_pdf_operator AS op
       ON cpev_operator.value = op.operator_id
-    LEFT JOIN catalog_product_entity_varchar AS begin_time
+    LEFT JOIN (
+      SELECT entity_id, MIN(value) AS value
+      FROM catalog_product_entity_varchar
+      WHERE attribute_id = ${MAGENTO_ATTRIBUTES.BEGIN_TIME}
+        AND store_id = 0
+      GROUP BY entity_id
+    ) AS begin_time
       ON soi.product_id = begin_time.entity_id
-      AND begin_time.attribute_id = ${MAGENTO_ATTRIBUTES.BEGIN_TIME}
-      AND begin_time.store_id = 0
     WHERE op.customernumber IN (${placeholders})
       AND so.status NOT IN ('canceled', 'closed', 'holded')
       AND CAST(so.base_total_due AS DECIMAL(12,4)) = 0  -- Only fully paid orders
