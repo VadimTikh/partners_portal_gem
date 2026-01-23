@@ -42,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navigation = [
     { name: t.common.myCourses, href: '/dashboard', icon: LayoutDashboard },
-    // { name: t.bookings.title, href: '/dashboard/bookings', icon: CalendarCheck }, // Hidden for now
+    { name: t.bookings.title, href: '/dashboard/bookings', icon: CalendarCheck },
     { name: t.common.addNewCourse, href: '/dashboard/requests', icon: PlusCircle },
     { name: t.common.orders, href: '/dashboard/orders', icon: ShoppingCart, inDevelopment: true },
     { name: t.common.accounting, href: '/dashboard/accounting', icon: Receipt, inDevelopment: true },
