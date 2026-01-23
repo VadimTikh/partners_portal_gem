@@ -88,7 +88,7 @@ export async function getOrdersByPartner(
       soi.name AS product_name,
       soi.sku AS product_sku,
       CAST(soi.qty_ordered AS UNSIGNED) AS qty_ordered,
-      ROUND(COALESCE(soi_parent.row_total, soi.row_total, 0), 2) AS item_price,
+      ROUND(COALESCE(soi_parent.row_total_incl_tax, soi.row_total_incl_tax, 0), 2) AS item_price,
       -- Extract date from SKU or product name (format: Course-Name-YYYY-MM-DD)
       CASE
         WHEN soi.sku REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
@@ -128,6 +128,16 @@ export async function getOrdersByPartner(
       AND begin_time.store_id = 0
     WHERE op.customernumber IN (${placeholders})
       AND so.status NOT IN ('canceled', 'closed', 'holded')
+      AND CAST(so.base_total_due AS DECIMAL(12,4)) = 0  -- Only fully paid orders
+      AND so.created_at >= '2026-01-22 00:00:00'  -- Only orders after feature launch
+      -- Only include tickets with future event dates (excludes vouchers and past events)
+      AND (
+        (soi.sku REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+         AND STR_TO_DATE(SUBSTRING_INDEX(soi.sku, '-', -3), '%Y-%m-%d') >= CURDATE())
+        OR
+        (soi.name REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+         AND STR_TO_DATE(SUBSTRING_INDEX(soi.name, '-', -3), '%Y-%m-%d') >= CURDATE())
+      )
   `;
 
   // Add optional filters
@@ -195,7 +205,7 @@ export async function getOrderItem(
       soi.name AS product_name,
       soi.sku AS product_sku,
       CAST(soi.qty_ordered AS UNSIGNED) AS qty_ordered,
-      ROUND(COALESCE(soi_parent.row_total, soi.row_total, 0), 2) AS item_price,
+      ROUND(COALESCE(soi_parent.row_total_incl_tax, soi.row_total_incl_tax, 0), 2) AS item_price,
       CASE
         WHEN soi.sku REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
         THEN SUBSTRING_INDEX(soi.sku, '-', -3)
@@ -256,7 +266,7 @@ export async function getOrderItemsByOrderId(orderId: number): Promise<DbOrder[]
       soi.name AS product_name,
       soi.sku AS product_sku,
       CAST(soi.qty_ordered AS UNSIGNED) AS qty_ordered,
-      ROUND(COALESCE(soi_parent.row_total, soi.row_total, 0), 2) AS item_price,
+      ROUND(COALESCE(soi_parent.row_total_incl_tax, soi.row_total_incl_tax, 0), 2) AS item_price,
       CASE
         WHEN soi.sku REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
         THEN SUBSTRING_INDEX(soi.sku, '-', -3)
@@ -330,7 +340,7 @@ export async function getOrdersNeedingConfirmations(
       soi.name AS product_name,
       soi.sku AS product_sku,
       CAST(soi.qty_ordered AS UNSIGNED) AS qty_ordered,
-      ROUND(COALESCE(soi_parent.row_total, soi.row_total, 0), 2) AS item_price,
+      ROUND(COALESCE(soi_parent.row_total_incl_tax, soi.row_total_incl_tax, 0), 2) AS item_price,
       CASE
         WHEN soi.sku REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
         THEN SUBSTRING_INDEX(soi.sku, '-', -3)
@@ -362,7 +372,17 @@ export async function getOrdersNeedingConfirmations(
       AND begin_time.store_id = 0
     WHERE op.customernumber IN (${placeholders})
       AND so.status NOT IN ('canceled', 'closed', 'holded')
+      AND CAST(so.base_total_due AS DECIMAL(12,4)) = 0  -- Only fully paid orders
+      AND so.created_at >= '2026-01-22 00:00:00'  -- Only orders after feature launch
       AND so.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+      -- Only include tickets with future event dates (excludes vouchers and past events)
+      AND (
+        (soi.sku REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+         AND STR_TO_DATE(SUBSTRING_INDEX(soi.sku, '-', -3), '%Y-%m-%d') >= CURDATE())
+        OR
+        (soi.name REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+         AND STR_TO_DATE(SUBSTRING_INDEX(soi.name, '-', -3), '%Y-%m-%d') >= CURDATE())
+      )
   `;
 
   // Exclude items that already have confirmations
@@ -407,7 +427,7 @@ export async function getFutureOrdersForPartner(
       soi.name AS product_name,
       soi.sku AS product_sku,
       CAST(soi.qty_ordered AS UNSIGNED) AS qty_ordered,
-      ROUND(COALESCE(soi_parent.row_total, soi.row_total, 0), 2) AS item_price,
+      ROUND(COALESCE(soi_parent.row_total_incl_tax, soi.row_total_incl_tax, 0), 2) AS item_price,
       CASE
         WHEN soi.sku REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
         THEN SUBSTRING_INDEX(soi.sku, '-', -3)
@@ -439,6 +459,8 @@ export async function getFutureOrdersForPartner(
       AND begin_time.store_id = 0
     WHERE op.customernumber IN (${placeholders})
       AND so.status NOT IN ('canceled', 'closed', 'holded')
+      AND CAST(so.base_total_due AS DECIMAL(12,4)) = 0  -- Only fully paid orders
+      AND so.created_at >= '2026-01-22 00:00:00'  -- Only orders after feature launch
       -- Filter for future dates only
       AND (
         (soi.sku REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
@@ -481,6 +503,16 @@ export async function countOrdersForPartner(
       ON cpev_operator.value = op.operator_id
     WHERE op.customernumber IN (${placeholders})
       AND so.status NOT IN ('canceled', 'closed', 'holded')
+      AND CAST(so.base_total_due AS DECIMAL(12,4)) = 0  -- Only fully paid orders
+      AND so.created_at >= '2026-01-22 00:00:00'  -- Only orders after feature launch
+      -- Only include tickets with future event dates (excludes vouchers and past events)
+      AND (
+        (soi.sku REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+         AND STR_TO_DATE(SUBSTRING_INDEX(soi.sku, '-', -3), '%Y-%m-%d') >= CURDATE())
+        OR
+        (soi.name REGEXP '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+         AND STR_TO_DATE(SUBSTRING_INDEX(soi.name, '-', -3), '%Y-%m-%d') >= CURDATE())
+      )
   `, customerNumbers);
 
   return result?.count || 0;
@@ -532,7 +564,7 @@ export function transformOrder(dbOrder: DbOrder): {
     eventDate: dbOrder.event_date || '',
     eventTime: dbOrder.event_time || '',
     participants: dbOrder.qty_ordered,
-    price: dbOrder.item_price,
+    price: Number(dbOrder.item_price) || 0,
     customerNumber: dbOrder.customer_number,
   };
 }

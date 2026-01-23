@@ -13,6 +13,7 @@ import {
   getFutureOrdersForPartner,
   transformOrder,
 } from '@/lib/db/queries/orders';
+import { sendInitialConfirmationEmail } from '@/lib/services/booking-reminders';
 import { Booking, BookingStatus } from '@/lib/types';
 
 /**
@@ -73,6 +74,11 @@ export async function GET(request: NextRequest) {
             magentoOrderItemId: order.order_item_id,
             magentoOrderIncrementId: order.order_increment_id,
             customerNumber: order.customer_number,
+          });
+
+          // Send initial confirmation request email for new bookings
+          sendInitialConfirmationEmail(confirmation).catch((error) => {
+            console.error('[Bookings] Failed to send initial email for booking:', confirmation?.id, error);
           });
         }
 

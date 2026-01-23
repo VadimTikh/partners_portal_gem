@@ -3,7 +3,7 @@
  * This bypasses Magento lookup and sends directly to DEV_EMAIL_OVERRIDE
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { config } from '@/lib/config';
 import { sendBookingReminderEmail, BookingEmailData } from '@/lib/email/booking-emails';
 import { generateConfirmationToken } from '@/lib/services/booking-tokens';
@@ -11,18 +11,10 @@ import { query as pgQuery } from '@/lib/db/postgres';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   // Only allow in development
   if (config.isProd) {
     return NextResponse.json({ error: 'Not available in production' }, { status: 403 });
-  }
-
-  // Validate cron secret
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '');
-
-  if (!config.cron.secret || token !== config.cron.secret) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   // Generate a valid token for testing

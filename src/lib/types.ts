@@ -226,6 +226,57 @@ export interface BookingStats {
 // App Log types for tracking API/database operations
 export type AppLogStatus = 'success' | 'error' | 'validation_error';
 
+// ============================================
+// Manager Booking Types (Manager Dashboard)
+// ============================================
+
+// Booking with partner info for manager view
+export interface ManagerBooking {
+  // Booking confirmation fields
+  id: number;
+  status: BookingStatus;
+  reminderCount: number;
+  odooTicketId: string | null;
+  createdAt: string;
+  confirmedAt: string | null;
+  declinedAt: string | null;
+  declineReason: string | null;
+  declineNotes: string | null;
+  escalatedAt: string | null;
+
+  // Partner info
+  partnerId: string;
+  partnerName: string;
+  partnerEmail: string;
+  customerNumber: string;
+
+  // Order info (from Magento)
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  courseName: string;
+  eventDate: string;
+  eventTime: string;
+  participants: number;
+  price: number;
+}
+
+// Partner summary for filter dropdown
+export interface PartnerSummary {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// Manager booking statistics
+export interface ManagerBookingStats {
+  total: number;
+  pending: number;
+  confirmed: number;
+  declined: number;
+}
+
 export interface AppLog {
   id: number;
   timestamp: string;

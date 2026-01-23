@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, Locale } from 'date-fns';
+import { format, isValid, Locale } from 'date-fns';
 import { de, enUS, uk } from 'date-fns/locale';
 import {
   Clock,
@@ -155,7 +155,9 @@ function BookingCard({
             <p className="text-xs text-muted-foreground">{t.bookings.eventDate}</p>
             <p className="text-sm font-medium flex items-center gap-1">
               <Calendar className="h-3 w-3" />
-              {format(new Date(booking.eventDate), 'PPP', { locale: dateLocale })}
+              {booking.eventDate && isValid(new Date(booking.eventDate))
+                ? format(new Date(booking.eventDate), 'PPP', { locale: dateLocale })
+                : '-'}
             </p>
           </div>
           <div>

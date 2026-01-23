@@ -1,5 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { config } from '@/lib/config';
+import { NextResponse } from 'next/server';
 import { processBookingReminders } from '@/lib/services/booking-reminders';
 
 // Disable Next.js caching
@@ -8,33 +7,11 @@ export const dynamic = 'force-dynamic';
 /**
  * POST /api/cron/booking-reminders
  *
- * Processes pending booking reminders. This endpoint should be called
- * by a scheduled task (e.g., Google Cloud Scheduler) every hour.
- *
- * Authentication: Bearer token must match CRON_SECRET environment variable
+ * Processes pending booking reminders. This is now primarily called by the
+ * internal node-cron scheduler, but can also be triggered manually for testing.
  */
-export async function POST(request: NextRequest) {
-  // Validate cron secret
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '');
-
-  if (!config.cron.secret) {
-    console.error('[Cron] CRON_SECRET not configured');
-    return NextResponse.json(
-      { error: 'Cron endpoint not configured' },
-      { status: 503 }
-    );
-  }
-
-  if (token !== config.cron.secret) {
-    console.warn('[Cron] Invalid cron secret attempted');
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
-
-  console.log('[Cron] Starting booking reminders processing...');
+export async function POST() {
+  console.log('[Cron] Manual trigger: Starting booking reminders processing...');
 
   try {
     const result = await processBookingReminders();
@@ -69,25 +46,14 @@ export async function POST(request: NextRequest) {
  * GET /api/cron/booking-reminders
  *
  * Health check for the cron endpoint.
- * Returns information about when reminders were last processed.
  */
-export async function GET(request: NextRequest) {
-  // Validate cron secret
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '');
-
-  if (!config.cron.secret || token !== config.cron.secret) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
-
+export async function GET() {
   return NextResponse.json({
     status: 'ready',
     endpoint: '/api/cron/booking-reminders',
     method: 'POST',
     description: 'Processes pending booking reminders (24h, 48h) and escalations (72h)',
+    note: 'Automatically scheduled via internal cron, but can be triggered manually',
     timestamp: new Date().toISOString(),
   });
 }

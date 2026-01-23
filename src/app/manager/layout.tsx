@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { FileText, LogOut, Languages, Settings, LayoutDashboard, Users, Activity, Server, Headset } from 'lucide-react';
+import { FileText, LogOut, Languages, Settings, LayoutDashboard, Users, Activity, Server, Headset, CalendarCheck } from 'lucide-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n';
@@ -44,6 +44,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
     { name: t.manager.dashboard, href: '/manager', icon: LayoutDashboard },
     { name: t.manager.courseRequests, href: '/manager/requests', icon: FileText },
     { name: t.manager.partners, href: '/manager/partners', icon: Users },
+    { name: t.managerBookings?.title || 'Buchungsbestätigungen', href: '/manager/bookings', icon: CalendarCheck },
     { name: t.helpdesk?.title || 'Helpdesk', href: '/manager/helpdesk', icon: Headset },
     { name: t.manager.activityLogs || 'Activity Logs', href: '/manager/activity', icon: Activity },
     { name: t.manager.appLogs || 'App Logs', href: '/manager/app-logs', icon: Server },

@@ -354,6 +354,50 @@ export const api = {
     return response.data.course;
   },
 
+  // ==================== Manager: Bookings ====================
+
+  getManagerBookings: async (params: {
+    status?: BookingStatus;
+    partnerId?: string;
+    page?: number;
+    limit?: number;
+  } = {}): Promise<{
+    bookings: import('./types').ManagerBooking[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    stats: import('./types').ManagerBookingStats;
+    partners: import('./types').PartnerSummary[];
+  }> => {
+    const queryParams = new URLSearchParams();
+    if (params.status) queryParams.set('status', params.status);
+    if (params.partnerId) queryParams.set('partnerId', params.partnerId);
+    if (params.page) queryParams.set('page', String(params.page));
+    if (params.limit) queryParams.set('limit', String(params.limit));
+
+    const response = await apiClient.get<{
+      success: boolean;
+      bookings: import('./types').ManagerBooking[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+      stats: import('./types').ManagerBookingStats;
+      partners: import('./types').PartnerSummary[];
+    }>(`/manager/bookings?${queryParams.toString()}`);
+
+    return {
+      bookings: response.data.bookings,
+      total: response.data.total,
+      page: response.data.page,
+      limit: response.data.limit,
+      totalPages: response.data.totalPages,
+      stats: response.data.stats,
+      partners: response.data.partners,
+    };
+  },
+
   // ==================== Manager: Activity Logs ====================
 
   getActivityLogs: async (params: {

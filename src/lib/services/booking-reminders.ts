@@ -260,15 +260,36 @@ export async function sendInitialConfirmationEmail(
   }
 ): Promise<boolean> {
   try {
-    const emailData = await prepareEmailData(booking as any);
+    // Build the full booking object that prepareEmailData expects
+    const fullBooking = {
+      ...booking,
+      status: 'pending' as const,
+      token_expires_at: '',
+      confirmed_at: null,
+      confirmed_by: null,
+      declined_at: null,
+      declined_by: null,
+      decline_reason: null,
+      decline_notes: null,
+      reminder_count: 0,
+      last_reminder_at: null,
+      escalated_at: null,
+      odoo_ticket_id: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const emailData = await prepareEmailData(fullBooking as any);
     if (!emailData) {
+      console.warn('[InitialEmail] Could not prepare email data for booking:', booking.id);
       return false;
     }
 
     const result = await sendBookingConfirmationRequestEmail(emailData);
+    console.log('[InitialEmail] Sent initial confirmation email for booking:', booking.id, 'order:', booking.magento_order_increment_id);
     return result.success;
   } catch (error) {
-    console.error('[Reminder] Error sending initial confirmation email:', error);
+    console.error('[InitialEmail] Error sending initial confirmation email:', error);
     return false;
   }
 }

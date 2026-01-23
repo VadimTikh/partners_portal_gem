@@ -95,7 +95,7 @@ export const config = {
 
   // Cron jobs
   cron: {
-    secret: getEnvVar('CRON_SECRET', false) || '',
+    bookingRemindersSchedule: process.env.CRON_BOOKING_REMINDERS || '0 * * * *',
   },
 } as const;
 
