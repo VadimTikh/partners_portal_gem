@@ -60,12 +60,18 @@ export async function GET(request: NextRequest) {
         confirmations.map(c => [`${c.magento_order_id}-${c.magento_order_item_id}`, c])
       );
 
-      // Combine orders with confirmations
-      const bookings: Booking[] = [];
+      // Combine orders with confirmations, grouping by order + event
+      // This handles cases where multiple order items represent tickets for the same event
+      const bookingGroups = new Map<string, {
+        orders: typeof orders;
+        confirmations: typeof confirmations;
+        totalParticipants: number;
+        totalPrice: number;
+      }>();
 
       for (const order of orders) {
-        const key = `${order.order_id}-${order.order_item_id}`;
-        let confirmation = confirmationMap.get(key);
+        const itemKey = `${order.order_id}-${order.order_item_id}`;
+        let confirmation = confirmationMap.get(itemKey);
 
         // Auto-create confirmation record if it doesn't exist
         if (!confirmation) {
@@ -80,6 +86,9 @@ export async function GET(request: NextRequest) {
           sendInitialConfirmationEmail(confirmation).catch((error) => {
             console.error('[Bookings] Failed to send initial email for booking:', confirmation?.id, error);
           });
+
+          // Add to confirmation map
+          confirmationMap.set(itemKey, confirmation);
         }
 
         // Skip if status filter doesn't match
@@ -88,6 +97,37 @@ export async function GET(request: NextRequest) {
         }
 
         const transformed = transformOrder(order);
+
+        // Group by order_id + event_date + event_time + course (same event in same order)
+        const groupKey = `${order.order_id}-${transformed.eventDate}-${transformed.eventTime}-${transformed.course.name}`;
+
+        if (!bookingGroups.has(groupKey)) {
+          bookingGroups.set(groupKey, {
+            orders: [],
+            confirmations: [],
+            totalParticipants: 0,
+            totalPrice: 0,
+          });
+        }
+
+        const group = bookingGroups.get(groupKey)!;
+        group.orders.push(order);
+        group.confirmations.push(confirmation);
+        group.totalParticipants += transformed.participants;
+        group.totalPrice += transformed.price;
+      }
+
+      // Build final bookings list from groups
+      const bookings: Booking[] = [];
+
+      for (const [, group] of bookingGroups) {
+        // Use the first order/confirmation as the representative
+        const order = group.orders[0];
+        const confirmation = group.confirmations[0];
+        const transformed = transformOrder(order);
+
+        // Collect all confirmation IDs in the group for bulk actions
+        const relatedConfirmationIds = group.confirmations.map(c => c.id);
 
         const booking: Booking = {
           id: confirmation.id,
@@ -98,8 +138,8 @@ export async function GET(request: NextRequest) {
           course: transformed.course,
           eventDate: transformed.eventDate,
           eventTime: transformed.eventTime,
-          participants: transformed.participants,
-          price: transformed.price,
+          participants: group.totalParticipants, // Aggregated participants
+          price: group.totalPrice, // Aggregated price
           currency: 'EUR',
           status: confirmation.status,
           confirmationStatus: {
@@ -118,6 +158,8 @@ export async function GET(request: NextRequest) {
           paymentStatus: transformed.orderStatus,
           createdAt: confirmation.created_at,
           updatedAt: confirmation.updated_at,
+          // Include related IDs for bulk confirm/decline
+          relatedConfirmationIds: relatedConfirmationIds.length > 1 ? relatedConfirmationIds : undefined,
         };
 
         bookings.push(booking);

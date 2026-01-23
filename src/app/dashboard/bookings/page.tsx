@@ -377,7 +377,8 @@ export default function BookingsPage() {
   });
 
   const confirmMutation = useMutation({
-    mutationFn: (bookingId: number) => api.confirmBooking(bookingId),
+    mutationFn: ({ bookingId, relatedIds }: { bookingId: number; relatedIds?: number[] }) =>
+      api.confirmBooking(bookingId, relatedIds),
     onSuccess: () => {
       toast.success(t.bookings.confirmSuccess);
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
@@ -392,11 +393,13 @@ export default function BookingsPage() {
       bookingId,
       reasonCode,
       notes,
+      relatedIds,
     }: {
       bookingId: number;
       reasonCode: string;
       notes?: string;
-    }) => api.declineBooking(bookingId, reasonCode, notes),
+      relatedIds?: number[];
+    }) => api.declineBooking(bookingId, reasonCode, notes, relatedIds),
     onSuccess: () => {
       toast.success(t.bookings.declineSuccess);
       setDeclineBooking(null);
@@ -408,7 +411,10 @@ export default function BookingsPage() {
   });
 
   const handleConfirm = (booking: Booking) => {
-    confirmMutation.mutate(booking.id);
+    confirmMutation.mutate({
+      bookingId: booking.id,
+      relatedIds: booking.relatedConfirmationIds,
+    });
   };
 
   const handleDeclineSubmit = (reasonCode: string, notes?: string) => {
@@ -417,6 +423,7 @@ export default function BookingsPage() {
         bookingId: declineBooking.id,
         reasonCode,
         notes,
+        relatedIds: declineBooking.relatedConfirmationIds,
       });
     }
   };

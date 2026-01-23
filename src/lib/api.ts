@@ -526,20 +526,23 @@ export const api = {
     return response.data.booking;
   },
 
-  confirmBooking: async (id: number): Promise<{
+  confirmBooking: async (id: number, relatedConfirmationIds?: number[]): Promise<{
     id: number;
     status: BookingStatus;
     confirmedAt: string;
     confirmedBy: string;
   }> => {
-    const response = await apiClient.post(`/partner/bookings/${id}/confirm`);
+    const response = await apiClient.post(`/partner/bookings/${id}/confirm`,
+      relatedConfirmationIds ? { relatedConfirmationIds } : undefined
+    );
     return response.data.booking;
   },
 
   declineBooking: async (
     id: number,
     reasonCode: string,
-    notes?: string
+    notes?: string,
+    relatedConfirmationIds?: number[]
   ): Promise<{
     id: number;
     status: BookingStatus;
@@ -548,7 +551,7 @@ export const api = {
     declineReason: string;
     odooTicketId?: string;
   }> => {
-    const response = await apiClient.post(`/partner/bookings/${id}/decline`, { reasonCode, notes });
+    const response = await apiClient.post(`/partner/bookings/${id}/decline`, { reasonCode, notes, relatedConfirmationIds });
     return { ...response.data.booking, odooTicketId: response.data.odooTicketId };
   },
 
