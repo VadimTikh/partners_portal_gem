@@ -152,6 +152,8 @@ export interface Booking {
   paymentStatus: string;
   createdAt: string;
   updatedAt: string;
+  // Related confirmation IDs when multiple items are grouped (for bulk confirm/decline)
+  relatedConfirmationIds?: number[];
 }
 
 // Database record for booking confirmation (PostgreSQL)

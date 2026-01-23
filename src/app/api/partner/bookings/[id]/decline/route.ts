@@ -18,6 +18,7 @@ interface RouteParams {
 interface DeclineRequestBody {
   reasonCode: string;
   notes?: string;
+  relatedConfirmationIds?: number[];
 }
 
 /**
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      const { reasonCode, notes } = body;
+      const { reasonCode, notes, relatedConfirmationIds } = body;
 
       if (!reasonCode) {
         return NextResponse.json(
@@ -111,32 +112,51 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      // Decline the booking
-      const updated = await declineBooking(
-        bookingId,
-        'portal',
-        reasonCode,
-        notes
-      );
+      // Build list of all booking IDs to decline (for grouped bookings)
+      let idsToDecline: number[] = [bookingId];
+      if (relatedConfirmationIds && Array.isArray(relatedConfirmationIds)) {
+        for (const relatedId of relatedConfirmationIds) {
+          if (relatedId === bookingId) continue;
+          const related = await findBookingConfirmationById(relatedId);
+          if (related && user.customerNumbers.includes(related.customer_number)) {
+            idsToDecline.push(relatedId);
+          }
+        }
+      }
 
-      if (!updated) {
+      // Decline all related bookings
+      const declinedBookings = [];
+      for (const idToDecline of idsToDecline) {
+        const updated = await declineBooking(
+          idToDecline,
+          'portal',
+          reasonCode,
+          notes
+        );
+        if (updated) {
+          declinedBookings.push(updated);
+        }
+      }
+
+      if (declinedBookings.length === 0) {
         return NextResponse.json(
           { error: 'Failed to decline booking' },
           { status: 500 }
         );
       }
 
-      // Get order details for Odoo ticket
+      // Get order details for Odoo ticket (using first booking)
       const order = await getOrderItem(
         confirmation.magento_order_id,
         confirmation.magento_order_item_id,
         user.customerNumbers
       );
 
-      // Create Odoo support ticket
+      // Create single Odoo support ticket for all declined bookings
       let odooTicketId: string | undefined;
       try {
-        const ticketSubject = `Buchung abgelehnt: ${order?.product_name || 'Kurs'} - ${order?.customer_firstname} ${order?.customer_lastname}`;
+        const participantCount = idsToDecline.length;
+        const ticketSubject = `Buchung abgelehnt: ${order?.product_name || 'Kurs'} - ${order?.customer_firstname} ${order?.customer_lastname}${participantCount > 1 ? ` (${participantCount} Teilnehmer)` : ''}`;
         const ticketMessage = `
 Partner: ${user.name} (${user.email})
 Bestellnummer: ${confirmation.magento_order_increment_id}
@@ -144,6 +164,7 @@ Kunde: ${order?.customer_firstname} ${order?.customer_lastname}
 E-Mail: ${order?.customer_email}
 Kurs: ${order?.product_name}
 Datum: ${order?.event_date || 'Unbekannt'}
+Teilnehmer: ${participantCount}
 
 Ablehnungsgrund: ${reason.labelDe}
 ${notes ? `Anmerkungen: ${notes}` : ''}
@@ -159,7 +180,10 @@ Diese Buchung wurde vom Partner abgelehnt. Bitte kontaktieren Sie den Kunden fü
         });
 
         odooTicketId = result.ticketId.toString();
-        await markAsEscalated(bookingId, odooTicketId);
+        // Mark all declined bookings with the same Odoo ticket
+        for (const id of idsToDecline) {
+          await markAsEscalated(id, odooTicketId);
+        }
       } catch (error) {
         console.error('[Decline Booking] Failed to create Odoo ticket:', error);
         // Don't fail the decline if Odoo ticket creation fails
@@ -167,16 +191,18 @@ Diese Buchung wurde vom Partner abgelehnt. Bitte kontaktieren Sie den Kunden fü
 
       // TODO: Send decline notification email to customer
 
+      const primaryDeclined = declinedBookings[0];
       return NextResponse.json({
         success: true,
-        message: 'Booking declined successfully',
+        message: `Booking${declinedBookings.length > 1 ? 's' : ''} declined successfully`,
         booking: {
-          id: updated.id,
-          status: updated.status,
-          declinedAt: updated.declined_at,
-          declinedBy: updated.declined_by,
-          declineReason: updated.decline_reason,
+          id: primaryDeclined.id,
+          status: primaryDeclined.status,
+          declinedAt: primaryDeclined.declined_at,
+          declinedBy: primaryDeclined.declined_by,
+          declineReason: primaryDeclined.decline_reason,
         },
+        declinedCount: declinedBookings.length,
         odooTicketId,
       });
     } catch (error) {

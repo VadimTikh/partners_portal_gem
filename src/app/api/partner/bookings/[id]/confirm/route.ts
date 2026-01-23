@@ -64,10 +64,39 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      // Confirm the booking
-      const updated = await confirmBooking(bookingId, 'portal');
+      // Get related confirmation IDs from request body (for grouped bookings)
+      let relatedIds: number[] = [bookingId];
+      try {
+        const body = await request.json();
+        if (body.relatedConfirmationIds && Array.isArray(body.relatedConfirmationIds)) {
+          // Verify all related IDs belong to the same partner
+          for (const relatedId of body.relatedConfirmationIds) {
+            if (relatedId === bookingId) continue;
+            const related = await findBookingConfirmationById(relatedId);
+            if (related && user.customerNumbers.includes(related.customer_number)) {
+              relatedIds.push(relatedId);
+            }
+          }
+        }
+      } catch {
+        // No body or invalid JSON - just confirm the single booking
+      }
 
-      if (!updated) {
+      // Confirm all related bookings
+      const confirmedBookings = [];
+      for (const idToConfirm of relatedIds) {
+        const updated = await confirmBooking(idToConfirm, 'portal');
+        if (updated) {
+          confirmedBookings.push({
+            id: updated.id,
+            status: updated.status,
+            confirmedAt: updated.confirmed_at,
+            confirmedBy: updated.confirmed_by,
+          });
+        }
+      }
+
+      if (confirmedBookings.length === 0) {
         return NextResponse.json(
           { error: 'Failed to confirm booking' },
           { status: 500 }
@@ -78,13 +107,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
       return NextResponse.json({
         success: true,
-        message: 'Booking confirmed successfully',
-        booking: {
-          id: updated.id,
-          status: updated.status,
-          confirmedAt: updated.confirmed_at,
-          confirmedBy: updated.confirmed_by,
-        },
+        message: `Booking${confirmedBookings.length > 1 ? 's' : ''} confirmed successfully`,
+        booking: confirmedBookings[0], // Primary booking
+        confirmedCount: confirmedBookings.length,
       });
     } catch (error) {
       console.error('[Confirm Booking] Error:', error);
