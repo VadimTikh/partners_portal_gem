@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
   experimental: {
     staleTimes: {
       dynamic: 0,
-      static: 0,
+      static: 30,
     },
   },
   // Add no-cache headers to prevent stale HTML/chunks issues after deployments

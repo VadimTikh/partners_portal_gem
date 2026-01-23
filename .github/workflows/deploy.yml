@@ -79,7 +79,7 @@ jobs:
               -e ODOO_DB="${{ secrets.PROD_ODOO_DB }}" \
               -e ODOO_USER_ID="${{ secrets.PROD_ODOO_USER_ID }}" \
               -e ODOO_API_KEY="${{ secrets.PROD_ODOO_API_KEY }}" \
-              -e CRON_SECRET="${{ secrets.PROD_CRON_SECRET }}" \
+              -e CRON_BOOKING_REMINDERS="${{ secrets.PROD_CRON_BOOKING_REMINDERS }}" \
               -e GEMINI_API_KEY="${{ secrets.PROD_GEMINI_API_KEY }}" \
               --restart unless-stopped \
               ${{ env.IMAGE }}:${{ steps.version.outputs.TAG }}
@@ -124,7 +124,7 @@ jobs:
               -e ODOO_DB="${{ secrets.DEV_ODOO_DB }}" \
               -e ODOO_USER_ID="${{ secrets.DEV_ODOO_USER_ID }}" \
               -e ODOO_API_KEY="${{ secrets.DEV_ODOO_API_KEY }}" \
-              -e CRON_SECRET="${{ secrets.DEV_CRON_SECRET }}" \
+              -e CRON_BOOKING_REMINDERS="${{ secrets.DEV_CRON_BOOKING_REMINDERS }}" \
               -e GEMINI_API_KEY="${{ secrets.DEV_GEMINI_API_KEY }}" \
               --restart unless-stopped \
               ${{ env.IMAGE }}:${{ steps.version.outputs.TAG }}
