@@ -98,8 +98,9 @@ export async function GET(request: NextRequest) {
 
         const transformed = transformOrder(order);
 
-        // Group by order_id + event_date + event_time + course (same event in same order)
-        const groupKey = `${order.order_id}-${transformed.eventDate}-${transformed.eventTime}-${transformed.course.name}`;
+        // Group by order_id + event_date + event_time (same event in same order)
+        // Don't include course name as it might vary slightly between order items
+        const groupKey = `${order.order_id}-${transformed.eventDate}-${transformed.eventTime}`;
 
         if (!bookingGroups.has(groupKey)) {
           bookingGroups.set(groupKey, {
