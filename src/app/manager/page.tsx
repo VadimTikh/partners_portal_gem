@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Users, FileText, Clock, CheckCircle2 } from 'lucide-react';
+import { Users, FileText, Clock, CheckCircle2, BookOpen, Calendar } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
@@ -29,22 +29,44 @@ export default function ManagerDashboardPage() {
   const inModerationRequests = requests?.filter((r) => r.status === 'in_moderation') || [];
   const approvedRequests = requests?.filter((r) => r.status === 'approved') || [];
 
+  // Partner statistics
+  const totalPartners = partners?.length || 0;
+  const partnersWithCourses = partners?.filter((p) => p.coursesCount > 0).length || 0;
+  const partnersWithDates = partners?.filter((p) => p.availableDatesCount > 0).length || 0;
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">{t.manager.dashboard}</h1>
 
-      {/* Partners Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t.manager.partners}</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{partners?.length || 0}</div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Partners Stats Card */}
+      <Card className="mb-6">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            {t.manager.partners}
+          </CardTitle>
+          <CardDescription>{t.manager.partnersDescription}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 grid-cols-3">
+            <div className="flex flex-col items-center p-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <Users className="h-5 w-5 text-slate-600 mb-1" />
+              <span className="text-2xl font-bold text-slate-700">{totalPartners}</span>
+              <span className="text-xs text-slate-600">{t.manager.totalPartners || 'Total'}</span>
+            </div>
+            <div className="flex flex-col items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <BookOpen className="h-5 w-5 text-blue-600 mb-1" />
+              <span className="text-2xl font-bold text-blue-700">{partnersWithCourses}</span>
+              <span className="text-xs text-blue-600 text-center">{t.manager.withCourses || 'With Courses'}</span>
+            </div>
+            <div className="flex flex-col items-center p-3 bg-green-50 border border-green-200 rounded-lg">
+              <Calendar className="h-5 w-5 text-green-600 mb-1" />
+              <span className="text-2xl font-bold text-green-700">{partnersWithDates}</span>
+              <span className="text-xs text-green-600 text-center">{t.manager.withDates || 'With Dates'}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-2">
