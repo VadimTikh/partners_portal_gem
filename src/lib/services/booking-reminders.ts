@@ -46,21 +46,21 @@ export async function processBookingReminders(): Promise<ReminderProcessingResul
   };
 
   try {
-    // Get bookings needing first reminder (24+ hours, 0 reminders sent)
+    // Get bookings needing first reminder (24+ hours, 1 = initial email sent)
     const needingReminder1 = await getPendingBookingsForReminder(
-      0, // min reminder count
+      1, // reminder count after initial email
       REMINDER_1_THRESHOLD_HOURS
     );
 
-    // Get bookings needing second reminder (48+ hours, 1 reminder sent)
+    // Get bookings needing second reminder (48+ hours, 2 = first reminder sent)
     const needingReminder2 = await getPendingBookingsForReminder(
-      1, // min reminder count
+      2, // reminder count after first reminder
       REMINDER_2_THRESHOLD_HOURS
     );
 
-    // Get bookings needing escalation (72+ hours, 2+ reminders sent)
+    // Get bookings needing escalation (72+ hours, 3 = second reminder sent)
     const needingEscalation = await getPendingBookingsForReminder(
-      2, // min reminder count
+      3, // reminder count after second reminder
       ESCALATION_THRESHOLD_HOURS
     );
 
@@ -286,6 +286,10 @@ export async function sendInitialConfirmationEmail(
     }
 
     const result = await sendBookingConfirmationRequestEmail(emailData);
+    if (result.success) {
+      // Increment reminder count when initial email is sent
+      await incrementReminderCount(booking.id);
+    }
     console.log('[InitialEmail] Sent initial confirmation email for booking:', booking.id, 'order:', booking.magento_order_increment_id);
     return result.success;
   } catch (error) {
