@@ -514,3 +514,221 @@ export async function getDeclineReasonByCode(
   );
   return row ? transformDeclineReason(row) : null;
 }
+
+// ============================================
+// Manager Booking Queries
+// ============================================
+
+// Database row type for manager booking query with partner info
+interface DbManagerBooking {
+  id: number;
+  magento_order_id: number;
+  magento_order_item_id: number;
+  magento_order_increment_id: string | null;
+  customer_number: string;
+  status: BookingStatus;
+  confirmed_at: string | null;
+  declined_at: string | null;
+  decline_reason: string | null;
+  decline_notes: string | null;
+  reminder_count: number;
+  escalated_at: string | null;
+  odoo_ticket_id: string | null;
+  created_at: string;
+  // Partner info from JOIN
+  partner_id: string;
+  partner_name: string;
+  partner_email: string;
+}
+
+// Partner summary for dropdown
+interface DbPartnerSummary {
+  id: string;
+  name: string;
+  email: string;
+}
+
+/**
+ * Get all booking confirmations for manager view with partner info
+ *
+ * @param options - Filter and pagination options
+ */
+export async function getAllBookingsForManager(options?: {
+  status?: BookingStatus;
+  partnerId?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<DbManagerBooking[]> {
+  // Join users directly and match customer_number from either:
+  // 1. Legacy field: users.customer_number
+  // 2. New table: miomente_partner_customer_numbers
+  let sql = `
+    SELECT
+      bc.id,
+      bc.magento_order_id,
+      bc.magento_order_item_id,
+      bc.magento_order_increment_id,
+      bc.customer_number,
+      bc.status,
+      bc.confirmed_at,
+      bc.declined_at,
+      bc.decline_reason,
+      bc.decline_notes,
+      bc.reminder_count,
+      bc.escalated_at,
+      bc.odoo_ticket_id,
+      bc.created_at,
+      u.id AS partner_id,
+      u.name AS partner_name,
+      u.email AS partner_email
+    FROM miomente_partner_portal_booking_confirmations bc
+    INNER JOIN miomente_partner_portal_users u
+      ON u.is_manager = false
+      AND (
+        bc.customer_number = u.customer_number
+        OR bc.customer_number IN (
+          SELECT cn.customer_number
+          FROM miomente_partner_customer_numbers cn
+          WHERE cn.user_id = u.id
+        )
+      )
+    WHERE 1=1
+  `;
+
+  const params: unknown[] = [];
+  let paramIndex = 1;
+
+  if (options?.status) {
+    sql += ` AND bc.status = $${paramIndex}`;
+    params.push(options.status);
+    paramIndex++;
+  }
+
+  if (options?.partnerId) {
+    sql += ` AND u.id = $${paramIndex}`;
+    params.push(options.partnerId);
+    paramIndex++;
+  }
+
+  sql += ` ORDER BY bc.created_at DESC`;
+
+  if (options?.limit) {
+    sql += ` LIMIT $${paramIndex}`;
+    params.push(options.limit);
+    paramIndex++;
+  }
+
+  if (options?.offset) {
+    sql += ` OFFSET $${paramIndex}`;
+    params.push(options.offset);
+  }
+
+  return queryAll<DbManagerBooking>(sql, params);
+}
+
+/**
+ * Count all bookings for manager with filters
+ */
+export async function countAllBookingsForManager(options?: {
+  status?: BookingStatus;
+  partnerId?: string;
+}): Promise<number> {
+  // Join users directly and match customer_number from either:
+  // 1. Legacy field: users.customer_number
+  // 2. New table: miomente_partner_customer_numbers
+  let sql = `
+    SELECT COUNT(DISTINCT bc.id) AS count
+    FROM miomente_partner_portal_booking_confirmations bc
+    INNER JOIN miomente_partner_portal_users u
+      ON u.is_manager = false
+      AND (
+        bc.customer_number = u.customer_number
+        OR bc.customer_number IN (
+          SELECT cn.customer_number
+          FROM miomente_partner_customer_numbers cn
+          WHERE cn.user_id = u.id
+        )
+      )
+    WHERE 1=1
+  `;
+
+  const params: unknown[] = [];
+  let paramIndex = 1;
+
+  if (options?.status) {
+    sql += ` AND bc.status = $${paramIndex}`;
+    params.push(options.status);
+    paramIndex++;
+  }
+
+  if (options?.partnerId) {
+    sql += ` AND u.id = $${paramIndex}`;
+    params.push(options.partnerId);
+  }
+
+  const result = await queryOne<{ count: string }>(sql, params);
+  return parseInt(result?.count || '0', 10);
+}
+
+/**
+ * Get booking statistics for manager dashboard
+ */
+export async function getManagerBookingStats(): Promise<{
+  total: number;
+  pending: number;
+  confirmed: number;
+  declined: number;
+}> {
+  const result = await queryOne<{
+    total: string;
+    pending: string;
+    confirmed: string;
+    declined: string;
+  }>(`
+    SELECT
+      COUNT(*) AS total,
+      COUNT(*) FILTER (WHERE status = 'pending') AS pending,
+      COUNT(*) FILTER (WHERE status = 'confirmed') AS confirmed,
+      COUNT(*) FILTER (WHERE status = 'declined') AS declined
+    FROM miomente_partner_portal_booking_confirmations
+  `);
+
+  return {
+    total: parseInt(result?.total || '0', 10),
+    pending: parseInt(result?.pending || '0', 10),
+    confirmed: parseInt(result?.confirmed || '0', 10),
+    declined: parseInt(result?.declined || '0', 10),
+  };
+}
+
+/**
+ * Get all partners who have bookings (for filter dropdown)
+ */
+export async function getPartnersWithBookings(): Promise<DbPartnerSummary[]> {
+  // Join users directly and match customer_number from either:
+  // 1. Legacy field: users.customer_number
+  // 2. New table: miomente_partner_customer_numbers
+  const sql = `
+    SELECT DISTINCT
+      u.id,
+      u.name,
+      u.email
+    FROM miomente_partner_portal_booking_confirmations bc
+    INNER JOIN miomente_partner_portal_users u
+      ON u.is_manager = false
+      AND (
+        bc.customer_number = u.customer_number
+        OR bc.customer_number IN (
+          SELECT cn.customer_number
+          FROM miomente_partner_customer_numbers cn
+          WHERE cn.user_id = u.id
+        )
+      )
+    ORDER BY u.name
+  `;
+
+  return queryAll<DbPartnerSummary>(sql);
+}
+
+// Export the types for use in API
+export type { DbManagerBooking, DbPartnerSummary };

@@ -234,65 +234,51 @@ export async function getAllPortalPartners(): Promise<PortalPartner[]> {
   });
 
   // Get course stats from Magento for all customer numbers
-  let courseStatsMap = new Map<string, { coursesCount: number; activeCoursesCount: number; availableDatesCount: number }>();
+  // Wrapped in try-catch to not block partner list if Magento is slow/unavailable
+  const courseStatsMap = new Map<string, { coursesCount: number; activeCoursesCount: number; availableDatesCount: number }>();
 
   if (allUniqueCustomerNumbers.size > 0) {
-    const customerNumbersArray = Array.from(allUniqueCustomerNumbers);
-    const placeholders = customerNumbersArray.map(() => '?').join(', ');
+    try {
+      const customerNumbersArray = Array.from(allUniqueCustomerNumbers);
+      const placeholders = customerNumbersArray.map(() => '?').join(', ');
 
-    const courseStats = await query<Array<{
-      customernumber: string;
-      courses_count: number;
-      active_courses_count: number;
-      available_dates_count: number;
-    } & RowDataPacket>>(`
-      SELECT
-        op.customernumber,
-        COUNT(DISTINCT cpe.entity_id) as courses_count,
-        COUNT(DISTINCT CASE WHEN cpei_status.value = 1 THEN cpe.entity_id END) as active_courses_count,
-        (
-          SELECT COUNT(*)
-          FROM catalog_product_entity AS s
-          INNER JOIN catalog_product_super_link AS sl ON s.entity_id = sl.product_id
-          INNER JOIN catalog_product_entity AS parent ON sl.parent_id = parent.entity_id
-          INNER JOIN catalog_product_entity_varchar AS pop ON parent.entity_id = pop.entity_id
-            AND pop.attribute_id = 700 AND pop.store_id = 0
-          INNER JOIN miomente_pdf_operator AS op2 ON pop.value = op2.operator_id
-          INNER JOIN catalog_product_entity_varchar AS sn ON s.entity_id = sn.entity_id
-            AND sn.attribute_id = 60 AND sn.store_id = 0
-          INNER JOIN catalog_product_entity_varchar AS sb ON s.entity_id = sb.entity_id
-            AND sb.attribute_id = 717 AND sb.store_id = 0
-          WHERE op2.customernumber = op.customernumber
-            AND s.type_id = 'simple'
-            AND sb.value IS NOT NULL
-            AND STR_TO_DATE(
-              CONCAT(SUBSTRING_INDEX(sn.value, '-', -3), ' ', sb.value),
-              '%Y-%m-%d %H:%i'
-            ) > NOW()
-        ) as available_dates_count
-      FROM miomente_pdf_operator AS op
-      INNER JOIN catalog_product_entity_varchar AS cpev_operator
-        ON cpev_operator.value = op.operator_id
-        AND cpev_operator.attribute_id = 700
-        AND cpev_operator.store_id = 0
-      INNER JOIN catalog_product_entity AS cpe
-        ON cpev_operator.entity_id = cpe.entity_id
-        AND cpe.type_id = 'configurable'
-      LEFT JOIN catalog_product_entity_int AS cpei_status
-        ON cpe.entity_id = cpei_status.entity_id
-        AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
-        AND cpei_status.store_id = 0
-      WHERE op.customernumber IN (${placeholders})
-      GROUP BY op.customernumber
-    `, customerNumbersArray);
+      // Simplified query without the expensive available_dates_count subquery
+      const courseStats = await query<Array<{
+        customernumber: string;
+        courses_count: number;
+        active_courses_count: number;
+      } & RowDataPacket>>(`
+        SELECT
+          op.customernumber,
+          COUNT(DISTINCT cpe.entity_id) as courses_count,
+          COUNT(DISTINCT CASE WHEN cpei_status.value = 1 THEN cpe.entity_id END) as active_courses_count
+        FROM miomente_pdf_operator AS op
+        INNER JOIN catalog_product_entity_varchar AS cpev_operator
+          ON cpev_operator.value = op.operator_id
+          AND cpev_operator.attribute_id = 700
+          AND cpev_operator.store_id = 0
+        INNER JOIN catalog_product_entity AS cpe
+          ON cpev_operator.entity_id = cpe.entity_id
+          AND cpe.type_id = 'configurable'
+        LEFT JOIN catalog_product_entity_int AS cpei_status
+          ON cpe.entity_id = cpei_status.entity_id
+          AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
+          AND cpei_status.store_id = 0
+        WHERE op.customernumber IN (${placeholders})
+        GROUP BY op.customernumber
+      `, customerNumbersArray);
 
-    courseStats.forEach(stat => {
-      courseStatsMap.set(stat.customernumber, {
-        coursesCount: stat.courses_count,
-        activeCoursesCount: stat.active_courses_count,
-        availableDatesCount: stat.available_dates_count,
+      courseStats.forEach(stat => {
+        courseStatsMap.set(stat.customernumber, {
+          coursesCount: stat.courses_count,
+          activeCoursesCount: stat.active_courses_count,
+          availableDatesCount: 0, // Skip expensive calculation for list view
+        });
       });
-    });
+    } catch (error) {
+      console.error('[getAllPortalPartners] Magento query failed, returning partners without course stats:', error);
+      // Continue without course stats - partners will show 0 courses
+    }
   }
 
   // Get pending request counts
@@ -407,52 +393,41 @@ export async function getPortalPartnerById(userId: string): Promise<PortalPartne
   }
 
   // Get course stats from Magento
-  const placeholders = customerNumbers.map(() => '?').join(', ');
+  // Wrapped in try-catch to not block if Magento is slow/unavailable
+  let stats = { courses_count: 0, active_courses_count: 0, available_dates_count: 0 };
 
-  const courseStats = await query<Array<{
-    courses_count: number;
-    active_courses_count: number;
-    available_dates_count: number;
-  } & RowDataPacket>>(`
-    SELECT
-      COUNT(DISTINCT cpe.entity_id) as courses_count,
-      COUNT(DISTINCT CASE WHEN cpei_status.value = 1 THEN cpe.entity_id END) as active_courses_count,
-      (
-        SELECT COUNT(*)
-        FROM catalog_product_entity AS s
-        INNER JOIN catalog_product_super_link AS sl ON s.entity_id = sl.product_id
-        INNER JOIN catalog_product_entity AS parent ON sl.parent_id = parent.entity_id
-        INNER JOIN catalog_product_entity_varchar AS pop ON parent.entity_id = pop.entity_id
-          AND pop.attribute_id = 700 AND pop.store_id = 0
-        INNER JOIN miomente_pdf_operator AS op2 ON pop.value = op2.operator_id
-        INNER JOIN catalog_product_entity_varchar AS sn ON s.entity_id = sn.entity_id
-          AND sn.attribute_id = 60 AND sn.store_id = 0
-        INNER JOIN catalog_product_entity_varchar AS sb ON s.entity_id = sb.entity_id
-          AND sb.attribute_id = 717 AND sb.store_id = 0
-        WHERE op2.customernumber IN (${placeholders})
-          AND s.type_id = 'simple'
-          AND sb.value IS NOT NULL
-          AND STR_TO_DATE(
-            CONCAT(SUBSTRING_INDEX(sn.value, '-', -3), ' ', sb.value),
-            '%Y-%m-%d %H:%i'
-          ) > NOW()
-      ) as available_dates_count
-    FROM miomente_pdf_operator AS op
-    INNER JOIN catalog_product_entity_varchar AS cpev_operator
-      ON cpev_operator.value = op.operator_id
-      AND cpev_operator.attribute_id = 700
-      AND cpev_operator.store_id = 0
-    INNER JOIN catalog_product_entity AS cpe
-      ON cpev_operator.entity_id = cpe.entity_id
-      AND cpe.type_id = 'configurable'
-    LEFT JOIN catalog_product_entity_int AS cpei_status
-      ON cpe.entity_id = cpei_status.entity_id
-      AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
-      AND cpei_status.store_id = 0
-    WHERE op.customernumber IN (${placeholders})
-  `, [...customerNumbers, ...customerNumbers]);
+  try {
+    const placeholders = customerNumbers.map(() => '?').join(', ');
 
-  const stats = courseStats[0] || { courses_count: 0, active_courses_count: 0, available_dates_count: 0 };
+    const courseStats = await query<Array<{
+      courses_count: number;
+      active_courses_count: number;
+    } & RowDataPacket>>(`
+      SELECT
+        COUNT(DISTINCT cpe.entity_id) as courses_count,
+        COUNT(DISTINCT CASE WHEN cpei_status.value = 1 THEN cpe.entity_id END) as active_courses_count
+      FROM miomente_pdf_operator AS op
+      INNER JOIN catalog_product_entity_varchar AS cpev_operator
+        ON cpev_operator.value = op.operator_id
+        AND cpev_operator.attribute_id = 700
+        AND cpev_operator.store_id = 0
+      INNER JOIN catalog_product_entity AS cpe
+        ON cpev_operator.entity_id = cpe.entity_id
+        AND cpe.type_id = 'configurable'
+      LEFT JOIN catalog_product_entity_int AS cpei_status
+        ON cpe.entity_id = cpei_status.entity_id
+        AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
+        AND cpei_status.store_id = 0
+      WHERE op.customernumber IN (${placeholders})
+    `, customerNumbers);
+
+    if (courseStats[0]) {
+      stats = { ...courseStats[0], available_dates_count: 0 };
+    }
+  } catch (error) {
+    console.error('[getPortalPartnerById] Magento query failed:', error);
+    // Continue with 0 stats
+  }
 
   // Get pending request count
   const pendingCounts = await getPendingRequestCountsByUserId();
