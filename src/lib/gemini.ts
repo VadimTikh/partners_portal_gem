@@ -274,7 +274,8 @@ Return a JSON object with EXACTLY this structure:
   "sentiment": "angry" | "frustrated" | "neutral" | "positive",
   "satisfactionLevel": 1-5,
   "aiIsResolved": true | false,
-  "lastMessageAuthorType": "support_team" | "customer" | "partner"
+  "lastMessageAuthorType": "support_team" | "customer" | "partner",
+  "isB2B": true | false
 }
 
 Intent guidelines:
@@ -306,7 +307,11 @@ Resolution status (aiIsResolved):
 Last message author type (lastMessageAuthorType):
 - "support_team" = Last message was from Miomente staff (internal notes, responses)
 - "customer" = Last message was from the end customer (voucher buyer, person making inquiry)
-- "partner" = Last message was from a partner (chef, venue operator)`;
+- "partner" = Last message was from a partner (chef, venue operator)
+
+B2B detection (isB2B):
+- true = Business customer indicators: company name mentioned, corporate order, bulk purchase, multiple vouchers, business email domain, mentions of employees/team/company event, invoice request, VAT/tax number mentioned
+- false = Individual consumer (personal use, gift, single voucher, no business indicators)`;
 }
 
 // ============================================
@@ -416,6 +421,9 @@ function validatePhase2Response(raw: unknown, phase1: TicketAIAnalysisPhase1): E
     ? (data.lastMessageAuthorType as MessageAuthorType)
     : undefined;
 
+  // Validate isB2B
+  const isB2B = typeof data.isB2B === 'boolean' ? data.isB2B : undefined;
+
   return {
     ...phase1,
     summary: String(data.summary || 'Unable to generate summary'),
@@ -425,6 +433,7 @@ function validatePhase2Response(raw: unknown, phase1: TicketAIAnalysisPhase1): E
     satisfactionLevel,
     aiIsResolved,
     lastMessageAuthorType,
+    isB2B,
   };
 }
 

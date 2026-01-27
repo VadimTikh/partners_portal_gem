@@ -52,6 +52,7 @@ interface AIAnalysisRow {
   satisfaction_level: number | null;
   ai_is_resolved: boolean | null;
   last_message_author_type: string | null;
+  is_b2b: boolean | null;
   created_at: string;
   updated_at: string;
 }
@@ -90,6 +91,7 @@ function transformAnalysisRow(row: AIAnalysisRow): StoredTicketAnalysis {
     satisfactionLevel: row.satisfaction_level as SatisfactionLevel | null,
     aiIsResolved: row.ai_is_resolved,
     lastMessageAuthorType: row.last_message_author_type as MessageAuthorType | null,
+    isB2B: row.is_b2b,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -304,16 +306,16 @@ export async function upsertTicketAnalysis(
       urgency, urgency_reason, category, category_confidence,
       extracted_data, language,
       summary, customer_intent, action_required, sentiment,
-      satisfaction_level, ai_is_resolved, last_message_author_type
+      satisfaction_level, ai_is_resolved, last_message_author_type, is_b2b
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
     ON CONFLICT (ticket_id)
     DO UPDATE SET
       ticket_write_date = $2,
       urgency = $3, urgency_reason = $4, category = $5, category_confidence = $6,
       extracted_data = $7, language = $8,
       summary = $9, customer_intent = $10, action_required = $11, sentiment = $12,
-      satisfaction_level = $13, ai_is_resolved = $14, last_message_author_type = $15,
+      satisfaction_level = $13, ai_is_resolved = $14, last_message_author_type = $15, is_b2b = $16,
       analyzed_at = CURRENT_TIMESTAMP,
       updated_at = CURRENT_TIMESTAMP
     RETURNING *`,
@@ -333,6 +335,7 @@ export async function upsertTicketAnalysis(
       analysis.satisfactionLevel || null,
       analysis.aiIsResolved ?? null,
       analysis.lastMessageAuthorType || null,
+      analysis.isB2B ?? null,
     ]
   );
 
@@ -364,7 +367,7 @@ export async function upsertTicketAnalysesBatch(
 
   for (const { ticketId, analysis, ticketWriteDate } of analyses) {
     valuePlaceholders.push(
-      `($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3}, $${paramIndex + 4}, $${paramIndex + 5}, $${paramIndex + 6}, $${paramIndex + 7}, $${paramIndex + 8}, $${paramIndex + 9}, $${paramIndex + 10}, $${paramIndex + 11}, $${paramIndex + 12}, $${paramIndex + 13}, $${paramIndex + 14})`
+      `($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3}, $${paramIndex + 4}, $${paramIndex + 5}, $${paramIndex + 6}, $${paramIndex + 7}, $${paramIndex + 8}, $${paramIndex + 9}, $${paramIndex + 10}, $${paramIndex + 11}, $${paramIndex + 12}, $${paramIndex + 13}, $${paramIndex + 14}, $${paramIndex + 15})`
     );
     values.push(
       ticketId,
@@ -381,9 +384,10 @@ export async function upsertTicketAnalysesBatch(
       analysis.sentiment || null,
       analysis.satisfactionLevel || null,
       analysis.aiIsResolved ?? null,
-      analysis.lastMessageAuthorType || null
+      analysis.lastMessageAuthorType || null,
+      analysis.isB2B ?? null
     );
-    paramIndex += 15;
+    paramIndex += 16;
   }
 
   const rows = await queryAll<AIAnalysisRow>(
@@ -392,7 +396,7 @@ export async function upsertTicketAnalysesBatch(
       urgency, urgency_reason, category, category_confidence,
       extracted_data, language,
       summary, customer_intent, action_required, sentiment,
-      satisfaction_level, ai_is_resolved, last_message_author_type
+      satisfaction_level, ai_is_resolved, last_message_author_type, is_b2b
     )
     VALUES ${valuePlaceholders.join(', ')}
     ON CONFLICT (ticket_id)
@@ -411,6 +415,7 @@ export async function upsertTicketAnalysesBatch(
       satisfaction_level = EXCLUDED.satisfaction_level,
       ai_is_resolved = EXCLUDED.ai_is_resolved,
       last_message_author_type = EXCLUDED.last_message_author_type,
+      is_b2b = EXCLUDED.is_b2b,
       analyzed_at = CURRENT_TIMESTAMP,
       updated_at = CURRENT_TIMESTAMP
     RETURNING *`,
@@ -486,6 +491,7 @@ export async function getTicketIdsByAIFilters(params: {
   aiIsResolved?: boolean;
   lastMessageAuthorType?: MessageAuthorType[];
   awaitingAnswer?: boolean;
+  isB2B?: boolean;
 }): Promise<number[]> {
   const conditions: string[] = [];
   const values: unknown[] = [];
@@ -530,6 +536,13 @@ export async function getTicketIdsByAIFilters(params: {
   // Awaiting answer = last message not from support team (or null, which means unknown)
   if (params.awaitingAnswer) {
     conditions.push(`(last_message_author_type IS NULL OR last_message_author_type != 'support_team')`);
+  }
+
+  // B2B filter
+  if (params.isB2B !== undefined) {
+    conditions.push(`is_b2b = $${paramIndex}`);
+    values.push(params.isB2B);
+    paramIndex++;
   }
 
   if (conditions.length === 0) {

@@ -80,7 +80,8 @@ export function AIFilterDropdowns({
     (filters.aiSentiment?.length || 0) +
     (filters.aiSatisfaction?.length || 0) +
     (filters.aiIsResolved !== undefined ? 1 : 0) +
-    (filters.awaitingAnswer ? 1 : 0);
+    (filters.awaitingAnswer ? 1 : 0) +
+    (filters.isB2B ? 1 : 0);
 
   const handleToggleArrayFilter = <T extends string | number>(
     field: keyof AITicketFilters,
@@ -105,6 +106,7 @@ export function AIFilterDropdowns({
       aiSatisfaction: undefined,
       aiIsResolved: undefined,
       awaitingAnswer: undefined,
+      isB2B: undefined,
     });
   };
 
@@ -324,6 +326,23 @@ export function AIFilterDropdowns({
             <span className="text-sm font-medium">
               {(helpdesk?.awaitingAnswer as string) ||
                 'Awaiting Answer (Last message not from support)'}
+            </span>
+          </label>
+
+          {/* B2B Filter */}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox
+              checked={filters.isB2B || false}
+              onCheckedChange={(checked) =>
+                onFiltersChange({
+                  ...filters,
+                  isB2B: checked ? true : undefined,
+                })
+              }
+            />
+            <span className="text-sm font-medium">
+              {(helpdesk?.b2bOnly as string) ||
+                'B2B Only (Business customers)'}
             </span>
           </label>
         </div>

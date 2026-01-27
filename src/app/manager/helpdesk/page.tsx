@@ -23,7 +23,6 @@ import { AIAnalysisBatchModal } from './components/AIAnalysisBatchModal';
 import { UltraAnalysisModal } from './components/UltraAnalysisModal';
 import { AskAIModal } from './components/AskAIModal';
 import { AIFilterDropdowns } from './components/AIFilterDropdowns';
-import { AIFilterInput } from './components/AIFilterInput';
 import { ExportPDFButton } from './components/ExportPDFButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -225,11 +224,6 @@ export default function HelpdeskPage() {
   const [aiFilters, setAIFilters] = useState<Partial<AITicketFilters>>({});
   const pageSize = 25;
 
-  // AI Chat Filter state
-  const [aiChatFilterIds, setAiChatFilterIds] = useState<number[] | null>(null);
-  const [aiChatFilterInterpretation, setAiChatFilterInterpretation] = useState<string>('');
-  const [allTickets, setAllTickets] = useState<Array<{ id: number; name: string }>>([]);
-
   // Load filter preferences on mount
   const { data: settingsData } = useQuery({
     queryKey: ['helpdesk-settings'],
@@ -340,23 +334,10 @@ export default function HelpdeskPage() {
       aiSatisfaction: aiFilters.aiSatisfaction,
       aiIsResolved: aiFilters.aiIsResolved,
       aiAwaitingAnswer: aiFilters.awaitingAnswer,
+      isB2B: aiFilters.isB2B,
     }),
     enabled: hasHydrated,
   });
-
-  // Update allTickets when ticketIdsData changes
-  useEffect(() => {
-    if (ticketIdsData) {
-      // Use tickets array if available, fallback to creating from ticketIds
-      const tickets = ticketIdsData.tickets ||
-        ticketIdsData.ticketIds?.map((id: number) => ({ id, name: '' })) ||
-        [];
-      setAllTickets(tickets);
-      // Clear AI chat filter when base filters change
-      setAiChatFilterIds(null);
-      setAiChatFilterInterpretation('');
-    }
-  }, [ticketIdsData]);
 
   const handleResetFilters = () => {
     setPeriod('30d');
@@ -367,22 +348,7 @@ export default function HelpdeskPage() {
     setPendingStageIds([]);
     setCurrentPage(0);
     setAIFilters({});
-    // Clear AI chat filter
-    setAiChatFilterIds(null);
-    setAiChatFilterInterpretation('');
   };
-
-  // AI Chat Filter handlers
-  const handleAiChatFilter = useCallback((matchingIds: number[], interpretation: string) => {
-    setAiChatFilterIds(matchingIds);
-    setAiChatFilterInterpretation(interpretation);
-    setCurrentPage(0);
-  }, []);
-
-  const handleClearAiChatFilter = useCallback(() => {
-    setAiChatFilterIds(null);
-    setAiChatFilterInterpretation('');
-  }, []);
 
   const handleStageToggle = (stageId: number) => {
     setPendingStageIds((prev) =>
@@ -428,15 +394,11 @@ export default function HelpdeskPage() {
     ? `${totalAnalyzedCount}/${totalFilteredTickets} analyzed`
     : undefined;
 
-  // Apply AI chat filter to displayed tickets (client-side filtering)
-  const displayedTickets = aiChatFilterIds !== null && data?.tickets
-    ? data.tickets.filter(ticket => aiChatFilterIds.includes(ticket.id))
-    : data?.tickets || [];
+  // Displayed tickets from server response
+  const displayedTickets = data?.tickets || [];
 
-  // Calculate displayed ticket count (respects AI chat filter)
-  const displayedTicketCount = aiChatFilterIds !== null
-    ? aiChatFilterIds.length
-    : data?.pagination.total || 0;
+  // Total ticket count from server pagination
+  const displayedTicketCount = data?.pagination.total || 0;
 
   return (
     <div className="space-y-6">
@@ -656,22 +618,10 @@ export default function HelpdeskPage() {
                   onComplete={() => refetch()}
                 />
                 <ExportPDFButton
-                  ticketIds={aiChatFilterIds || allTickets.map(t => t.id)}
-                  disabled={isLoading || allTickets.length === 0}
+                  ticketIds={ticketIdsData?.ticketIds || []}
+                  disabled={isLoading || !ticketIdsData?.ticketIds?.length}
                 />
               </div>
-            </div>
-            {/* Ticket Name Search Filter */}
-            <div className="mt-4">
-              <AIFilterInput
-                onFilter={handleAiChatFilter}
-                onClear={handleClearAiChatFilter}
-                isActive={aiChatFilterIds !== null}
-                interpretation={aiChatFilterInterpretation}
-                tickets={allTickets}
-                matchCount={aiChatFilterIds?.length}
-                disabled={isLoading || allTickets.length === 0}
-              />
             </div>
           </div>
         </CardContent>
@@ -683,11 +633,6 @@ export default function HelpdeskPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">
               {(helpdesk?.tickets as string) || 'Tickets'} ({displayedTicketCount})
-              {aiChatFilterIds !== null && data?.pagination.total && displayedTicketCount !== data.pagination.total && (
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  (filtered from {data.pagination.total})
-                </span>
-              )}
             </CardTitle>
           </div>
         </CardHeader>

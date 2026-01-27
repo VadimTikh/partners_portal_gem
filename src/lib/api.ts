@@ -702,6 +702,7 @@ export const api = {
     aiIsResolved?: boolean;
     aiAwaitingAnswer?: boolean;
     lastMessageAuthorType?: MessageAuthorType[];
+    isB2B?: boolean;
     // Special filter: only return tickets without AI analysis
     onlyUnanalyzed?: boolean;
   } = {}): Promise<{
@@ -726,6 +727,7 @@ export const api = {
     if (params.aiIsResolved !== undefined) searchParams.set('aiIsResolved', params.aiIsResolved.toString());
     if (params.aiAwaitingAnswer) searchParams.set('aiAwaitingAnswer', 'true');
     if (params.lastMessageAuthorType?.length) searchParams.set('aiAuthorType', params.lastMessageAuthorType.join(','));
+    if (params.isB2B !== undefined) searchParams.set('isB2B', params.isB2B.toString());
     // Special filter for only unanalyzed tickets
     if (params.onlyUnanalyzed) searchParams.set('onlyUnanalyzed', 'true');
 

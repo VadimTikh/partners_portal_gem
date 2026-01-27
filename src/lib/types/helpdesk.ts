@@ -375,6 +375,7 @@ export interface ExtendedAIAnalysis extends TicketAIAnalysisPhase2 {
   satisfactionLevel?: SatisfactionLevel;
   aiIsResolved?: boolean;
   lastMessageAuthorType?: MessageAuthorType;
+  isB2B?: boolean;  // Business-to-business customer (company, corporate order, bulk purchase)
 }
 
 /**
@@ -404,6 +405,7 @@ export interface StoredTicketAnalysis {
   satisfactionLevel: SatisfactionLevel | null;
   aiIsResolved: boolean | null;
   lastMessageAuthorType: MessageAuthorType | null;
+  isB2B: boolean | null;  // Business-to-business customer
 
   // Computed field (not in DB)
   isStale?: boolean;  // ticket.write_date > analyzed_at
@@ -456,6 +458,7 @@ export interface AITicketFilters extends TicketFilters {
   awaitingAnswer?: boolean;  // Where last author != support_team
   staleOnly?: boolean;  // Only tickets with outdated analysis
   hasAnalysis?: boolean;  // Only tickets with AI analysis
+  isB2B?: boolean;  // Business-to-business customers only
 }
 
 /**

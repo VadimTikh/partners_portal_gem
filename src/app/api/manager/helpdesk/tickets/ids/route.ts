@@ -85,6 +85,7 @@ export async function GET(request: NextRequest) {
       const aiIsResolvedParam = searchParams.get('aiIsResolved');
       const aiAwaitingAnswerParam = searchParams.get('aiAwaitingAnswer');
       const aiAuthorTypeParam = searchParams.get('aiAuthorType');
+      const isB2BParam = searchParams.get('isB2B');
 
       const stageIds = stageIdsParam
         ? stageIdsParam.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id))
@@ -121,9 +122,13 @@ export async function GET(request: NextRequest) {
         ? aiAuthorTypeParam.split(',').filter(v => ['support_team', 'customer', 'partner'].includes(v)) as MessageAuthorType[]
         : undefined;
 
+      const isB2B = isB2BParam !== null
+        ? isB2BParam === 'true'
+        : undefined;
+
       // Check if any AI filters are applied
       const hasAIFilters = aiUrgency?.length || aiCategory?.length || aiSentiment?.length ||
-        aiSatisfaction?.length || aiIsResolved !== undefined || aiAwaitingAnswer || aiAuthorType?.length;
+        aiSatisfaction?.length || aiIsResolved !== undefined || aiAwaitingAnswer || aiAuthorType?.length || isB2B !== undefined;
 
       // If AI filters are applied, get filtered ticket IDs from PostgreSQL first
       let aiFilteredIds: number[] | undefined;
@@ -136,6 +141,7 @@ export async function GET(request: NextRequest) {
           aiIsResolved,
           lastMessageAuthorType: aiAuthorType,
           awaitingAnswer: aiAwaitingAnswer,
+          isB2B,
         });
 
         // If AI filters are active but no tickets match, return empty result
