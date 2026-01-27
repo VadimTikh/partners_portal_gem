@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
       // Fetch ALL tickets matching filters (no limit)
       // We only need the IDs, but getTickets returns full tickets
       // For very large result sets, consider adding a dedicated Odoo function
-      const MAX_TICKETS = 1000; // Safety limit
+      const MAX_TICKETS = 5000; // Safety limit (increased from 1000 to support larger datasets)
       const { tickets, total } = await getTickets({
         ids: aiFilteredIds,
         stageIds,
