@@ -541,6 +541,19 @@ export const dictionaries = {
       downloadPdf: 'PDF herunterladen',
       generatingPdf: 'PDF wird generiert...',
       retry: 'Erneut versuchen',
+      // AI Chat Filter
+      aiFilterPlaceholder: 'KI: Tickets filtern... (z.B. "B2B-Kunden", "Erstattungsanfragen")',
+      matches: 'Treffer',
+      // PDF Export
+      exportPDF: 'PDF exportieren',
+      exportPDFTitle: 'Tickets als PDF exportieren',
+      exportPDFDesc: 'Laden Sie Tickets als PDF-Dokument mit vollständigen Details herunter.',
+      exportTicketCount: '{count} Tickets werden exportiert.',
+      exportWillTruncate: 'Nur die ersten {max} von {total} Tickets werden exportiert.',
+      includeAIAnalysis: 'KI-Analyse einbeziehen',
+      includeMessages: 'Nachrichtenverlauf einbeziehen',
+      exportSuccess: 'PDF erfolgreich heruntergeladen!',
+      exporting: 'PDF wird generiert...',
     },
     // Bookings / Booking Confirmations
     bookings: {
@@ -1159,6 +1172,19 @@ export const dictionaries = {
       downloadPdf: 'Download PDF',
       generatingPdf: 'Generating PDF...',
       retry: 'Retry',
+      // AI Chat Filter
+      aiFilterPlaceholder: "AI: Filter tickets... (e.g., 'B2B customers', 'refund requests')",
+      matches: 'matches',
+      // PDF Export
+      exportPDF: 'Export PDF',
+      exportPDFTitle: 'Export Tickets to PDF',
+      exportPDFDesc: 'Download tickets as a PDF document with full details.',
+      exportTicketCount: '{count} tickets will be exported.',
+      exportWillTruncate: 'Only first {max} of {total} tickets will be exported.',
+      includeAIAnalysis: 'Include AI Analysis',
+      includeMessages: 'Include Message Thread',
+      exportSuccess: 'PDF downloaded successfully!',
+      exporting: 'Generating PDF...',
     },
     // Bookings / Booking Confirmations
     bookings: {
@@ -1771,6 +1797,19 @@ export const dictionaries = {
       downloadPdf: 'Завантажити PDF',
       generatingPdf: 'Генерація PDF...',
       retry: 'Повторити',
+      // AI Chat Filter
+      aiFilterPlaceholder: "ШІ: Фільтрувати тікети... (напр., 'B2B клієнти', 'запити на повернення')",
+      matches: 'збігів',
+      // PDF Export
+      exportPDF: 'Експорт PDF',
+      exportPDFTitle: 'Експортувати тікети в PDF',
+      exportPDFDesc: 'Завантажте тікети як PDF-документ з повними деталями.',
+      exportTicketCount: '{count} тікетів буде експортовано.',
+      exportWillTruncate: 'Лише перші {max} з {total} тікетів буде експортовано.',
+      includeAIAnalysis: 'Включити ШІ-аналіз',
+      includeMessages: 'Включити переписку',
+      exportSuccess: 'PDF успішно завантажено!',
+      exporting: 'Генерація PDF...',
     },
     // Bookings / Booking Confirmations
     bookings: {

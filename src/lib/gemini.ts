@@ -836,6 +836,168 @@ export async function generateUltraReport(
 }
 
 // ============================================
+// AI Chat Filter
+// ============================================
+
+const FILTER_SYSTEM_INSTRUCTION = `You are an AI assistant helping filter helpdesk tickets for Miomente, a German company that sells culinary experience vouchers and cooking courses.
+
+Context about Miomente:
+- Sells vouchers for cooking courses, wine tastings, and culinary experiences
+- Operates mainly in Germany (German-speaking customers)
+- Partners are the chefs/venues who run the courses
+- Common issues: missing course dates, voucher problems, refund requests, booking changes
+
+You will be given a user's filter query and ticket summaries. Your task is to identify which tickets match the filter criteria.
+
+Examples of filter queries:
+- "B2B customers" -> Look for corporate orders, business inquiries, bulk orders
+- "angry refund requests" -> Tickets with angry sentiment AND refund_request category
+- "urgent voucher issues" -> High/critical urgency tickets about vouchers
+- "partner problems" -> Issues involving partners/chefs/venues
+
+Always respond with valid JSON only, no additional text or markdown formatting.`;
+
+/**
+ * Filter ticket summary for AI processing
+ */
+export interface TicketFilterSummary {
+  ticketId: number;
+  category: AICategory;
+  urgency: AIUrgency;
+  sentiment?: AISentiment;
+  summary: string;
+  customerIntent?: AICustomerIntent;
+}
+
+/**
+ * Result of AI-based ticket filtering
+ */
+export interface AIFilterResult {
+  matchingIds: number[];
+  interpretation: string;
+  matchCount: number;
+}
+
+/**
+ * Build prompt for AI ticket filtering
+ */
+function buildFilterPrompt(query: string, tickets: TicketFilterSummary[], language: string): string {
+  const langName = getLanguageName(language);
+
+  const ticketList = tickets.map(t =>
+    `[ID: ${t.ticketId}] Category: ${t.category} | Urgency: ${t.urgency} | Sentiment: ${t.sentiment || 'unknown'} | Intent: ${t.customerIntent || 'unknown'}
+Summary: "${t.summary}"`
+  ).join('\n\n');
+
+  return `Analyze this helpdesk filter query and return matching tickets.
+
+USER QUERY: "${query}"
+
+TICKET SUMMARIES:
+${ticketList}
+
+---
+
+Based on the user's filter query, identify which tickets match the criteria.
+Consider semantic meaning - for example:
+- "B2B" might match tickets mentioning companies, corporate orders, bulk purchases, business inquiries
+- "angry" should match tickets with angry or frustrated sentiment
+- "refund" should match refund_request category or tickets mentioning refunds
+
+Return a JSON object with EXACTLY this structure:
+{
+  "interpretation": "Your understanding of the filter query in ${langName} (e.g., 'Filtering for corporate/B2B customers')",
+  "matchingIds": [123, 456, ...],
+  "reasoning": "Brief explanation of why these tickets match"
+}
+
+If no tickets match, return an empty matchingIds array.
+Be inclusive rather than exclusive - if a ticket might match the criteria, include it.`;
+}
+
+/**
+ * Validate AI filter response
+ */
+function validateFilterResponse(raw: unknown, originalTicketIds: number[]): AIFilterResult {
+  const data = raw as Record<string, unknown>;
+
+  // Validate matchingIds - must be from the original list
+  let matchingIds: number[] = [];
+  if (Array.isArray(data.matchingIds)) {
+    matchingIds = data.matchingIds
+      .filter((id): id is number => typeof id === 'number')
+      .filter(id => originalTicketIds.includes(id));
+  }
+
+  return {
+    matchingIds,
+    interpretation: String(data.interpretation || 'Filter applied'),
+    matchCount: matchingIds.length,
+  };
+}
+
+/**
+ * Filter tickets using AI based on natural language query
+ * @param tickets - Array of ticket summaries to filter
+ * @param query - Natural language filter query (e.g., "B2B customers", "angry refund requests")
+ * @param language - Output language for interpretation (de, en, uk)
+ * @returns Matching ticket IDs and interpretation
+ */
+export async function filterTicketsByQuery(
+  tickets: TicketFilterSummary[],
+  query: string,
+  language: string = 'en'
+): Promise<AIFilterResult> {
+  if (!query.trim()) {
+    return {
+      matchingIds: tickets.map(t => t.ticketId),
+      interpretation: '',
+      matchCount: tickets.length,
+    };
+  }
+
+  // Process in batches if too many tickets (Gemini has context limits)
+  const BATCH_SIZE = 100;
+  const originalIds = tickets.map(t => t.ticketId);
+
+  if (tickets.length <= BATCH_SIZE) {
+    // Single batch processing
+    const prompt = buildFilterPrompt(query, tickets, language);
+    const response = await callGemini(prompt, FILTER_SYSTEM_INSTRUCTION, 4096);
+    const raw = parseGeminiJSON(response);
+    return validateFilterResponse(raw, originalIds);
+  }
+
+  // Multi-batch processing for large ticket sets
+  const allMatchingIds: Set<number> = new Set();
+  let interpretation = '';
+
+  for (let i = 0; i < tickets.length; i += BATCH_SIZE) {
+    const batch = tickets.slice(i, i + BATCH_SIZE);
+    const batchIds = batch.map(t => t.ticketId);
+
+    const prompt = buildFilterPrompt(query, batch, language);
+    const response = await callGemini(prompt, FILTER_SYSTEM_INSTRUCTION, 4096);
+    const raw = parseGeminiJSON(response);
+    const result = validateFilterResponse(raw, batchIds);
+
+    // Collect matching IDs
+    result.matchingIds.forEach(id => allMatchingIds.add(id));
+
+    // Use first interpretation
+    if (!interpretation && result.interpretation) {
+      interpretation = result.interpretation;
+    }
+  }
+
+  return {
+    matchingIds: Array.from(allMatchingIds),
+    interpretation,
+    matchCount: allMatchingIds.size,
+  };
+}
+
+// ============================================
 // Ask AI (Custom Questions)
 // ============================================
 

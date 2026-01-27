@@ -774,6 +774,49 @@ export const api = {
     return response.data;
   },
 
+  /**
+   * Filter tickets using AI based on natural language query.
+   * Analyzes ticket summaries and returns matching ticket IDs.
+   */
+  filterByAIQuery: async (params: {
+    ticketIds: number[];
+    query: string;
+    language?: string;
+  }): Promise<{
+    success: boolean;
+    matchingIds: number[];
+    interpretation: string;
+    matchCount: number;
+  }> => {
+    const response = await apiClient.post('/manager/helpdesk/ai/filter', {
+      ticketIds: params.ticketIds,
+      query: params.query,
+      language: params.language || 'en',
+    });
+    return response.data;
+  },
+
+  /**
+   * Export tickets to PDF.
+   * Returns a PDF file with full ticket details and messages.
+   */
+  exportTicketsPDF: async (params: {
+    ticketIds: number[];
+    includeAnalysis?: boolean;
+    includeMessages?: boolean;
+    language?: string;
+  }): Promise<Blob> => {
+    const response = await apiClient.post('/manager/helpdesk/export/pdf', {
+      ticketIds: params.ticketIds,
+      includeAnalysis: params.includeAnalysis ?? true,
+      includeMessages: params.includeMessages ?? true,
+      language: params.language || 'en',
+    }, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
   // ==================== Manager: Helpdesk Tickets with AI Filters ====================
 
   getHelpdeskTicketsWithAI: async (params: {

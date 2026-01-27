@@ -23,6 +23,8 @@ import { AIAnalysisBatchModal } from './components/AIAnalysisBatchModal';
 import { UltraAnalysisModal } from './components/UltraAnalysisModal';
 import { AskAIModal } from './components/AskAIModal';
 import { AIFilterDropdowns } from './components/AIFilterDropdowns';
+import { AIFilterInput } from './components/AIFilterInput';
+import { ExportPDFButton } from './components/ExportPDFButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -223,6 +225,11 @@ export default function HelpdeskPage() {
   const [aiFilters, setAIFilters] = useState<Partial<AITicketFilters>>({});
   const pageSize = 25;
 
+  // AI Chat Filter state
+  const [aiChatFilterIds, setAiChatFilterIds] = useState<number[] | null>(null);
+  const [aiChatFilterInterpretation, setAiChatFilterInterpretation] = useState<string>('');
+  const [allTicketIds, setAllTicketIds] = useState<number[]>([]);
+
   // Load filter preferences on mount
   const { data: settingsData } = useQuery({
     queryKey: ['helpdesk-settings'],
@@ -318,6 +325,35 @@ export default function HelpdeskPage() {
     enabled: hasHydrated,
   });
 
+  // Fetch all ticket IDs for AI chat filter (separate query, no pagination)
+  const { data: ticketIdsData } = useQuery({
+    queryKey: ['helpdesk-ticket-ids', period, customFrom, customTo, searchQuery, selectedStageIds, aiFilters],
+    queryFn: () => api.getFilteredTicketIds({
+      period,
+      customFrom: period === 'custom' ? customFrom : undefined,
+      customTo: period === 'custom' ? customTo : undefined,
+      stageIds: selectedStageIds.length > 0 ? selectedStageIds : undefined,
+      search: searchQuery || undefined,
+      aiUrgency: aiFilters.aiUrgency,
+      aiCategory: aiFilters.aiCategory,
+      aiSentiment: aiFilters.aiSentiment,
+      aiSatisfaction: aiFilters.aiSatisfaction,
+      aiIsResolved: aiFilters.aiIsResolved,
+      aiAwaitingAnswer: aiFilters.awaitingAnswer,
+    }),
+    enabled: hasHydrated,
+  });
+
+  // Update allTicketIds when ticketIdsData changes
+  useEffect(() => {
+    if (ticketIdsData?.ticketIds) {
+      setAllTicketIds(ticketIdsData.ticketIds);
+      // Clear AI chat filter when base filters change
+      setAiChatFilterIds(null);
+      setAiChatFilterInterpretation('');
+    }
+  }, [ticketIdsData]);
+
   const handleResetFilters = () => {
     setPeriod('30d');
     setCustomFrom('');
@@ -327,7 +363,22 @@ export default function HelpdeskPage() {
     setPendingStageIds([]);
     setCurrentPage(0);
     setAIFilters({});
+    // Clear AI chat filter
+    setAiChatFilterIds(null);
+    setAiChatFilterInterpretation('');
   };
+
+  // AI Chat Filter handlers
+  const handleAiChatFilter = useCallback((matchingIds: number[], interpretation: string) => {
+    setAiChatFilterIds(matchingIds);
+    setAiChatFilterInterpretation(interpretation);
+    setCurrentPage(0);
+  }, []);
+
+  const handleClearAiChatFilter = useCallback(() => {
+    setAiChatFilterIds(null);
+    setAiChatFilterInterpretation('');
+  }, []);
 
   const handleStageToggle = (stageId: number) => {
     setPendingStageIds((prev) =>
@@ -372,6 +423,16 @@ export default function HelpdeskPage() {
   const aiFiltersInfoText = !isLoading && totalFilteredTickets > 0 && !allFilteredTicketsAnalyzed
     ? `${totalAnalyzedCount}/${totalFilteredTickets} analyzed`
     : undefined;
+
+  // Apply AI chat filter to displayed tickets (client-side filtering)
+  const displayedTickets = aiChatFilterIds !== null && data?.tickets
+    ? data.tickets.filter(ticket => aiChatFilterIds.includes(ticket.id))
+    : data?.tickets || [];
+
+  // Calculate displayed ticket count (respects AI chat filter)
+  const displayedTicketCount = aiChatFilterIds !== null
+    ? aiChatFilterIds.length
+    : data?.pagination.total || 0;
 
   return (
     <div className="space-y-6">
@@ -590,7 +651,23 @@ export default function HelpdeskPage() {
                   totalFilteredCount={data?.pagination.total}
                   onComplete={() => refetch()}
                 />
+                <ExportPDFButton
+                  ticketIds={aiChatFilterIds || allTicketIds}
+                  disabled={isLoading || allTicketIds.length === 0}
+                />
               </div>
+            </div>
+            {/* AI Chat Filter */}
+            <div className="mt-4">
+              <AIFilterInput
+                onFilter={handleAiChatFilter}
+                onClear={handleClearAiChatFilter}
+                isActive={aiChatFilterIds !== null}
+                interpretation={aiChatFilterInterpretation}
+                ticketIds={allTicketIds}
+                matchCount={aiChatFilterIds?.length}
+                disabled={isLoading || allTicketIds.length === 0}
+              />
             </div>
           </div>
         </CardContent>
@@ -601,7 +678,12 @@ export default function HelpdeskPage() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">
-              {(helpdesk?.tickets as string) || 'Tickets'} ({data?.pagination.total || 0})
+              {(helpdesk?.tickets as string) || 'Tickets'} ({displayedTicketCount})
+              {aiChatFilterIds !== null && data?.pagination.total && displayedTicketCount !== data.pagination.total && (
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  (filtered from {data.pagination.total})
+                </span>
+              )}
             </CardTitle>
           </div>
         </CardHeader>
@@ -610,7 +692,7 @@ export default function HelpdeskPage() {
             <div className="flex items-center justify-center py-12">
               <p className="text-muted-foreground">{(t.common.loading as string) || 'Loading...'}</p>
             </div>
-          ) : !data?.tickets.length ? (
+          ) : displayedTickets.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <p className="text-muted-foreground">{(helpdesk?.noTickets as string) || 'No tickets found'}</p>
             </div>
@@ -629,12 +711,12 @@ export default function HelpdeskPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.tickets.map((ticket) => (
+                  {displayedTickets.map((ticket) => (
                     <TicketRow
                       key={ticket.id}
                       ticket={ticket}
                       locale={locale}
-                      analysis={data.analysisMap?.[ticket.id]}
+                      analysis={data?.analysisMap?.[ticket.id]}
                     />
                   ))}
                 </TableBody>
@@ -660,7 +742,7 @@ export default function HelpdeskPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage((p) => p + 1)}
-                      disabled={!data.pagination.hasMore}
+                      disabled={!data?.pagination.hasMore}
                     >
                       {(t.common.next as string) || 'Next'}
                       <ChevronRight className="h-4 w-4" />
