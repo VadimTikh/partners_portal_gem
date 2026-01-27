@@ -107,6 +107,8 @@ export function AIAnalysisBatchModal({
 
   const abortRef = useRef(false);
   const isAnalyzingRef = useRef(false);
+  // Ref to track timeout for state reset (prevents race condition on quick reopen)
+  const resetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calculate estimated time remaining based on chunk processing times
   const getEstimatedTimeRemaining = useCallback(() => {
@@ -306,8 +308,12 @@ export function AIAnalysisBatchModal({
       abortRef.current = true;
     }
     setOpen(false);
+    // Clear any existing timeout
+    if (resetTimeoutRef.current) {
+      clearTimeout(resetTimeoutRef.current);
+    }
     // Reset state after close animation
-    setTimeout(() => {
+    resetTimeoutRef.current = setTimeout(() => {
       setState('idle');
       setMode('all_filtered');
       setProgress({
@@ -323,6 +329,7 @@ export function AIAnalysisBatchModal({
         chunkTimes: [],
       });
       setSkipAnalyzed(true);
+      resetTimeoutRef.current = null;
     }, 300);
   }, [state]);
 
@@ -330,6 +337,11 @@ export function AIAnalysisBatchModal({
     if (!newOpen) {
       handleClose();
     } else {
+      // Clear pending reset timeout when reopening quickly
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+        resetTimeoutRef.current = null;
+      }
       setOpen(true);
     }
   }, [handleClose]);
@@ -611,9 +623,11 @@ export function AIAnalysisBatchModal({
                   <Clock className="h-4 w-4 inline mr-1" />
                   {(helpdesk?.totalTime as string) || 'Total time:'}{' '}
                   {formatTimeRemaining((Date.now() - progress.startTime) / 1000)}
-                  <span className="ml-2">
-                    (~{((Date.now() - progress.startTime) / 1000 / progress.total).toFixed(1)}s/{(helpdesk?.perTicket as string) || 'ticket'})
-                  </span>
+                  {progress.total > 0 && (
+                    <span className="ml-2">
+                      (~{((Date.now() - progress.startTime) / 1000 / progress.total).toFixed(1)}s/{(helpdesk?.perTicket as string) || 'ticket'})
+                    </span>
+                  )}
                 </div>
 
                 {/* Error details */}

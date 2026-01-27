@@ -148,8 +148,12 @@ function buildAggregatedData(
   const summariesByCategory = new Map<AICategory, StoredTicketAnalysis[]>();
   for (const a of analyses) {
     if (a.category && a.summary) {
-      const existing = summariesByCategory.get(a.category) || [];
-      summariesByCategory.set(a.category, [...existing, a]);
+      const existing = summariesByCategory.get(a.category);
+      if (existing) {
+        existing.push(a);
+      } else {
+        summariesByCategory.set(a.category, [a]);
+      }
     }
   }
 

@@ -527,9 +527,9 @@ export async function getTicketIdsByAIFilters(params: {
     paramIndex++;
   }
 
-  // Awaiting answer = last message not from support team
+  // Awaiting answer = last message not from support team (or null, which means unknown)
   if (params.awaitingAnswer) {
-    conditions.push(`last_message_author_type != 'support_team'`);
+    conditions.push(`(last_message_author_type IS NULL OR last_message_author_type != 'support_team')`);
   }
 
   if (conditions.length === 0) {

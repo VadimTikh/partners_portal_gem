@@ -492,6 +492,7 @@ export const dictionaries = {
       skipped: 'Übersprungen',
       // AI Filters
       aiFilters: 'KI-Filter',
+      aiFiltersTooltip: 'KI-Filter wirken sich nur auf analysierte Tickets aus',
       clearFilters: 'Filter löschen',
       filterByUrgency: 'Dringlichkeit',
       filterByCategory: 'Kategorie',
@@ -1109,6 +1110,7 @@ export const dictionaries = {
       skipped: 'Skipped',
       // AI Filters
       aiFilters: 'AI Filters',
+      aiFiltersTooltip: 'AI filters will only affect analyzed tickets',
       clearFilters: 'Clear Filters',
       filterByUrgency: 'Urgency',
       filterByCategory: 'Category',
@@ -1720,6 +1722,7 @@ export const dictionaries = {
       skipped: 'Пропущено',
       // AI Filters
       aiFilters: 'ШІ-фільтри',
+      aiFiltersTooltip: 'ШІ-фільтри впливатимуть лише на проаналізовані тікети',
       clearFilters: 'Очистити фільтри',
       filterByUrgency: 'Терміновість',
       filterByCategory: 'Категорія',

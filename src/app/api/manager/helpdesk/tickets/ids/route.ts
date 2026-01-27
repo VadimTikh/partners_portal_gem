@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
         : undefined;
 
       const aiSentiment = aiSentimentParam
-        ? aiSentimentParam.split(',').filter(v => ['angry', 'frustrated', 'neutral', 'satisfied', 'grateful'].includes(v)) as AISentiment[]
+        ? aiSentimentParam.split(',').filter(v => ['angry', 'frustrated', 'neutral', 'positive'].includes(v)) as AISentiment[]
         : undefined;
 
       const aiSatisfaction = aiSatisfactionParam

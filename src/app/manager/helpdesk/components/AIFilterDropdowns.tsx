@@ -127,7 +127,7 @@ export function AIFilterDropdowns({
             )}
             {/* Show info text (e.g., "X/Y analyzed") when not all tickets are analyzed */}
             {!disabled && infoText && (
-              <span className="text-xs text-muted-foreground ml-1" title="AI filters will only affect analyzed tickets">
+              <span className="text-xs text-muted-foreground ml-1" title={(helpdesk?.aiFiltersTooltip as string) || 'AI filters will only affect analyzed tickets'}>
                 ({infoText})
               </span>
             )}
