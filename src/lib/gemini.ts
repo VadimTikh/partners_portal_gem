@@ -963,7 +963,7 @@ export async function filterTicketsByQuery(
   if (tickets.length <= BATCH_SIZE) {
     // Single batch processing
     const prompt = buildFilterPrompt(query, tickets, language);
-    const response = await callGemini(prompt, FILTER_SYSTEM_INSTRUCTION, 4096);
+    const response = await callGemini(prompt, FILTER_SYSTEM_INSTRUCTION, 8192);
     const raw = parseGeminiJSON(response);
     return validateFilterResponse(raw, originalIds);
   }
@@ -977,7 +977,7 @@ export async function filterTicketsByQuery(
     const batchIds = batch.map(t => t.ticketId);
 
     const prompt = buildFilterPrompt(query, batch, language);
-    const response = await callGemini(prompt, FILTER_SYSTEM_INSTRUCTION, 4096);
+    const response = await callGemini(prompt, FILTER_SYSTEM_INSTRUCTION, 8192);
     const raw = parseGeminiJSON(response);
     const result = validateFilterResponse(raw, batchIds);
 
