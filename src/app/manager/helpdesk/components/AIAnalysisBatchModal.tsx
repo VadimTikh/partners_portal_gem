@@ -163,6 +163,8 @@ export function AIAnalysisBatchModal({
           aiSatisfaction: filterParams.aiFilters?.aiSatisfaction,
           aiIsResolved: filterParams.aiFilters?.aiIsResolved,
           aiAwaitingAnswer: filterParams.aiFilters?.awaitingAnswer,
+          // Filter out already analyzed tickets on the backend when skipAnalyzed is true
+          onlyUnanalyzed: skipAnalyzed,
         });
         ticketIds = fetchedIds;
 

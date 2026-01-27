@@ -702,6 +702,8 @@ export const api = {
     aiIsResolved?: boolean;
     aiAwaitingAnswer?: boolean;
     lastMessageAuthorType?: MessageAuthorType[];
+    // Special filter: only return tickets without AI analysis
+    onlyUnanalyzed?: boolean;
   } = {}): Promise<{
     success: boolean;
     ticketIds: number[];
@@ -723,6 +725,8 @@ export const api = {
     if (params.aiIsResolved !== undefined) searchParams.set('aiIsResolved', params.aiIsResolved.toString());
     if (params.aiAwaitingAnswer) searchParams.set('aiAwaitingAnswer', 'true');
     if (params.lastMessageAuthorType?.length) searchParams.set('aiAuthorType', params.lastMessageAuthorType.join(','));
+    // Special filter for only unanalyzed tickets
+    if (params.onlyUnanalyzed) searchParams.set('onlyUnanalyzed', 'true');
 
     const response = await apiClient.get(`/manager/helpdesk/tickets/ids?${searchParams.toString()}`);
     return response.data;
@@ -744,6 +748,28 @@ export const api = {
       ticketIds: params.ticketIds,
       language: params.language || 'en',
       period: params.period,
+    });
+    return response.data;
+  },
+
+  /**
+   * Ask AI a custom question about helpdesk ticket data.
+   * Uses aggregated analysis data to answer the question.
+   */
+  askAI: async (params: {
+    ticketIds: number[];
+    question: string;
+    language?: string;
+  }): Promise<{
+    success: boolean;
+    answer: string;
+    ticketCount: number;
+    analyzedCount: number;
+  }> => {
+    const response = await apiClient.post('/manager/helpdesk/ai/ask', {
+      ticketIds: params.ticketIds,
+      question: params.question,
+      language: params.language || 'en',
     });
     return response.data;
   },

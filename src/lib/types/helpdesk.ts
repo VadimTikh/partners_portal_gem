@@ -579,3 +579,25 @@ export interface UltraAnalysisAggregatedData {
     sentiment?: AISentiment;
   }>;
 }
+
+// ============================================
+// Ask AI Types (Custom Reports)
+// ============================================
+
+/**
+ * Request for "Ask AI" custom report feature
+ */
+export interface AskAIRequest {
+  ticketIds: number[];
+  question: string;
+  language?: string;
+}
+
+/**
+ * Response from "Ask AI" custom report feature
+ */
+export interface AskAIResponse {
+  answer: string;
+  ticketCount: number;
+  analyzedCount: number;
+}

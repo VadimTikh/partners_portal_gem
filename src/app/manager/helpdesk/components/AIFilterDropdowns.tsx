@@ -24,7 +24,7 @@ interface AIFilterDropdownsProps {
   filters: Partial<AITicketFilters>;
   onFiltersChange: (filters: Partial<AITicketFilters>) => void;
   disabled?: boolean;
-  disabledReason?: string;
+  infoText?: string;  // Informational text (e.g., "X/Y analyzed") - not blocking
 }
 
 const URGENCY_OPTIONS: { value: AIUrgency; labelKey: string; color: string }[] = [
@@ -67,7 +67,7 @@ export function AIFilterDropdowns({
   filters,
   onFiltersChange,
   disabled = false,
-  disabledReason,
+  infoText,
 }: AIFilterDropdownsProps) {
   const { t } = useI18n();
   const helpdesk = t.helpdesk as Record<string, unknown> | undefined;
@@ -116,7 +116,6 @@ export function AIFilterDropdowns({
           size="sm"
           className={`w-full justify-between ${disabled ? 'opacity-60' : ''}`}
           disabled={disabled}
-          title={disabled ? disabledReason : undefined}
         >
           <div className="flex items-center gap-2">
             <Sparkles className={`h-4 w-4 ${disabled ? 'text-gray-400' : 'text-purple-500'}`} />
@@ -126,9 +125,10 @@ export function AIFilterDropdowns({
                 {activeFilterCount}
               </Badge>
             )}
-            {disabled && disabledReason && (
-              <span className="text-xs text-muted-foreground ml-1">
-                ({disabledReason})
+            {/* Show info text (e.g., "X/Y analyzed") when not all tickets are analyzed */}
+            {!disabled && infoText && (
+              <span className="text-xs text-muted-foreground ml-1" title="AI filters will only affect analyzed tickets">
+                ({infoText})
               </span>
             )}
           </div>

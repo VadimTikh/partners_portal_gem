@@ -21,6 +21,7 @@ import { Ticket, TimePeriod, AITicketFilters, StoredTicketAnalysis, FilterPrefer
 import { Button } from '@/components/ui/button';
 import { AIAnalysisBatchModal } from './components/AIAnalysisBatchModal';
 import { UltraAnalysisModal } from './components/UltraAnalysisModal';
+import { AskAIModal } from './components/AskAIModal';
 import { AIFilterDropdowns } from './components/AIFilterDropdowns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -364,11 +365,11 @@ export default function HelpdeskPage() {
   // AI filters are available when: all tickets are analyzed OR there are no tickets (0 results)
   const allFilteredTicketsAnalyzed = totalFilteredTickets === 0 || totalAnalyzedCount >= totalFilteredTickets;
 
-  // AI filters are only available when ALL filtered tickets are analyzed (or no tickets)
-  const aiFiltersDisabled = isLoading || !allFilteredTicketsAnalyzed;
-  const aiFiltersDisabledReason = isLoading
-    ? undefined
-    : !allFilteredTicketsAnalyzed
+  // AI filters are always available (only disabled during loading)
+  // When AI filters are applied, unanalyzed tickets are excluded from results
+  const aiFiltersDisabled = isLoading;
+  // Show informational status about how many tickets are analyzed (not blocking)
+  const aiFiltersInfoText = !isLoading && totalFilteredTickets > 0 && !allFilteredTicketsAnalyzed
     ? `${totalAnalyzedCount}/${totalFilteredTickets} analyzed`
     : undefined;
 
@@ -549,7 +550,7 @@ export default function HelpdeskPage() {
                   filters={aiFilters}
                   onFiltersChange={handleAIFiltersChange}
                   disabled={aiFiltersDisabled}
-                  disabledReason={aiFiltersDisabledReason}
+                  infoText={aiFiltersInfoText}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -565,6 +566,17 @@ export default function HelpdeskPage() {
                   }}
                   totalFilteredCount={data?.pagination.total}
                   onComplete={() => refetch()}
+                />
+                <AskAIModal
+                  filterParams={{
+                    period,
+                    customFrom: period === 'custom' ? customFrom : undefined,
+                    customTo: period === 'custom' ? customTo : undefined,
+                    stageIds: selectedStageIds.length > 0 ? selectedStageIds : undefined,
+                    search: searchQuery || undefined,
+                    aiFilters,
+                  }}
+                  totalFilteredCount={data?.pagination.total}
                 />
                 <UltraAnalysisModal
                   filterParams={{

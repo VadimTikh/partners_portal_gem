@@ -459,6 +459,22 @@ export async function countAnalyzedTickets(ticketIds: number[]): Promise<number>
 }
 
 /**
+ * Get analyzed ticket IDs from a given list
+ * Returns a Set of ticket IDs that have AI analysis stored
+ */
+export async function getAnalyzedTicketIdsFromList(ticketIds: number[]): Promise<Set<number>> {
+  if (ticketIds.length === 0) return new Set();
+
+  const rows = await queryAll<{ ticket_id: number }>(
+    `SELECT ticket_id FROM miomente_partner_helpdesk_ai_analysis
+     WHERE ticket_id = ANY($1)`,
+    [ticketIds]
+  );
+
+  return new Set(rows.map(r => r.ticket_id));
+}
+
+/**
  * Get ticket IDs filtered by AI criteria
  * Returns ticket IDs that match the given AI filters
  */

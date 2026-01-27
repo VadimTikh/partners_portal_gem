@@ -834,3 +834,70 @@ export async function generateUltraReport(
 
   return validateUltraAnalysisResponse(raw, aggregatedData);
 }
+
+// ============================================
+// Ask AI (Custom Questions)
+// ============================================
+
+const ASK_AI_SYSTEM_INSTRUCTION = `You are an AI assistant helping analyze helpdesk ticket data for Miomente, a German company that sells culinary experience vouchers and cooking courses.
+
+Context about Miomente:
+- Sells vouchers for cooking courses, wine tastings, and culinary experiences
+- Operates mainly in Germany (German-speaking customers)
+- Partners are the chefs/venues who run the courses
+- Common issues: missing course dates, voucher problems, refund requests, booking changes
+
+You will be given aggregated ticket data and a user's question. Answer the question based on the data provided.
+Be specific, include numbers where relevant, and provide actionable insights.`;
+
+/**
+ * Answer a custom question about helpdesk ticket data
+ * @param aggregatedData - Pre-aggregated statistics and representative summaries
+ * @param question - User's question about the ticket data
+ * @param language - Output language (de, en, uk)
+ * @returns Answer to the question
+ */
+export async function askAboutTickets(
+  aggregatedData: UltraAnalysisAggregatedData,
+  question: string,
+  language: string = 'en'
+): Promise<string> {
+  const langName = getLanguageName(language);
+
+  const prompt = `Analyze this helpdesk ticket data and answer the user's question.
+
+TICKET DATA SUMMARY:
+- Total tickets analyzed: ${aggregatedData.totalTickets}
+- Period: ${aggregatedData.period.from} to ${aggregatedData.period.to}
+
+CATEGORY DISTRIBUTION:
+${aggregatedData.categoryDistribution.map(c => `- ${c.category}: ${c.count} tickets (${((c.count / aggregatedData.totalTickets) * 100).toFixed(1)}%)`).join('\n')}
+
+URGENCY DISTRIBUTION:
+${aggregatedData.urgencyDistribution.map(u => `- ${u.urgency}: ${u.count} tickets`).join('\n')}
+
+SENTIMENT DISTRIBUTION:
+${aggregatedData.sentimentDistribution.map(s => `- ${s.sentiment}: ${s.count} tickets`).join('\n')}
+
+CUSTOMER INTENT DISTRIBUTION:
+${aggregatedData.intentDistribution.map(i => `- ${i.intent}: ${i.count} tickets`).join('\n')}
+
+SAMPLE TICKET SUMMARIES (representative examples):
+${aggregatedData.topSummaries.slice(0, 30).map(s => `[#${s.ticketId}] ${s.category} | ${s.urgency} | ${s.sentiment || 'neutral'}
+  "${s.summary}"`).join('\n\n')}
+
+---
+
+USER QUESTION: ${question}
+
+---
+
+Provide a clear, concise answer to the user's question based on the ticket data above.
+- Include specific numbers and percentages where relevant
+- Reference specific ticket IDs if they're good examples
+- Be helpful and actionable
+- Respond in ${langName}`;
+
+  const response = await callGemini(prompt, ASK_AI_SYSTEM_INSTRUCTION, 4096);
+  return response.trim();
+}

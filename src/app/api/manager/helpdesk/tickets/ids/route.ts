@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { withManager } from '@/lib/auth/middleware';
 import { getTickets } from '@/lib/odoo';
-import { getTicketIdsByAIFilters } from '@/lib/db/queries/helpdesk';
+import { getTicketIdsByAIFilters, getAnalyzedTicketIdsFromList } from '@/lib/db/queries/helpdesk';
 import {
   TimePeriod,
   AIUrgency,
@@ -73,6 +73,9 @@ export async function GET(request: NextRequest) {
       const stageIdsParam = searchParams.get('stageIds');
       const typeIdsParam = searchParams.get('typeIds');
       const search = searchParams.get('search') || undefined;
+
+      // Parse special filters
+      const onlyUnanalyzed = searchParams.get('onlyUnanalyzed') === 'true';
 
       // Parse AI filters
       const aiUrgencyParam = searchParams.get('aiUrgency');
@@ -164,12 +167,18 @@ export async function GET(request: NextRequest) {
       });
 
       // Extract just the IDs
-      const ticketIds = tickets.map(t => t.id);
+      let ticketIds = tickets.map(t => t.id);
+
+      // If onlyUnanalyzed is true, filter out tickets that already have analysis
+      if (onlyUnanalyzed && ticketIds.length > 0) {
+        const analyzedIds = await getAnalyzedTicketIdsFromList(ticketIds);
+        ticketIds = ticketIds.filter(id => !analyzedIds.has(id));
+      }
 
       return NextResponse.json({
         success: true,
         ticketIds,
-        total: Math.min(total, MAX_TICKETS),
+        total: ticketIds.length,
         truncated: total > MAX_TICKETS,
       });
     } catch (error) {
