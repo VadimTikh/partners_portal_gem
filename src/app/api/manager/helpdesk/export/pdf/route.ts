@@ -5,10 +5,10 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 import { withManager } from '@/lib/auth/middleware';
-import { query } from '@/lib/db/postgres';
+import { getStoredAnalysesBatch } from '@/lib/db/queries/helpdesk';
 import { getTicket, getTicketMessages } from '@/lib/odoo';
 import { generateTicketsPDF, TicketExportData } from '@/lib/pdf/helpdesk-export';
-import { StoredTicketAnalysis, AIExtractedData } from '@/lib/types/helpdesk';
+import { StoredTicketAnalysis } from '@/lib/types/helpdesk';
 
 /**
  * POST /api/manager/helpdesk/export/pdf
@@ -47,45 +47,9 @@ export async function POST(request: NextRequest) {
       console.log(`[PDF Export] Exporting ${limitedTicketIds.length} tickets...`);
 
       // Fetch stored analyses if needed
-      const analysesMap: Map<number, StoredTicketAnalysis> = new Map();
+      let analysesMap: Map<number, StoredTicketAnalysis> = new Map();
       if (includeAnalysis && limitedTicketIds.length > 0) {
-        const placeholders = limitedTicketIds.map((_, i) => `$${i + 1}`).join(', ');
-        const result = await query(
-          `SELECT
-            id, ticket_id, analyzed_at, ticket_write_date,
-            urgency, urgency_reason, category, category_confidence,
-            extracted_data, language, summary, customer_intent,
-            action_required, sentiment, satisfaction_level,
-            ai_is_resolved, last_message_author_type,
-            created_at, updated_at
-          FROM helpdesk_ticket_analysis
-          WHERE ticket_id IN (${placeholders})`,
-          limitedTicketIds
-        );
-
-        for (const row of result.rows) {
-          analysesMap.set(row.ticket_id, {
-            id: row.id,
-            ticketId: row.ticket_id,
-            analyzedAt: row.analyzed_at,
-            ticketWriteDate: row.ticket_write_date,
-            urgency: row.urgency,
-            urgencyReason: row.urgency_reason,
-            category: row.category,
-            categoryConfidence: row.category_confidence ? parseFloat(row.category_confidence) : null,
-            extractedData: row.extracted_data as AIExtractedData | null,
-            language: row.language,
-            summary: row.summary,
-            customerIntent: row.customer_intent,
-            actionRequired: row.action_required,
-            sentiment: row.sentiment,
-            satisfactionLevel: row.satisfaction_level,
-            aiIsResolved: row.ai_is_resolved,
-            lastMessageAuthorType: row.last_message_author_type,
-            createdAt: row.created_at,
-            updatedAt: row.updated_at,
-          });
-        }
+        analysesMap = await getStoredAnalysesBatch(limitedTicketIds);
       }
 
       // Fetch tickets and messages in batches to avoid overloading

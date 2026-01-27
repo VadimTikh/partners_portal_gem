@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { withManager } from '@/lib/auth/middleware';
 import { filterTicketsByQuery, TicketFilterSummary } from '@/lib/gemini';
-import { query } from '@/lib/db/postgres';
+import { getStoredAnalysesBatch } from '@/lib/db/queries/helpdesk';
 
 /**
  * POST /api/manager/helpdesk/ai/filter
@@ -38,21 +38,9 @@ export async function POST(request: NextRequest) {
       }
 
       // Fetch stored analyses for the given ticket IDs
-      const placeholders = ticketIds.map((_, i) => `$${i + 1}`).join(', ');
-      const result = await query(
-        `SELECT
-          ticket_id,
-          urgency,
-          category,
-          sentiment,
-          summary,
-          customer_intent
-        FROM helpdesk_ticket_analysis
-        WHERE ticket_id IN (${placeholders})`,
-        ticketIds
-      );
+      const analysesMap = await getStoredAnalysesBatch(ticketIds);
 
-      if (result.rows.length === 0) {
+      if (analysesMap.size === 0) {
         return NextResponse.json({
           success: true,
           matchingIds: [],
@@ -62,13 +50,13 @@ export async function POST(request: NextRequest) {
       }
 
       // Transform to TicketFilterSummary format
-      const ticketSummaries: TicketFilterSummary[] = result.rows.map(row => ({
-        ticketId: row.ticket_id,
-        category: row.category,
-        urgency: row.urgency,
-        sentiment: row.sentiment || undefined,
-        summary: row.summary || '',
-        customerIntent: row.customer_intent || undefined,
+      const ticketSummaries: TicketFilterSummary[] = Array.from(analysesMap.values()).map(analysis => ({
+        ticketId: analysis.ticketId,
+        category: analysis.category,
+        urgency: analysis.urgency,
+        sentiment: analysis.sentiment || undefined,
+        summary: analysis.summary || '',
+        customerIntent: analysis.customerIntent || undefined,
       }));
 
       // Call AI to filter tickets
