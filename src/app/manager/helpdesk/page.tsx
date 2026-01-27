@@ -228,7 +228,7 @@ export default function HelpdeskPage() {
   // AI Chat Filter state
   const [aiChatFilterIds, setAiChatFilterIds] = useState<number[] | null>(null);
   const [aiChatFilterInterpretation, setAiChatFilterInterpretation] = useState<string>('');
-  const [allTicketIds, setAllTicketIds] = useState<number[]>([]);
+  const [allTickets, setAllTickets] = useState<Array<{ id: number; name: string }>>([]);
 
   // Load filter preferences on mount
   const { data: settingsData } = useQuery({
@@ -344,10 +344,10 @@ export default function HelpdeskPage() {
     enabled: hasHydrated,
   });
 
-  // Update allTicketIds when ticketIdsData changes
+  // Update allTickets when ticketIdsData changes
   useEffect(() => {
-    if (ticketIdsData?.ticketIds) {
-      setAllTicketIds(ticketIdsData.ticketIds);
+    if (ticketIdsData?.tickets) {
+      setAllTickets(ticketIdsData.tickets);
       // Clear AI chat filter when base filters change
       setAiChatFilterIds(null);
       setAiChatFilterInterpretation('');
@@ -652,21 +652,21 @@ export default function HelpdeskPage() {
                   onComplete={() => refetch()}
                 />
                 <ExportPDFButton
-                  ticketIds={aiChatFilterIds || allTicketIds}
-                  disabled={isLoading || allTicketIds.length === 0}
+                  ticketIds={aiChatFilterIds || allTickets.map(t => t.id)}
+                  disabled={isLoading || allTickets.length === 0}
                 />
               </div>
             </div>
-            {/* AI Chat Filter */}
+            {/* Ticket Name Search Filter */}
             <div className="mt-4">
               <AIFilterInput
                 onFilter={handleAiChatFilter}
                 onClear={handleClearAiChatFilter}
                 isActive={aiChatFilterIds !== null}
                 interpretation={aiChatFilterInterpretation}
-                ticketIds={allTicketIds}
+                tickets={allTickets}
                 matchCount={aiChatFilterIds?.length}
-                disabled={isLoading || allTicketIds.length === 0}
+                disabled={isLoading || allTickets.length === 0}
               />
             </div>
           </div>

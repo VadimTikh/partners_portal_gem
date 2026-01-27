@@ -3,29 +3,50 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 import { withManager } from '@/lib/auth/middleware';
-import { filterTicketsByQuery, TicketFilterSummary } from '@/lib/gemini';
-import { getStoredAnalysesBatch } from '@/lib/db/queries/helpdesk';
+import { filterTicketsByName, TicketFilterData } from '@/lib/gemini';
 
 /**
  * POST /api/manager/helpdesk/ai/filter
  *
- * Filter tickets using AI based on natural language query.
- * Requires ticket IDs and a query string.
+ * Filter tickets by searching in ticket names.
+ * Simple text search - no AI involved.
+ *
+ * Accepts either:
+ * - tickets: Array of {id, name} objects (preferred)
+ * - ticketIds + ticketNames: Parallel arrays (legacy)
  */
 export async function POST(request: NextRequest) {
   return withManager(request, async () => {
     try {
       // Parse request body
       const body = await request.json();
-      const { ticketIds, query: filterQuery, language = 'en' } = body as {
-        ticketIds: number[];
+      const { tickets, ticketIds, ticketNames, query: filterQuery } = body as {
+        tickets?: Array<{ id: number; name: string }>;
+        ticketIds?: number[];
+        ticketNames?: string[];
         query: string;
-        language?: string;
       };
 
-      if (!ticketIds || !Array.isArray(ticketIds) || ticketIds.length === 0) {
+      // Build ticket data from either format
+      let ticketData: TicketFilterData[] = [];
+
+      if (tickets && Array.isArray(tickets) && tickets.length > 0) {
+        // New format: array of {id, name} objects
+        ticketData = tickets.map(t => ({
+          ticketId: t.id,
+          ticketName: t.name || '',
+        }));
+      } else if (ticketIds && ticketNames && Array.isArray(ticketIds) && Array.isArray(ticketNames)) {
+        // Legacy format: parallel arrays
+        ticketData = ticketIds.map((id, index) => ({
+          ticketId: id,
+          ticketName: ticketNames[index] || '',
+        }));
+      }
+
+      if (ticketData.length === 0) {
         return NextResponse.json(
-          { error: 'ticketIds array is required' },
+          { error: 'tickets array or ticketIds+ticketNames arrays are required' },
           { status: 400 }
         );
       }
@@ -37,40 +58,18 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Fetch stored analyses for the given ticket IDs
-      const analysesMap = await getStoredAnalysesBatch(ticketIds);
-
-      if (analysesMap.size === 0) {
-        return NextResponse.json({
-          success: true,
-          matchingIds: [],
-          interpretation: 'No analyzed tickets found to filter',
-          matchCount: 0,
-        });
-      }
-
-      // Transform to TicketFilterSummary format
-      const ticketSummaries: TicketFilterSummary[] = Array.from(analysesMap.values()).map(analysis => ({
-        ticketId: analysis.ticketId,
-        category: analysis.category,
-        urgency: analysis.urgency,
-        sentiment: analysis.sentiment || undefined,
-        summary: analysis.summary || '',
-        customerIntent: analysis.customerIntent || undefined,
-      }));
-
-      // Call AI to filter tickets
-      const filterResult = await filterTicketsByQuery(ticketSummaries, filterQuery.trim(), language);
+      // Filter tickets by name (simple text search)
+      const filterResult = filterTicketsByName(ticketData, filterQuery.trim());
 
       return NextResponse.json({
         success: true,
         matchingIds: filterResult.matchingIds,
-        interpretation: filterResult.interpretation,
+        interpretation: `Search: "${filterQuery.trim()}"`,
         matchCount: filterResult.matchCount,
       });
 
     } catch (error) {
-      console.error('[AI Filter] Error:', error);
+      console.error('[Filter] Error:', error);
       return NextResponse.json(
         { error: error instanceof Error ? error.message : 'Failed to filter tickets' },
         { status: 500 }

@@ -166,19 +166,20 @@ export async function GET(request: NextRequest) {
         offset: 0,
       });
 
-      // Extract just the IDs
-      let ticketIds = tickets.map(t => t.id);
+      // Extract IDs and names
+      let ticketData = tickets.map(t => ({ id: t.id, name: t.name }));
 
       // If onlyUnanalyzed is true, filter out tickets that already have analysis
-      if (onlyUnanalyzed && ticketIds.length > 0) {
-        const analyzedIds = await getAnalyzedTicketIdsFromList(ticketIds);
-        ticketIds = ticketIds.filter(id => !analyzedIds.has(id));
+      if (onlyUnanalyzed && ticketData.length > 0) {
+        const analyzedIds = await getAnalyzedTicketIdsFromList(ticketData.map(t => t.id));
+        ticketData = ticketData.filter(t => !analyzedIds.has(t.id));
       }
 
       return NextResponse.json({
         success: true,
-        ticketIds,
-        total: ticketIds.length,
+        ticketIds: ticketData.map(t => t.id),
+        tickets: ticketData, // Include names for search
+        total: ticketData.length,
         truncated: total > MAX_TICKETS,
       });
     } catch (error) {

@@ -707,6 +707,7 @@ export const api = {
   } = {}): Promise<{
     success: boolean;
     ticketIds: number[];
+    tickets: Array<{ id: number; name: string }>;
     total: number;
     truncated?: boolean;
   }> => {
@@ -775,11 +776,31 @@ export const api = {
   },
 
   /**
-   * Filter tickets using AI based on natural language query.
-   * Analyzes ticket summaries and returns matching ticket IDs.
+   * Filter tickets by searching in ticket names.
+   * Simple text search - no AI involved.
+   */
+  filterByQuery: async (params: {
+    tickets: Array<{ id: number; name: string }>;
+    query: string;
+  }): Promise<{
+    success: boolean;
+    matchingIds: number[];
+    interpretation: string;
+    matchCount: number;
+  }> => {
+    const response = await apiClient.post('/manager/helpdesk/ai/filter', {
+      tickets: params.tickets,
+      query: params.query,
+    });
+    return response.data;
+  },
+
+  /**
+   * @deprecated Use filterByQuery instead
    */
   filterByAIQuery: async (params: {
     ticketIds: number[];
+    ticketNames?: string[];
     query: string;
     language?: string;
   }): Promise<{
@@ -790,8 +811,8 @@ export const api = {
   }> => {
     const response = await apiClient.post('/manager/helpdesk/ai/filter', {
       ticketIds: params.ticketIds,
+      ticketNames: params.ticketNames || [],
       query: params.query,
-      language: params.language || 'en',
     });
     return response.data;
   },
