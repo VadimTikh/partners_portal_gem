@@ -346,8 +346,12 @@ export default function HelpdeskPage() {
 
   // Update allTickets when ticketIdsData changes
   useEffect(() => {
-    if (ticketIdsData?.tickets) {
-      setAllTickets(ticketIdsData.tickets);
+    if (ticketIdsData) {
+      // Use tickets array if available, fallback to creating from ticketIds
+      const tickets = ticketIdsData.tickets ||
+        ticketIdsData.ticketIds?.map((id: number) => ({ id, name: '' })) ||
+        [];
+      setAllTickets(tickets);
       // Clear AI chat filter when base filters change
       setAiChatFilterIds(null);
       setAiChatFilterInterpretation('');

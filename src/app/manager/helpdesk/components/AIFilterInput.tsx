@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useCallback, KeyboardEvent } from 'react';
-import { X, Loader2, Search } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/lib/i18n';
-import { api } from '@/lib/api';
 
 interface TicketNameFilterInputProps {
   /** Called when filter returns results */
@@ -25,6 +24,28 @@ interface TicketNameFilterInputProps {
   disabled?: boolean;
 }
 
+/**
+ * Filter tickets by name - client-side, instant search
+ */
+function filterTicketsByName(
+  tickets: Array<{ id: number; name: string }>,
+  query: string
+): number[] {
+  if (!query.trim()) {
+    return tickets.map(t => t.id);
+  }
+
+  const searchTerms = query.toLowerCase().trim().split(/\s+/);
+
+  return tickets
+    .filter(ticket => {
+      const nameLower = ticket.name.toLowerCase();
+      // All search terms must be found in the ticket name
+      return searchTerms.every(term => nameLower.includes(term));
+    })
+    .map(t => t.id);
+}
+
 export function TicketNameFilterInput({
   onFilter,
   onClear,
@@ -38,29 +59,14 @@ export function TicketNameFilterInput({
   const helpdesk = t.helpdesk as Record<string, unknown> | undefined;
 
   const [query, setQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleFilter = useCallback(async () => {
-    if (!query.trim() || isLoading || disabled) return;
+  // Client-side filtering - instant, no API call needed
+  const handleFilter = useCallback(() => {
+    if (!query.trim() || disabled) return;
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await api.filterByQuery({
-        tickets,
-        query: query.trim(),
-      });
-
-      onFilter(result.matchingIds, result.interpretation);
-    } catch (err) {
-      console.error('[Filter] Error:', err);
-      setError(err instanceof Error ? err.message : 'Filter failed');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [query, tickets, onFilter, isLoading, disabled]);
+    const matchingIds = filterTicketsByName(tickets, query.trim());
+    onFilter(matchingIds, `Search: "${query.trim()}"`);
+  }, [query, tickets, onFilter, disabled]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -71,7 +77,6 @@ export function TicketNameFilterInput({
 
   const handleClear = () => {
     setQuery('');
-    setError(null);
     onClear();
   };
 
@@ -85,18 +90,15 @@ export function TicketNameFilterInput({
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={(helpdesk?.searchPlaceholder as string) || "Search by ticket name..."}
-            className="pl-10 pr-10"
-            disabled={disabled || isLoading}
+            className="pl-10"
+            disabled={disabled}
           />
-          {isLoading && (
-            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-          )}
         </div>
         <Button
           variant="outline"
           size="icon"
           onClick={handleFilter}
-          disabled={!query.trim() || isLoading || disabled}
+          disabled={!query.trim() || disabled}
         >
           <Search className="h-4 w-4" />
         </Button>
@@ -125,11 +127,6 @@ export function TicketNameFilterInput({
             </span>
           )}
         </div>
-      )}
-
-      {/* Error message */}
-      {error && (
-        <p className="text-sm text-red-500">{error}</p>
       )}
     </div>
   );
