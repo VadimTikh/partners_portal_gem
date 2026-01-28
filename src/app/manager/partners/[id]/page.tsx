@@ -199,9 +199,9 @@ export default function PartnerDetailPage() {
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">
                   <Package className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-2xl font-bold">{partner.coursesCount}</span>
+                  <span className="text-2xl font-bold">{partner.activeCoursesCount ?? partner.coursesCount}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">{t.manager.courses || 'Courses'}</p>
+                <p className="text-xs text-muted-foreground">{t.manager.activeCourses}</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">

@@ -471,6 +471,46 @@ export async function getPortalPartnerById(userId: string): Promise<PortalPartne
     if (courseStats[0]) {
       stats = { ...courseStats[0], available_dates_count: 0 };
     }
+
+    // Query 2: Get available dates count (separate query for better performance)
+    const availableDatesStats = await query<Array<{
+      available_dates_count: number;
+    } & RowDataPacket>>(`
+      SELECT
+        COUNT(DISTINCT s.entity_id) as available_dates_count
+      FROM miomente_pdf_operator AS op
+      INNER JOIN catalog_product_entity_varchar AS cpev_operator
+        ON cpev_operator.value = op.operator_id
+        AND cpev_operator.attribute_id = 700
+        AND cpev_operator.store_id = 0
+      INNER JOIN catalog_product_entity AS cpe
+        ON cpev_operator.entity_id = cpe.entity_id
+        AND cpe.type_id = 'configurable'
+      INNER JOIN catalog_product_super_link AS sl
+        ON sl.parent_id = cpe.entity_id
+      INNER JOIN catalog_product_entity AS s
+        ON s.entity_id = sl.product_id
+        AND s.type_id = 'simple'
+      INNER JOIN catalog_product_entity_varchar AS sn
+        ON s.entity_id = sn.entity_id
+        AND sn.attribute_id = 60
+        AND sn.store_id = 0
+      INNER JOIN catalog_product_entity_varchar AS sb
+        ON s.entity_id = sb.entity_id
+        AND sb.attribute_id = 717
+        AND sb.store_id = 0
+        AND sb.value IS NOT NULL
+      WHERE op.customernumber IN (${placeholders})
+        AND STR_TO_DATE(
+          CONCAT(SUBSTRING_INDEX(sn.value, '-', -3), ' ', sb.value),
+          '%Y-%m-%d %H:%i'
+        ) > NOW()
+    `, customerNumbers);
+
+    // Update stats to include available_dates_count
+    if (availableDatesStats[0]) {
+      stats.available_dates_count = availableDatesStats[0].available_dates_count;
+    }
   } catch (error) {
     console.error('[getPortalPartnerById] Magento query failed:', error);
     // Continue with 0 stats
