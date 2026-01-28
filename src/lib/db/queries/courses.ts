@@ -991,7 +991,7 @@ export async function getDatesByCourseForManager(
     duration: number;
     price: number;
   } & RowDataPacket>>(`
-    SELECT
+    SELECT SQL_NO_CACHE
         simple.entity_id AS 'id',
         link.parent_id AS 'courseId',
         CONCAT(

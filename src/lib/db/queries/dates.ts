@@ -55,7 +55,7 @@ export async function getDatesByCourse(
   const placeholders = customerNumbers.map(() => '?').join(', ');
 
   const dates = await query<DbCourseDate[]>(`
-    SELECT
+    SELECT SQL_NO_CACHE
         simple.entity_id AS 'id',
         link.parent_id AS 'courseId',
         CONCAT(
