@@ -641,3 +641,415 @@ export function transformCourse(dbCourse: DbCourse): {
     operator_ids: dbCourse.operator_ids ? dbCourse.operator_ids.split(',') : [],
   };
 }
+
+// ============================================
+// Manager Course Queries
+// ============================================
+
+export interface DbManagerCourse extends RowDataPacket {
+  id: number;
+  title: string;
+  sku: string;
+  status: 'active' | 'inactive';
+  description: string | null;
+  image: string | null;
+  basePrice: number | null;
+  location: string | null;
+  customer_number: string;
+  operator_ids: string;
+  available_dates: number;
+  partner_id: string;
+  partner_name: string;
+  partner_email: string;
+}
+
+export interface ManagerCourseFilters {
+  search?: string;              // Partner name/email search
+  location?: string;            // Exact location match
+  availableDatesRange?: 'none' | '1-5' | '5+';
+  dateRangeType?: 'next7d' | 'next30d' | 'custom';
+  dateFrom?: string;
+  dateTo?: string;
+  status?: 'active' | 'inactive';
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * Get unique locations from all courses for filter dropdown
+ */
+export async function getUniqueLocations(): Promise<string[]> {
+  const results = await query<Array<{ location: string } & RowDataPacket>>(`
+    SELECT DISTINCT cpev_location.value AS location
+    FROM catalog_product_entity AS cpe
+    LEFT JOIN catalog_product_entity_varchar AS cpev_location
+      ON cpe.entity_id = cpev_location.entity_id
+      AND cpev_location.attribute_id = 578
+      AND cpev_location.store_id = 0
+    WHERE cpe.type_id = 'configurable'
+      AND cpev_location.value IS NOT NULL
+      AND cpev_location.value != ''
+    ORDER BY cpev_location.value ASC
+  `);
+
+  return results.map(r => r.location);
+}
+
+/**
+ * Get all courses for manager with server-side filters and pagination
+ */
+export async function getAllCoursesForManager(
+  filters: ManagerCourseFilters = {}
+): Promise<{ courses: DbManagerCourse[]; total: number }> {
+  const {
+    // search is handled at the API layer since partner info is in PostgreSQL
+    location,
+    availableDatesRange,
+    dateRangeType,
+    dateFrom,
+    dateTo,
+    status,
+    limit = 25,
+    offset = 0,
+  } = filters;
+
+  // Build WHERE conditions
+  const conditions: string[] = ["cpe.type_id = 'configurable'"];
+  const params: (string | number)[] = [];
+
+  // Status filter
+  if (status === 'active') {
+    conditions.push('cpei_status.value = 1');
+  } else if (status === 'inactive') {
+    conditions.push('(cpei_status.value IS NULL OR cpei_status.value != 1)');
+  }
+
+  // Location filter
+  if (location) {
+    conditions.push('cpev_location.value = ?');
+    params.push(location);
+  }
+
+  // Build the date subquery conditions
+  let dateConditions = 'STR_TO_DATE(CONCAT(SUBSTRING_INDEX(sn.value, \'-\', -3), \' \', sb.value), \'%Y-%m-%d %H:%i\') > NOW()';
+
+  // Date range filter
+  if (dateRangeType === 'next7d') {
+    dateConditions += ' AND STR_TO_DATE(CONCAT(SUBSTRING_INDEX(sn.value, \'-\', -3), \' \', sb.value), \'%Y-%m-%d %H:%i\') <= DATE_ADD(NOW(), INTERVAL 7 DAY)';
+  } else if (dateRangeType === 'next30d') {
+    dateConditions += ' AND STR_TO_DATE(CONCAT(SUBSTRING_INDEX(sn.value, \'-\', -3), \' \', sb.value), \'%Y-%m-%d %H:%i\') <= DATE_ADD(NOW(), INTERVAL 30 DAY)';
+  } else if (dateRangeType === 'custom' && dateFrom && dateTo) {
+    dateConditions += ` AND STR_TO_DATE(CONCAT(SUBSTRING_INDEX(sn.value, '-', -3), ' ', sb.value), '%Y-%m-%d %H:%i') >= '${dateFrom}'`;
+    dateConditions += ` AND STR_TO_DATE(CONCAT(SUBSTRING_INDEX(sn.value, '-', -3), ' ', sb.value), '%Y-%m-%d %H:%i') <= '${dateTo} 23:59:59'`;
+  }
+
+  const baseQuery = `
+    SELECT
+      cpe.entity_id AS id,
+      cpev_name.value AS title,
+      cpe.sku AS sku,
+      CASE
+        WHEN cpei_status.value = 1 THEN 'active'
+        ELSE 'inactive'
+      END AS status,
+      cpet_desc.value AS description,
+      CONCAT('https://www.miomente.de/media/catalog/product', img.value) AS image,
+      ROUND(cpd_price.value, 2) AS basePrice,
+      cpev_location.value AS location,
+      op.customernumber AS customer_number,
+      (
+        SELECT GROUP_CONCAT(DISTINCT o2.operator_id ORDER BY o2.operator_id)
+        FROM miomente_pdf_operator AS o2
+        WHERE o2.customernumber = op.customernumber
+      ) AS operator_ids,
+      (
+        SELECT COUNT(*)
+        FROM catalog_product_entity AS s
+        INNER JOIN catalog_product_super_link AS sl
+          ON s.entity_id = sl.product_id
+        INNER JOIN catalog_product_entity_varchar AS sn
+          ON s.entity_id = sn.entity_id
+          AND sn.attribute_id = 60
+          AND sn.store_id = 0
+        INNER JOIN catalog_product_entity_varchar AS sb
+          ON s.entity_id = sb.entity_id
+          AND sb.attribute_id = 717
+          AND sb.store_id = 0
+        WHERE sl.parent_id = cpe.entity_id
+          AND s.type_id = 'simple'
+          AND sb.value IS NOT NULL
+          AND ${dateConditions}
+      ) AS available_dates,
+      u.id AS partner_id,
+      u.name AS partner_name,
+      u.email AS partner_email
+    FROM catalog_product_entity AS cpe
+    -- Title
+    INNER JOIN catalog_product_entity_varchar AS cpev_name
+      ON cpe.entity_id = cpev_name.entity_id
+      AND cpev_name.attribute_id = 60
+      AND cpev_name.store_id = 0
+    -- Status
+    LEFT JOIN catalog_product_entity_int AS cpei_status
+      ON cpe.entity_id = cpei_status.entity_id
+      AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
+      AND cpei_status.store_id = 0
+    -- Description
+    LEFT JOIN catalog_product_entity_text AS cpet_desc
+      ON cpe.entity_id = cpet_desc.entity_id
+      AND cpet_desc.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'description' AND entity_type_id = 4 LIMIT 1)
+      AND cpet_desc.store_id = 0
+    -- Image
+    LEFT JOIN catalog_product_entity_varchar AS img
+      ON cpe.entity_id = img.entity_id
+      AND img.attribute_id = 74
+      AND img.store_id = 0
+    -- Price
+    LEFT JOIN catalog_product_entity_decimal AS cpd_price
+      ON cpe.entity_id = cpd_price.entity_id
+      AND cpd_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1)
+      AND cpd_price.store_id = 0
+    -- Location (attribute_id = 578)
+    LEFT JOIN catalog_product_entity_varchar AS cpev_location
+      ON cpe.entity_id = cpev_location.entity_id
+      AND cpev_location.attribute_id = 578
+      AND cpev_location.store_id = 0
+    -- Operator (product -> operator_id)
+    INNER JOIN catalog_product_entity_varchar AS cpev_operator
+      ON cpe.entity_id = cpev_operator.entity_id
+      AND cpev_operator.attribute_id = 700
+      AND cpev_operator.store_id = 0
+    -- Operator table (operator_id -> customernumber)
+    INNER JOIN miomente_pdf_operator AS op
+      ON cpev_operator.value = op.operator_id
+    -- Join to PostgreSQL users via customer_numbers table (using federated query concept)
+    -- Since we can't directly join MySQL to PostgreSQL, we need to handle partner lookup separately
+    -- For now, we'll use a placeholder that will be resolved in the API layer
+    LEFT JOIN (
+      SELECT 'placeholder' AS id, 'placeholder' AS name, 'placeholder' AS email, 'placeholder' AS customer_number
+    ) AS u ON 1=0
+    WHERE ${conditions.join(' AND ')}
+    GROUP BY cpe.entity_id
+  `;
+
+  // For search, we need to handle it at the application layer since partner info is in PostgreSQL
+  // For now, let's get all courses from MySQL first
+
+  // Add available dates range filter using HAVING
+  let havingClause = '';
+  if (availableDatesRange === 'none') {
+    havingClause = 'HAVING available_dates = 0';
+  } else if (availableDatesRange === '1-5') {
+    havingClause = 'HAVING available_dates BETWEEN 1 AND 5';
+  } else if (availableDatesRange === '5+') {
+    havingClause = 'HAVING available_dates > 5';
+  }
+
+  // Count query (without pagination)
+  const countQuery = `
+    SELECT COUNT(*) as total FROM (
+      ${baseQuery}
+      ${havingClause}
+    ) AS count_query
+  `;
+
+  // Data query (with pagination)
+  const dataQuery = `
+    ${baseQuery}
+    ${havingClause}
+    ORDER BY cpe.entity_id DESC
+    LIMIT ? OFFSET ?
+  `;
+
+  const dataParams = [...params, limit, offset];
+
+  // Execute queries
+  const [countResult, courses] = await Promise.all([
+    queryOne<{ total: number } & RowDataPacket>(countQuery, params),
+    query<DbManagerCourse[]>(dataQuery, dataParams),
+  ]);
+
+  return {
+    courses,
+    total: countResult?.total || 0,
+  };
+}
+
+/**
+ * Get a single course by ID (manager - no ownership check)
+ */
+export async function getCourseByIdForManager(
+  courseId: number
+): Promise<DbCourse | null> {
+  const course = await queryOne<DbCourse>(`
+    SELECT
+      cpe.entity_id AS id,
+      cpev_name.value AS title,
+      cpev_location.value AS location,
+      cpe.sku AS sku,
+      CASE
+        WHEN cpei_status.value = 1 THEN 'active'
+        ELSE 'inactive'
+      END AS status,
+      cpet_desc.value AS description,
+      CONCAT('https://www.miomente.de/media/catalog/product', img.value) AS image,
+      ROUND(cpd_price.value, 2) AS basePrice,
+      op.customernumber AS customer_number,
+      (
+        SELECT GROUP_CONCAT(DISTINCT o2.operator_id ORDER BY o2.operator_id)
+        FROM miomente_pdf_operator AS o2
+        WHERE o2.customernumber = op.customernumber
+      ) AS operator_ids,
+      (
+        SELECT COUNT(*)
+        FROM catalog_product_entity AS s
+        INNER JOIN catalog_product_super_link AS sl
+          ON s.entity_id = sl.product_id
+        INNER JOIN catalog_product_entity_varchar AS sn
+          ON s.entity_id = sn.entity_id
+          AND sn.attribute_id = 60
+          AND sn.store_id = 0
+        INNER JOIN catalog_product_entity_varchar AS sb
+          ON s.entity_id = sb.entity_id
+          AND sb.attribute_id = 717
+          AND sb.store_id = 0
+        WHERE sl.parent_id = cpe.entity_id
+          AND s.type_id = 'simple'
+          AND sb.value IS NOT NULL
+          AND STR_TO_DATE(
+            CONCAT(SUBSTRING_INDEX(sn.value, '-', -3), ' ', sb.value),
+            '%Y-%m-%d %H:%i'
+          ) > NOW()
+      ) AS available_dates
+    FROM catalog_product_entity AS cpe
+    -- Title
+    INNER JOIN catalog_product_entity_varchar AS cpev_name
+      ON cpe.entity_id = cpev_name.entity_id
+      AND cpev_name.attribute_id = 60
+      AND cpev_name.store_id = 0
+    -- Status
+    LEFT JOIN catalog_product_entity_int AS cpei_status
+      ON cpe.entity_id = cpei_status.entity_id
+      AND cpei_status.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'status' AND entity_type_id = 4 LIMIT 1)
+      AND cpei_status.store_id = 0
+    -- Description
+    LEFT JOIN catalog_product_entity_text AS cpet_desc
+      ON cpe.entity_id = cpet_desc.entity_id
+      AND cpet_desc.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'description' AND entity_type_id = 4 LIMIT 1)
+      AND cpet_desc.store_id = 0
+    -- Location
+    LEFT JOIN catalog_product_entity_varchar AS cpev_location
+      ON cpe.entity_id = cpev_location.entity_id
+      AND cpev_location.attribute_id = 578
+      AND cpev_location.store_id = 0
+    -- Image
+    LEFT JOIN catalog_product_entity_varchar AS img
+      ON cpe.entity_id = img.entity_id
+      AND img.attribute_id = 74
+      AND img.store_id = 0
+    -- Price
+    LEFT JOIN catalog_product_entity_decimal AS cpd_price
+      ON cpe.entity_id = cpd_price.entity_id
+      AND cpd_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1)
+      AND cpd_price.store_id = 0
+    -- Operator (product -> operator_id)
+    INNER JOIN catalog_product_entity_varchar AS cpev_operator
+      ON cpe.entity_id = cpev_operator.entity_id
+      AND cpev_operator.attribute_id = 700
+      AND cpev_operator.store_id = 0
+    -- Operator table (operator_id -> customernumber)
+    INNER JOIN miomente_pdf_operator AS op
+      ON cpev_operator.value = op.operator_id
+    WHERE cpe.entity_id = ?
+      AND cpe.type_id = 'configurable'
+    LIMIT 1
+  `, [courseId]);
+
+  return course;
+}
+
+/**
+ * Get dates for a course (manager - no ownership check)
+ */
+export async function getDatesByCourseForManager(
+  courseId: number
+): Promise<Array<{
+  id: number;
+  courseId: number;
+  dateTime: string;
+  capacity: number;
+  booked: number;
+  duration: number;
+  price: number;
+}>> {
+  const dates = await query<Array<{
+    id: number;
+    courseId: number;
+    dateTime: string;
+    capacity: number;
+    booked: number;
+    duration: number;
+    price: number;
+  } & RowDataPacket>>(`
+    SELECT
+        simple.entity_id AS 'id',
+        link.parent_id AS 'courseId',
+        CONCAT(
+            SUBSTRING_INDEX(cpev_name.value, '-', -3),
+            'T',
+            cpev_begin.value,
+            ':00Z'
+        ) AS 'dateTime',
+        CAST(IFNULL(cpev_seats.value, 0) AS UNSIGNED) AS 'capacity',
+        0 AS 'booked',
+        CASE
+            WHEN TIMESTAMPDIFF(MINUTE, STR_TO_DATE(cpev_begin.value, '%H:%i'), STR_TO_DATE(cpev_end.value, '%H:%i')) < 0
+            THEN TIMESTAMPDIFF(MINUTE, STR_TO_DATE(cpev_begin.value, '%H:%i'), STR_TO_DATE(cpev_end.value, '%H:%i')) + 1440
+            ELSE TIMESTAMPDIFF(MINUTE, STR_TO_DATE(cpev_begin.value, '%H:%i'), STR_TO_DATE(cpev_end.value, '%H:%i'))
+        END AS 'duration',
+        ROUND(cpd_simple_price.value, 2) AS 'price'
+    FROM catalog_product_entity AS simple
+    -- Link to configurable
+    INNER JOIN catalog_product_super_link AS link
+        ON simple.entity_id = link.product_id
+    -- Name (to extract date)
+    INNER JOIN catalog_product_entity_varchar AS cpev_name
+        ON simple.entity_id = cpev_name.entity_id
+        AND cpev_name.attribute_id = 60
+        AND cpev_name.store_id = 0
+    -- Begin time
+    LEFT JOIN catalog_product_entity_varchar AS cpev_begin
+        ON simple.entity_id = cpev_begin.entity_id
+        AND cpev_begin.attribute_id = 717
+        AND cpev_begin.store_id = 0
+    -- End time
+    LEFT JOIN catalog_product_entity_varchar AS cpev_end
+        ON simple.entity_id = cpev_end.entity_id
+        AND cpev_end.attribute_id = 718
+        AND cpev_end.store_id = 0
+    -- Seats
+    LEFT JOIN catalog_product_entity_varchar AS cpev_seats
+        ON simple.entity_id = cpev_seats.entity_id
+        AND cpev_seats.attribute_id = 720
+        AND cpev_seats.store_id = 0
+    -- Price for simple product
+    LEFT JOIN catalog_product_entity_decimal AS cpd_simple_price
+        ON simple.entity_id = cpd_simple_price.entity_id
+        AND cpd_simple_price.attribute_id = (SELECT attribute_id FROM eav_attribute WHERE attribute_code = 'price' AND entity_type_id = 4 LIMIT 1)
+        AND cpd_simple_price.store_id = 0
+    WHERE link.parent_id = ?
+      AND simple.type_id = 'simple'
+      AND cpev_begin.value IS NOT NULL
+      AND STR_TO_DATE(
+          CONCAT(SUBSTRING_INDEX(cpev_name.value, '-', -3), ' ', cpev_begin.value),
+          '%Y-%m-%d %H:%i'
+      ) > NOW()
+    GROUP BY simple.entity_id
+    ORDER BY STR_TO_DATE(
+        CONCAT(SUBSTRING_INDEX(cpev_name.value, '-', -3), ' ', cpev_begin.value),
+        '%Y-%m-%d %H:%i'
+    ) ASC
+  `, [courseId]);
+
+  return dates;
+}

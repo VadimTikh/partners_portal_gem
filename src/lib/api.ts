@@ -891,4 +891,95 @@ export const api = {
     const response = await apiClient.get(`/manager/helpdesk/tickets?${searchParams.toString()}`);
     return response.data;
   },
+
+  // ==================== Manager: Courses ====================
+
+  getManagerCourses: async (params: {
+    search?: string;
+    location?: string;
+    availableDatesRange?: 'none' | '1-5' | '5+';
+    dateRangeType?: 'next7d' | 'next30d' | 'custom';
+    dateFrom?: string;
+    dateTo?: string;
+    status?: 'active' | 'inactive';
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<{
+    courses: import('./types').ManagerCourse[];
+    total: number;
+    pagination: { limit: number; offset: number; hasMore: boolean };
+  }> => {
+    const searchParams = new URLSearchParams();
+    if (params.search) searchParams.set('search', params.search);
+    if (params.location) searchParams.set('location', params.location);
+    if (params.availableDatesRange) searchParams.set('availableDatesRange', params.availableDatesRange);
+    if (params.dateRangeType) searchParams.set('dateRangeType', params.dateRangeType);
+    if (params.dateFrom) searchParams.set('dateFrom', params.dateFrom);
+    if (params.dateTo) searchParams.set('dateTo', params.dateTo);
+    if (params.status) searchParams.set('status', params.status);
+    if (params.limit) searchParams.set('limit', params.limit.toString());
+    if (params.offset !== undefined) searchParams.set('offset', params.offset.toString());
+
+    const response = await apiClient.get(`/manager/courses?${searchParams.toString()}`);
+    return response.data;
+  },
+
+  getManagerCourse: async (id: number | string): Promise<import('./types').ManagerCourse | undefined> => {
+    const response = await apiClient.get<{ success: boolean; course: import('./types').ManagerCourse }>(`/manager/courses/${id}`);
+    return response.data.course;
+  },
+
+  updateManagerCourse: async (
+    id: number,
+    data: { title?: string; status?: 'active' | 'inactive'; basePrice?: number }
+  ): Promise<import('./types').ManagerCourse> => {
+    const response = await apiClient.patch<{ success: boolean; course: import('./types').ManagerCourse }>(`/manager/courses/${id}`, data);
+    return response.data.course;
+  },
+
+  getManagerCourseDates: async (courseId: number | string): Promise<CourseDate[]> => {
+    const response = await apiClient.get<{ success: boolean; dates: CourseDate[] }>(`/manager/courses/${courseId}/dates`);
+    return response.data.dates;
+  },
+
+  createManagerCourseDate: async (
+    courseId: number,
+    data: { dateTime: string; capacity: number; duration?: number; price?: number }
+  ): Promise<CourseDate> => {
+    const response = await apiClient.post<{ success: boolean; date: CourseDate }>(`/manager/courses/${courseId}/dates`, data);
+    return response.data.date;
+  },
+
+  updateManagerCourseDate: async (
+    courseId: number,
+    dateId: number,
+    data: { price?: number; seats?: number }
+  ): Promise<void> => {
+    await apiClient.patch(`/manager/courses/${courseId}/dates/${dateId}`, data);
+  },
+
+  updateManagerCourseDateDateTime: async (
+    courseId: number,
+    dateId: number,
+    dateTime: string
+  ): Promise<void> => {
+    await apiClient.patch(`/manager/courses/${courseId}/dates/${dateId}/datetime`, { dateTime });
+  },
+
+  updateManagerCourseDateDuration: async (
+    courseId: number,
+    dateId: number,
+    duration: number
+  ): Promise<void> => {
+    await apiClient.patch(`/manager/courses/${courseId}/dates/${dateId}/duration`, { duration });
+  },
+
+  deleteManagerCourseDate: async (courseId: number, dateId: number): Promise<void> => {
+    await apiClient.delete(`/manager/courses/${courseId}/dates/${dateId}`);
+  },
+
+  getCourseLocations: async (): Promise<string[]> => {
+    const response = await apiClient.get<{ success: boolean; locations: string[] }>('/manager/courses/locations');
+    return response.data.locations;
+  },
 };

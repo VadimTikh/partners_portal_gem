@@ -298,3 +298,15 @@ export interface AppLog {
   durationMs: number;
   ipAddress: string | null;
 }
+
+// ============================================
+// Manager Courses Types
+// ============================================
+
+// Course with partner info for manager view
+export interface ManagerCourse extends Course {
+  partnerId: string;
+  partnerName: string;
+  partnerEmail: string;
+  customerNumber: string;
+}
